@@ -186,6 +186,10 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Foundation-Site.css" />
+    <Content Include="Content\Foundation-Site.min.css">
+      <DependentUpon>Foundation-Site.css</DependentUpon>
+    </Content>
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -240,6 +244,11 @@
     <Content Include="sass\foundation\components\_accordion.scss" />
     <Content Include="App_Readme\Foundation for Sites\readme.md" />
     <Content Include="ConnectionStrings.config" />
+    <Content Include="PrivateAppSettings.config" />
+    <None Include="compilerconfig.json" />
+    <Content Include="compilerconfig.json.defaults">
+      <DependentUpon>compilerconfig.json</DependentUpon>
+    </Content>
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\foundation\fastclick.js" />
     <Content Include="Scripts\foundation\foundation.abide.js" />

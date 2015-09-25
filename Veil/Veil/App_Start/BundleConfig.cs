@@ -20,7 +20,8 @@ namespace Veil
                         "~/Scripts/modernizr-*"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
-           "~/Content/site.css"));
+                "~/Content/site.css", 
+                "~/Content/Foundation-Site.css"));
 
             #region Foundation Bundles
 
