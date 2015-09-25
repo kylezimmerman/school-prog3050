@@ -18,3 +18,6 @@ I've created milestones for these deadlines, so put issues related to them under
 
 Our specific week by week plan can be found here:
 https://docs.google.com/document/d/1kHlQPMBe7dQ8jpvGUNa2ZDrAGux7Vlwn9OXq5KZhnkE/edit?usp=sharing
+
+### Solution
+The two config files needed can be found in our Drive folder. Place these in the Veil project.
