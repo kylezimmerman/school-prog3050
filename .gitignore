@@ -164,5 +164,5 @@ bower_components/
 ###########
 ## Private Configuration Files
 ###########
-ConnectionStrings.config
-PrivateAppSettings.config
+#ConnectionStrings.config
+#PrivateAppSettings.config
