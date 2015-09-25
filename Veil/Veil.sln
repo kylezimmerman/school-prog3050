@@ -7,13 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veil", "Veil\Veil.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veil.Tests", "Veil.Tests\Veil.Tests.csproj", "{3E2D4B12-B23E-4A7D-B039-AC93872FAA8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{6F7C10F4-40B7-4C33-91E7-E293587126B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veil.Models", "Models\Veil.Models.csproj", "{6F7C10F4-40B7-4C33-91E7-E293587126B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models.Tests", "Models.Tests\Models.Tests.csproj", "{5D137228-7944-4E74-9D52-FF7D6BADA3DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veil.Models.Tests", "Models.Tests\Veil.Models.Tests.csproj", "{5D137228-7944-4E74-9D52-FF7D6BADA3DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{7ADBF6E7-8252-4EC4-9E74-32E29B0D6A84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veil.DataAccess", "DataAccess\Veil.DataAccess.csproj", "{7ADBF6E7-8252-4EC4-9E74-32E29B0D6A84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess.Tests", "DataAccess.Tests\DataAccess.Tests.csproj", "{97502BBD-DB2A-42BE-9939-93C8B6ABE790}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veil.DataAccess.Tests", "DataAccess.Tests\Veil.DataAccess.Tests.csproj", "{97502BBD-DB2A-42BE-9939-93C8B6ABE790}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
