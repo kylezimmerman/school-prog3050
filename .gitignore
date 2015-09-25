@@ -252,6 +252,6 @@ bower_components/
 ###########
 ## Private Configuration Files
 ###########
-ConnectionStrings.config
-PrivateAppSettings.config
-veil.publishsettings
+**/ConnectionStrings.config
+**/PrivateAppSettings.config
+**/veil.publishsettings

@@ -240,7 +240,6 @@
     <Content Include="sass\foundation\components\_accordion.scss" />
     <Content Include="App_Readme\Foundation for Sites\readme.md" />
     <Content Include="ConnectionStrings.config" />
-    <Content Include="PrivateAppSettings.config" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\foundation\fastclick.js" />
     <Content Include="Scripts\foundation\foundation.abide.js" />
@@ -275,7 +274,9 @@
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\_references.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
