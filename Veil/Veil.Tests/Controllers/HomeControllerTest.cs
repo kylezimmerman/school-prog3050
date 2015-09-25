@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Veil;
+﻿using System.Web.Mvc;
+using NUnit.Framework;
 using Veil.Controllers;
 
 namespace Veil.Tests.Controllers
 {
-    [TestClass]
+    [TestFixture]
     public class HomeControllerTest
     {
-        [TestMethod]
-        public void Index()
+        [Test]
+        public void Index_WhenCalled_ReturnsViewResult()
         {
             // Arrange
             HomeController controller = new HomeController();
@@ -22,11 +17,11 @@ namespace Veil.Tests.Controllers
             ViewResult result = controller.Index() as ViewResult;
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.That(result != null);
         }
 
-        [TestMethod]
-        public void About()
+        [Test]
+        public void About_WhenCalled_ReturnsViewResult()
         {
             // Arrange
             HomeController controller = new HomeController();
@@ -35,11 +30,26 @@ namespace Veil.Tests.Controllers
             ViewResult result = controller.About() as ViewResult;
 
             // Assert
-            Assert.AreEqual("Your application description page.", result.ViewBag.Message);
+            Assert.That(result != null);
+            Assert.That(result.ViewBag.Message, Is.EqualTo("Your application description page."));
         }
 
-        [TestMethod]
-        public void Contact()
+        [Test]
+        public void About_WhenCalled_SetsViewBagMessage()
+        {
+            // Arrange
+            HomeController controller = new HomeController();
+
+            // Act
+            ViewResult result = controller.About() as ViewResult;
+
+            // Assert
+            Assert.That(result != null);
+            Assert.That(result.ViewBag.Message, Is.EqualTo("Your application description page."));
+        }
+
+        [Test]
+        public void Contact_WhenCalled_ReturnsViewResult()
         {
             // Arrange
             HomeController controller = new HomeController();
@@ -48,7 +58,7 @@ namespace Veil.Tests.Controllers
             ViewResult result = controller.Contact() as ViewResult;
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.That(result != null);
         }
     }
 }
