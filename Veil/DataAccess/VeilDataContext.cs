@@ -1,9 +1,10 @@
 ﻿using System.Data.Entity;
+using Veil.DataAccess.Interfaces;
 using Veil.Models;
 
 namespace Veil.DataAccess
 {
-    public class VeilDataContext : DbContext
+    public class VeilDataContext : DbContext, IVeilDataAccess
     {
         public VeilDataContext() : base("name=VeilDatabase") { }
 

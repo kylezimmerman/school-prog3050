@@ -4,16 +4,22 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess;
+using Veil.DataAccess.Interfaces;
 using Veil.Models;
 
 namespace Veil.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IVeilDataAccess db;
+
+        public HomeController(IVeilDataAccess dataAccess)
+        {
+            db = dataAccess;
+        }
+
         public ActionResult Index()
         {
-            VeilDataContext db = new VeilDataContext();
-
             List<Member> members = db.Members.ToList();
 
             return View();
