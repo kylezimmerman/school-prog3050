@@ -62,7 +62,39 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Address.cs" />
+    <Compile Include="Cart.cs" />
+    <Compile Include="CartItem.cs" />
+    <Compile Include="Company.cs" />
+    <Compile Include="Country.cs" />
+    <Compile Include="CreditCardPaymentInformation.cs" />
+    <Compile Include="Department.cs" />
+    <Compile Include="DownloadGameProduct.cs" />
+    <Compile Include="Employee.cs" />
+    <Compile Include="ESRBContentDescriptor.cs" />
+    <Compile Include="ESRBRating.cs" />
+    <Compile Include="Event.cs" />
+    <Compile Include="EventRegistration.cs" />
+    <Compile Include="Friendship.cs" />
+    <Compile Include="FriendshipRequestStatus.cs" />
+    <Compile Include="Game.cs" />
+    <Compile Include="GameProduct.cs" />
+    <Compile Include="GameStatus.cs" />
+    <Compile Include="Location.cs" />
+    <Compile Include="LocationType.cs" />
+    <Compile Include="Member.cs" />
+    <Compile Include="MemberPreferences.cs" />
+    <Compile Include="Person.cs" />
+    <Compile Include="PhysicalGameProduct.cs" />
+    <Compile Include="Platform.cs" />
+    <Compile Include="Product.cs" />
+    <Compile Include="ProductLocationInventory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Province.cs" />
+    <Compile Include="Review.cs" />
+    <Compile Include="Tag.cs" />
+    <Compile Include="WebOrder.cs" />
+    <Compile Include="WishList.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

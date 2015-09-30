@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Veil.DataAccess;
+using Veil.Models;
 
 namespace Veil.Controllers
 {
@@ -10,6 +12,10 @@ namespace Veil.Controllers
     {
         public ActionResult Index()
         {
+            VeilDataContext db = new VeilDataContext();
+
+            List<Member> members = db.Members.ToList();
+
             return View();
         }
 
