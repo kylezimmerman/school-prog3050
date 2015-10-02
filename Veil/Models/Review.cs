@@ -4,6 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
+    public enum ReviewStatus
+    {
+        Pending,
+        Approved,
+        Denied
+    }
+
     public class Review
     {
         [Key]
@@ -23,5 +30,7 @@ namespace Veil.Models
         public int Rating { get; set; }
 
         public string ReviewText { get; set; }
+
+        public ReviewStatus ReviewStatus { get; set; }
     }
 }

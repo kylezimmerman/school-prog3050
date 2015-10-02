@@ -12,8 +12,17 @@ namespace Veil.DataAccess
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Company>().HasMany(p => p.GameProducts).WithRequired(gp => gp.Developer).HasForeignKey(gp => gp.DeveloperId).WillCascadeOnDelete(false);
-            modelBuilder.Entity<Company>().HasMany(p => p.GameProducts).WithRequired(gp => gp.Publisher).HasForeignKey(gp => gp.PublisherId).WillCascadeOnDelete(false);
+            modelBuilder.Entity<Company>().
+                HasMany(p => p.GameProducts).
+                WithRequired(gp => gp.Developer).
+                HasForeignKey(gp => gp.DeveloperId).
+                WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Company>().
+                HasMany(p => p.GameProducts).
+                WithRequired(gp => gp.Publisher).
+                HasForeignKey(gp => gp.PublisherId).
+                WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Member>().
                 HasMany(m => m.WishList).

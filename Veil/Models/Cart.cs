@@ -1,12 +1,17 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
-    // TODO: Potentially in-memory only
     public class Cart
     {
-        public string MemberId { get; set; }
+        [Key, ForeignKey(nameof(Member))]
+        public Guid MemberId { get; set; }
 
-        public ICollection<CartItem> Items { get; set; }
+        public virtual Member Member { get; set; }
+
+        public virtual ICollection<CartItem> Items { get; set; }
     }
 }

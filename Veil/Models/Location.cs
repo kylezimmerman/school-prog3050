@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -6,7 +7,7 @@ namespace Veil.Models
     public class Location
     {
         [Key]
-        public string Id { get; set; } // GUID
+        public Guid Id { get; set; }
 
         public int LocationNumber { get; set; }
 

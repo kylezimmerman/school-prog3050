@@ -5,13 +5,14 @@ namespace Veil.Models
 {
     public class Member : Person
     {
-        /*[ForeignKey(nameof(PersonId))]
-        public virtual MemberPreferences Preferences { get; set; }*/
+        public virtual Cart Cart { get; set; }
 
         public virtual ICollection<Platform> FavoritePlatforms { get; set; }
 
         public virtual ICollection<Tag> FavoriteTags { get; set; }
 
         public virtual ICollection<Product> WishList { get; set; } 
+
+        public virtual ICollection<Event> RegisteredEvents { get; set; } 
     }
 }

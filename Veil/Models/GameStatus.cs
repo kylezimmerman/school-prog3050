@@ -2,11 +2,10 @@
 
 namespace Veil.Models
 {
-    public class GameStatus
+    public enum GameStatus
     {
-        [Key]
-        public int Id { get; set; }
-
-        public string Category { get; set; }
+        PreOrder,
+        Available,
+        Discontinued
     }
 }

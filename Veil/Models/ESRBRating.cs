@@ -4,7 +4,7 @@ namespace Veil.Models
 {
     public class ESRBRating
     {
-        [Key]
+        [Key] // EG: E, T, M
         public string RatingId { get; set; }
 
         [Required]

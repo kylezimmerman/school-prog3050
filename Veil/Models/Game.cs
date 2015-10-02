@@ -5,18 +5,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
-
     public class Game
     {
+        [Key]
         public Guid Id { get; set; }
 
         [Required]
         public string Name { get; set; }
 
-        [Required]
-        public int GameStatusId { get; set; }
-
-        [ForeignKey(nameof(GameStatusId))]
         public virtual GameStatus GameStatus { get; set; }
 
         [Required]
@@ -45,6 +41,6 @@ namespace Veil.Models
 
         public virtual ICollection<Tag> GameCategories { get; set; }
 
-        public virtual ICollection<GameProduct> GameProducts { get; set; } // TODO: Consider name
+        public virtual ICollection<GameProduct> GameSKUs { get; set; }
     }
 }

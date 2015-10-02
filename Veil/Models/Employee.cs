@@ -7,10 +7,10 @@ namespace Veil.Models
     public class Employee : Person // Table per concrete type
     {
         [Required]
-        public string EmployeeId { get; set; }
+        public int EmployeeId { get; set; }
 
         [Key]
-        public string StoreLocationId { get; set; }
+        public Guid StoreLocationId { get; set; }
 
         [ForeignKey(nameof(StoreLocationId))]
         public virtual Location StoreLocation { get; set; }
