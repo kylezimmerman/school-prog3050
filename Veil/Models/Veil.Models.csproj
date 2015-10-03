@@ -74,7 +74,6 @@
     <Compile Include="ESRBContentDescriptor.cs" />
     <Compile Include="ESRBRating.cs" />
     <Compile Include="Event.cs" />
-    <Compile Include="EventRegistration.cs" />
     <Compile Include="Friendship.cs" />
     <Compile Include="FriendshipRequestStatus.cs" />
     <Compile Include="Game.cs" />
@@ -83,7 +82,6 @@
     <Compile Include="Location.cs" />
     <Compile Include="LocationType.cs" />
     <Compile Include="Member.cs" />
-    <Compile Include="MemberPreferences.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="PhysicalGameProduct.cs" />
     <Compile Include="Platform.cs" />

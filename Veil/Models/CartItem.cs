@@ -1,18 +1,38 @@
+/* CartItem.cs
+ * Purpose: A class for products in a cart
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.02: Created
+ */ 
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
+    /// <summary>
+    /// An item in a cart. Includes product quantity and the cart it belongs to
+    /// </summary>
     public class CartItem
     {
-        // TODO: Setup EF to know this doesn't have a navigation property, and FK
+        // TODO: Setup EF to know this doesn't have a navigation property and is a FK
+        /// <summary>
+        /// The Id of the member this cart is for.
+        /// As a member can only have one cart, this also acts as the primary key
+        /// </summary>
         [Key]
         public Guid MemberId { get; set; }
 
+        /// <summary>
+        /// The Id of the product this CartItem is for
+        /// </summary>
         [Key, ForeignKey(nameof(Product))]
         public Guid ProductId { get; set; }
 
+        /// <summary>
+        /// Navigation property for the Product this CartItem is for
+        /// </summary>
         public virtual Product Product { get; set; }
 
         /// <summary>
@@ -20,6 +40,9 @@ namespace Veil.Models
         /// </summary>
         public bool IsNew { get; set; }
 
+        /// <summary>
+        /// Quantity of the product for this CartItem
+        /// </summary>
         public int Quantity { get; set; }
     }
 }

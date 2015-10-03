@@ -12,6 +12,10 @@ namespace Veil.DataAccess
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            // TODO: Tables per concrete type for:
+            // Address: Location & Member Address
+            // Person: Employee & Member TODO: Figure out how this will work with Identity
+
             modelBuilder.Entity<Company>().
                 HasMany(p => p.GameProducts).
                 WithRequired(gp => gp.Developer).
@@ -25,7 +29,7 @@ namespace Veil.DataAccess
                 WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Member>().
-                HasMany(m => m.WishList).
+                HasMany(m => m.Wishlist).
                 WithMany().
                 Map(t => t.MapLeftKey("MemberId").
                     MapRightKey("ProductId").

@@ -1,6 +1,8 @@
 ﻿using System.Web.Mvc;
+using Moq;
 using NUnit.Framework;
 using Veil.Controllers;
+using Veil.DataAccess.Interfaces;
 
 namespace Veil.Tests.Controllers
 {
@@ -10,26 +12,22 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Index_WhenCalled_ReturnsViewResult()
         {
-            // Arrange
-            HomeController controller = new HomeController();
+            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
+            HomeController controller = new HomeController(dbMock.Object);
 
-            // Act
             ViewResult result = controller.Index() as ViewResult;
 
-            // Assert
             Assert.That(result != null);
         }
 
         [Test]
         public void About_WhenCalled_ReturnsViewResult()
         {
-            // Arrange
-            HomeController controller = new HomeController();
+            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
+            HomeController controller = new HomeController(dbMock.Object);
 
-            // Act
             ViewResult result = controller.About() as ViewResult;
 
-            // Assert
             Assert.That(result != null);
             Assert.That(result.ViewBag.Message, Is.EqualTo("Your application description page."));
         }
@@ -37,13 +35,11 @@ namespace Veil.Tests.Controllers
         [Test]
         public void About_WhenCalled_SetsViewBagMessage()
         {
-            // Arrange
-            HomeController controller = new HomeController();
+            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
+            HomeController controller = new HomeController(dbMock.Object);
 
-            // Act
             ViewResult result = controller.About() as ViewResult;
 
-            // Assert
             Assert.That(result != null);
             Assert.That(result.ViewBag.Message, Is.EqualTo("Your application description page."));
         }
@@ -51,13 +47,11 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Contact_WhenCalled_ReturnsViewResult()
         {
-            // Arrange
-            HomeController controller = new HomeController();
+            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
+            HomeController controller = new HomeController(dbMock.Object);
 
-            // Act
             ViewResult result = controller.Contact() as ViewResult;
 
-            // Assert
             Assert.That(result != null);
         }
     }

@@ -4,21 +4,23 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
+    // TODO: Figure out what this should actually be
+    // TODO: Figure out how member links to this (Unsure with composite key)
     public class CreditCardPaymentInformation
     {
-        [Key, ForeignKey(nameof(Member))]
+        [Key, Column(Order = 0), ForeignKey(nameof(Member))]
         public Guid MemberId { get; set; }
 
-        public Member Member { get; set; }
+        public virtual Member Member { get; set; }
 
         public int ExpiryMonth { get; set; }
         public int ExpiryYear { get; set; }
 
         public string CardSecurityCode { get; set; } 
 
-        [Key]
+        [Key, Column(Order = 1)]
         public string CardNumber { get; set; }
+
         public string NameOnCard { get; set; }
-        public Address BillingAddress { get; set; }
     }
 }

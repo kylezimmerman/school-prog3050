@@ -1,14 +1,10 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
-    public class Location
+    public class Location : Address
     {
-        [Key]
-        public Guid Id { get; set; }
-
         public int LocationNumber { get; set; }
 
         [Required]
@@ -24,11 +20,5 @@ namespace Veil.Models
         public string FaxNumber { get; set; }
 
         public string TollFreeNumber { get; set; }
-
-        [Required]
-        public string AddressId { get; set; }
-
-        [ForeignKey(nameof(AddressId))]
-        public Address Address { get; set; }
     }
 }
