@@ -1,5 +1,5 @@
 ﻿/* Game.cs
- * Purpose: A class for storing information about a game that isn't specific to a product version of it
+ * Purpose: A class for information about a game that isn't specific to a product version of it
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.02: Created

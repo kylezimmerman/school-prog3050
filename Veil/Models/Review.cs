@@ -1,3 +1,11 @@
+/* Review.cs
+ * Purpose: An abstract base class for product reviews and an enumeration of the 
+ *          moderation statuses for a review's text
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.03: Created
+ */ 
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

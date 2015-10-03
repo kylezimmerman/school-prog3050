@@ -1,3 +1,10 @@
+/* MemberAddress.cs
+ * Purpose: A class to associate an address with a member
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.03: Created
+ */ 
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,7 +19,7 @@ namespace Veil.Models
         /// <summary>
         /// The Id for this address entry
         /// <remarks>
-        ///     We override this so it is more clear that this class uses a composite primary key
+        ///     We override this so it is clearer that this class uses a composite primary key
         /// </remarks>
         /// </summary>
         [Key, Column(Order = 0)]
@@ -22,7 +29,6 @@ namespace Veil.Models
         /// The Id for the member whose address this is
         /// </summary>
         [Key, Column(Order = 1)]
-        [ForeignKey(nameof(Member))]
         public Guid MemberId { get; set; }
 
         /// <summary>

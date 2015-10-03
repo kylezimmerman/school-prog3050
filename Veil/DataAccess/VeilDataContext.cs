@@ -16,6 +16,29 @@ namespace Veil.DataAccess
             // Address: Location & Member Address
             // Person: Employee & Member TODO: Figure out how this will work with Identity
 
+            // TODO: Foreign keys:
+            // Address: (ProvinceCode, CountryCode), CountryCode
+            //      Location: LocationTypeName
+            //      MemberAddress: MemberId
+            // GameProduct: PublisherId, DeveloperId, PlatformCode, GameId
+            // GameReview: GameProductId
+            // ProductLocationInventory: ProductId, LocationId
+            // Province: CountryCode
+            // WebOrder: (AddressId, MemberId), MemberId, CreditCardPaymentInformation
+            // CreditCardPaymentInformation: MemberId
+
+            // TODO: Composite keys:
+            // MemberAddress: Id, MemberId
+            // Province: ProvinceCode, CountryCode
+            // CreditCardPaymentInformation: MemberId, CardNumber
+
+            // TODO: No navigation property:
+            // Location: LocationType UNSURE: Can we do updates without the navigation property? Does it even matter as we aren't allowing entry of locations
+            // Product: ICollection<Member> UNSURE: We won't event want to navigate from a product to the member's with it on their wish list
+
+            // TODO: Missing navigation properties we will want:
+            // Product -> Review and/or GameProduct -> Review
+
             modelBuilder.Entity<Company>().
                 HasMany(p => p.GameProducts).
                 WithRequired(gp => gp.Developer).

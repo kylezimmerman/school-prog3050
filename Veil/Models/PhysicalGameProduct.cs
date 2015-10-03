@@ -1,8 +1,19 @@
+/* PhysicalGameProduct.cs
+ * Purpose: A class for a physical version of a GameProduct (i.e. a boxed game)
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.03: Created
+ */ 
+
 namespace Veil.Models
 {
+    /// <summary>
+    /// A physical product version of a GameProduct
+    /// </summary>
     public class PhysicalGameProduct : GameProduct
     {
-        public override string Name => $"{base.Name} {SKUNameSuffix}"; // TODO: Maybe this isn't the best way to do this?
+        public override string Name => $"{base.Name} {SKUNameSuffix}";
+        // TODO: Maybe this isn't the best way to do this?
 
         /// <summary>
         /// The optional suffix for this specific SKU of the game.

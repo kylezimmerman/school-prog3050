@@ -1,3 +1,10 @@
+/* GameProduct.cs
+ * Purpose: Abstract base class for a product version of a game on a specific platform
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.03: Created
+ */ 
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -5,7 +12,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Veil.Models
 {
     /// <summary>
-    /// Product version of a game for a specific platform
+    /// Product SKU of a game for a specific platform
     /// </summary>
     public abstract class GameProduct : Product
     {

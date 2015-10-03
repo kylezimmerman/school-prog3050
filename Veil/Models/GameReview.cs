@@ -1,6 +1,12 @@
+/* GameReview.cs
+ * Purpose: Class for a review of a specific game product
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.03: Created
+ */ 
+
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -18,7 +24,6 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the GameProduct the review is for
         /// </summary>
-        [ForeignKey(nameof(GameProductId))]
         public virtual GameProduct GameProduct { get; set; }
     }
 }
