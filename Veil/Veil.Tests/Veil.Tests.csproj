@@ -120,6 +120,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DataAccess\Veil.DataAccess.csproj">
+      <Project>{7adbf6e7-8252-4ec4-9e74-32e29b0d6a84}</Project>
+      <Name>Veil.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Models\Veil.Models.csproj">
+      <Project>{6f7c10f4-40b7-4c33-91e7-e293587126b0}</Project>
+      <Name>Veil.Models</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Veil\Veil.csproj">
       <Project>{8F45898A-1267-4206-89E2-793C10E84104}</Project>
       <Name>Veil</Name>

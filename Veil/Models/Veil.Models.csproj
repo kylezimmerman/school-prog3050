@@ -75,13 +75,13 @@
     <Compile Include="ESRBRating.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="Friendship.cs" />
-    <Compile Include="FriendshipRequestStatus.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameProduct.cs" />
-    <Compile Include="GameStatus.cs" />
+    <Compile Include="GameReview.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="LocationType.cs" />
     <Compile Include="Member.cs" />
+    <Compile Include="MemberAddress.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="PhysicalGameProduct.cs" />
     <Compile Include="Platform.cs" />
@@ -91,8 +91,8 @@
     <Compile Include="Province.cs" />
     <Compile Include="Review.cs" />
     <Compile Include="Tag.cs" />
+    <Compile Include="Validation\CompareValuesAttribute.cs" />
     <Compile Include="WebOrder.cs" />
-    <Compile Include="WishList.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
