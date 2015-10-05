@@ -3,8 +3,9 @@
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.02: Created
- */ 
+ */
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.Models
@@ -28,5 +29,10 @@ namespace Veil.Models
         /// </summary>
         [Required]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for games with this rating
+        /// </summary>
+        public virtual ICollection<Game> Games { get; set; }
     }
 }

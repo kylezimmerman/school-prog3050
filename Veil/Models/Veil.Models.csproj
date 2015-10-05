@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Address.cs" />
     <Compile Include="Cart.cs" />
+    <Compile Include="OrderItem.cs" />
     <Compile Include="CartItem.cs" />
     <Compile Include="Company.cs" />
     <Compile Include="Country.cs" />
@@ -93,6 +94,9 @@
     <Compile Include="Tag.cs" />
     <Compile Include="Validation\CompareValuesAttribute.cs" />
     <Compile Include="WebOrder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ModelClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

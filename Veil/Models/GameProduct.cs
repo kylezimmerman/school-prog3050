@@ -7,7 +7,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -47,7 +46,6 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the platform this GameProduct is on
         /// </summary>
-        [ForeignKey(nameof(PlatformCode))]
         public virtual Platform Platform { get; set; }
 
         /// <summary>
@@ -59,7 +57,6 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the Game this is a product version of
         /// </summary>
-        [ForeignKey(nameof(GameId))]
         public virtual Game Game { get; set; }
 
         /// <summary>

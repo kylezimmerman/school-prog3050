@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Veil.Models.Validation;
 
 namespace Veil.Models
@@ -67,7 +66,6 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the Game's ESRB rating
         /// </summary>
-        [ForeignKey(nameof(ESRBRatingId))]
         public virtual ESRBRating Rating { get; set; }
 
         /// <summary>

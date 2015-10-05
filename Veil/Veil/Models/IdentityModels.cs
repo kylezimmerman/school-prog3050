@@ -16,6 +16,8 @@ namespace Veil.Models
             // Add custom user claims here
             return userIdentity;
         }
+
+        public virtual Person UserInfo { get; set; }
     }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>

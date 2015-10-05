@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -21,7 +20,7 @@ namespace Veil.Models
         /// <summary>
         /// The Id for the Member whose cart this is
         /// </summary>
-        [Key, ForeignKey(nameof(Member))]
+        [Key]
         public Guid MemberId { get; set; }
 
         /// <summary>

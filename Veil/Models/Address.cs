@@ -7,7 +7,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -44,7 +43,6 @@ namespace Veil.Models
         /// </summary>
         [StringLength(2, MinimumLength = 2)]
         [Required]
-        [ForeignKey(nameof(ProvinceCode)), Column(Order = 0)]
         public string ProvinceCode { get; set; }
 
         /// <summary>
@@ -57,13 +55,11 @@ namespace Veil.Models
         /// </summary>
         [StringLength(2, MinimumLength = 2)]
         [Required]
-        [ForeignKey(nameof(Province)), Column(Order = 1)]
         public string CountryCode { get; set; }
 
         /// <summary>
         /// Navigation property for this Address's Country
         /// </summary>
-        [ForeignKey(nameof(CountryCode))]
         public virtual Country Country { get; set; }
     }
 }

@@ -48,7 +48,7 @@ namespace Veil.Models
         /// The Id of the member who made the order
         /// </summary>
         [Required]
-        public string MemberId { get; set; }
+        public Guid MemberId { get; set; }
 
         /// <summary>
         /// Navigation property for the Member who made the order
@@ -73,7 +73,7 @@ namespace Veil.Models
         /// <summary>
         /// Collection navigation property for the CartItems in the order
         /// </summary>
-        public virtual ICollection<CartItem> OrderItems { get; set; }
+        public virtual ICollection<OrderItem> OrderItems { get; set; }
 
         /// <summary>
         /// OrderStatus indicating the current status of the order

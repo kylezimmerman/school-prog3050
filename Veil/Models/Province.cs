@@ -6,7 +6,6 @@
  */ 
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -18,21 +17,20 @@ namespace Veil.Models
         /// <summary>
         /// The provinces two letter code
         /// </summary>
-        [Key, Column(Order = 0)]
+        [Key]
         [StringLength(2, MinimumLength = 2)]
         public string ProvinceCode { get; set; }
 
         /// <summary>
         /// The country code for the province
         /// </summary>
-        [Key, Column(Order = 1)]
+        [Key]
         [StringLength(2, MinimumLength = 2)]
         public string CountryCode { get; set; }
 
         /// <summary>
         /// Navigation property for the province's country
         /// </summary>
-        [ForeignKey(nameof(CountryCode))]
         public virtual Country Country { get; set; }
 
         /// <summary>

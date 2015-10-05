@@ -1,5 +1,5 @@
 /* CartItem.cs
- * Purpose: A class for products in a cart
+ * Purpose: A class for items in an order
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.02: Created
@@ -11,25 +11,24 @@ using System.ComponentModel.DataAnnotations;
 namespace Veil.Models
 {
     /// <summary>
-    /// An item in a cart. Includes product quantity and the cart it belongs to
+    /// An item in an order. Includes product quantity and the order it belongs to
     /// </summary>
-    public class CartItem
+    public class OrderItem
     {
         /// <summary>
-        /// The Id of the member this cart is for.
-        /// As a member can only have one cart, this also acts as the primary key
+        /// The Id of the order this item is part of.
         /// </summary>
         [Key]
-        public Guid MemberId { get; set; }
+        public Guid OrderId { get; set; }
 
         /// <summary>
-        /// The Id of the product this CartItem is for
+        /// The Id of the product this OrderItem is for
         /// </summary>
         [Key]
         public Guid ProductId { get; set; }
 
         /// <summary>
-        /// Navigation property for the Product this CartItem is for
+        /// Navigation property for the Product this OrderItem is for
         /// </summary>
         public virtual Product Product { get; set; }
 
@@ -39,7 +38,7 @@ namespace Veil.Models
         public bool IsNew { get; set; }
 
         /// <summary>
-        /// Quantity of the product for this CartItem
+        /// Quantity of the product for this OrderItem
         /// </summary>
         public int Quantity { get; set; }
     }

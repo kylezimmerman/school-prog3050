@@ -8,7 +8,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -37,7 +36,6 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the Member who created this review
         /// </summary>
-        [ForeignKey(nameof(MemberId))]
         public Member Member { get; set; }
 
         /// <summary>

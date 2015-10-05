@@ -7,7 +7,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -22,13 +21,13 @@ namespace Veil.Models
         ///     We override this so it is clearer that this class uses a composite primary key
         /// </remarks>
         /// </summary>
-        [Key, Column(Order = 0)]
+        [Key]
         public override Guid Id { get; set; }
 
         /// <summary>
         /// The Id for the member whose address this is
         /// </summary>
-        [Key, Column(Order = 1)]
+        [Key]
         public Guid MemberId { get; set; }
 
         /// <summary>

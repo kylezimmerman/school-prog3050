@@ -3,8 +3,9 @@
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.02: Created
- */ 
+ */
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.Models
@@ -36,5 +37,10 @@ namespace Veil.Models
         /// The acronym for the federal tax
         /// </summary>
         public string FederalTaxAcronym { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for this Country's provinces
+        /// </summary>
+        public ICollection<Province> Provinces { get; set; }
     }
 }

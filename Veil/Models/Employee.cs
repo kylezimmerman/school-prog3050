@@ -7,7 +7,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -16,19 +15,17 @@ namespace Veil.Models
         /// <summary>
         /// The employee's internal Id number
         /// </summary>
-        [Required]
+        [Required] // TODO: Do we want this to be required? Or do we leave it optional and generate an ID if it isn't provided
         public int EmployeeId { get; set; }
 
         /// <summary>
         /// The Id for the store location where the employee works
         /// </summary>
-        [Key]
         public Guid StoreLocationId { get; set; }
 
         /// <summary>
         /// Navigation property for the employee's store location
         /// </summary>
-        [ForeignKey(nameof(StoreLocationId))]
         public virtual Location StoreLocation { get; set; }
 
         /// <summary>
@@ -40,12 +37,12 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the employee's department
         /// </summary>
-        [ForeignKey(nameof(DepartmentId))]
         public virtual Department Department { get; set; }
 
         /// <summary>
         /// The date the employee was hired
         /// </summary>
+        [Required]
         public DateTime HireDate { get; set; }
 
         /// <summary>

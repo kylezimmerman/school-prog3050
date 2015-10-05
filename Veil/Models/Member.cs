@@ -6,7 +6,6 @@
  */ 
 
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Veil.Models
 {
@@ -18,7 +17,6 @@ namespace Veil.Models
         /// <summary>
         /// Navigation property for the Member's cart
         /// </summary>
-        [ForeignKey(nameof(PersonId))]
         public virtual Cart Cart { get; set; }
 
         /// <summary>

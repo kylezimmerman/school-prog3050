@@ -25,10 +25,6 @@ namespace Veil.Models
         [Required]
         public string LocationTypeName { get; set; }
 
-        // TODO: Remove this
-        /*[ForeignKey(nameof(LocationTypeName))]
-        public virtual LocationType LocationType { get; set; }*/
-
         /// <summary>
         /// The Location's site name
         /// </summary>
