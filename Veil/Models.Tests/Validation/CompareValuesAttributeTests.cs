@@ -9,9 +9,9 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using NUnit.Framework;
-using Veil.Models.Validation;
+using Veil.DataModels.Validation;
 
-namespace Veil.Models.Test.Validation
+namespace Veil.DataModels.Tests.Validation
 {
     public class ComparisonEntity
     {

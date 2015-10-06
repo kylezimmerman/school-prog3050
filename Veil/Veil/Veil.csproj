@@ -51,6 +51,10 @@
       <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="JetBrains.Annotations, Version=9.2.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.9.2.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
@@ -356,9 +360,9 @@
       <Project>{7adbf6e7-8252-4ec4-9e74-32e29b0d6a84}</Project>
       <Name>Veil.DataAccess</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Models\Veil.Models.csproj">
+    <ProjectReference Include="..\Models\Veil.DataModels.csproj">
       <Project>{6f7c10f4-40b7-4c33-91e7-e293587126b0}</Project>
-      <Name>Veil.Models</Name>
+      <Name>Veil.DataModels</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

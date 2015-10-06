@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
-using Veil.Models;
+using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {

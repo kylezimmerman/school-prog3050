@@ -72,9 +72,9 @@
       <Project>{7adbf6e7-8252-4ec4-9e74-32e29b0d6a84}</Project>
       <Name>Veil.DataAccess</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Models\Veil.Models.csproj">
+    <ProjectReference Include="..\Models\Veil.DataModels.csproj">
       <Project>{6f7c10f4-40b7-4c33-91e7-e293587126b0}</Project>
-      <Name>Veil.Models</Name>
+      <Name>Veil.DataModels</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

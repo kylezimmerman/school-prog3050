@@ -29,9 +29,9 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Veil.Models.Country">
-    <Position X="20.5" Y="0.5" Width="2.25" />
+    <Position X="20.5" Y="0.5" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>ICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAg=</HashCode>
+      <HashCode>ICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAABAg=</HashCode>
       <FileName>Country.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -64,16 +64,16 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Veil.Models.ESRBContentDescriptor">
-    <Position X="18.5" Y="5" Width="2" />
+    <Position X="19" Y="5" Width="2" />
     <TypeIdentifier>
       <HashCode>AEACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ESRBContentDescriptor.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Veil.Models.ESRBRating">
-    <Position X="16.5" Y="5" Width="1.75" />
+    <Position X="16.5" Y="5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>QAAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ESRBRating.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -120,9 +120,9 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Veil.Models.LocationType">
-    <Position X="6.25" Y="13.5" Width="2.25" />
+    <Position X="6.25" Y="13.5" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
       <FileName>LocationType.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -169,14 +169,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Veil.Models.ProductLocationInventory">
-    <Position X="26" Y="0.5" Width="2" />
+    <Position X="9.25" Y="13.5" Width="2" />
     <TypeIdentifier>
       <HashCode>EAAKCAAAAAAAAAEAAAIAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
       <FileName>ProductLocationInventory.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Veil.Models.Province">
-    <Position X="23" Y="0.5" Width="2.25" />
+    <Position X="23.75" Y="0.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>ACAAAAAEAAAQAAAAAAAAAAQAAAIAAACAAAAAAAAAAAA=</HashCode>
       <FileName>Province.cs</FileName>

@@ -1,19 +1,54 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿/* VeilDataContext.cs
+ * Purpose: Database context class for the application's database
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.09.29: Created
+ */ 
+
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Annotations;
+using JetBrains.Annotations;
 using Veil.DataAccess.Interfaces;
-using Veil.Models;
+using Veil.DataModels.Models;
 
 namespace Veil.DataAccess
 {
     public class VeilDataContext : DbContext, IVeilDataAccess
     {
+        [UsedImplicitly]
         public VeilDataContext() : base("name=VeilDatabase") { }
 
-        public IDbSet<Member> Members { get; set; }
+        public IDbSet<Address> Addresses { get; set; } // TODO: I doubt we will want this
+        public IDbSet<Cart> Carts { get; set; }
+        public IDbSet<CartItem> CartItems { get; set; } // TODO: I doubt we will ant this
+        public IDbSet<Company> Companies { get; set; }
+        public IDbSet<Country> Countries { get; set; }
+        public IDbSet<CreditCardPaymentInformation> CreditCardPaymentInformations { get; set; }
+        public IDbSet<Department> Departments { get; set; }
+        public IDbSet<DownloadGameProduct> DownloadGameProducts { get; set; }
         public IDbSet<Employee> Employees { get; set; }
+        public IDbSet<ESRBContentDescriptor> ESRBContentDescriptors { get; set; }
+        public IDbSet<ESRBRating> ESRBRatings { get; set; }
+        public IDbSet<Event> Events { get; set; }
+        public IDbSet<Friendship> Friendships { get; set; }
         public IDbSet<Game> Games { get; set; }
-        public IDbSet<WebOrder> WebOrders { get; set; } 
+        public IDbSet<GameProduct> GameProducts { get; set; } // TODO: I doubt we will want this
+        public IDbSet<GameReview> GameReviews { get; set; }
+        public IDbSet<Location> Locations { get; set; }
+        public IDbSet<LocationType> LocationTypes { get; set; }
+        public IDbSet<Member> Members { get; set; }
+        public IDbSet<MemberAddress> MemberAddresses { get; set; }
+        public IDbSet<OrderItem> OrderItems { get; set; } // TODO: I doubt we will want this
+        public IDbSet<Person> Persons { get; set; } // TODO: Name and I doubt we will want this
+        public IDbSet<PhysicalGameProduct> PhysicalGameProducts { get; set; }
+        public IDbSet<Platform> Platforms { get; set; }
+        public IDbSet<Product> Products { get; set; } // TODO: Do we want this?
+        public IDbSet<ProductLocationInventory> ProductLocationInventories { get; set; }
+        public IDbSet<Province> Provinces { get; set; }
+        public IDbSet<Review> Reviews { get; set; } // TODO: Do we want this?
+        public IDbSet<Tag> Tags { get; set; }
+        public IDbSet<WebOrder> WebOrders { get; set; }
 
         protected void SetupCompanyModel(DbModelBuilder modelBuilder)
         {
@@ -28,18 +63,6 @@ namespace Veil.DataAccess
                 WithRequired(gp => gp.Publisher).
                 HasForeignKey(gp => gp.PublisherId).
                 WillCascadeOnDelete(false);
-
-/*            modelBuilder.Entity<GameProduct>().
-                HasRequired(gp => gp.Developer).
-                WithMany(c => c.GameProducts).
-                HasForeignKey(gp => gp.DeveloperId).
-                WillCascadeOnDelete(true);
-
-            modelBuilder.Entity<GameProduct>().
-                HasRequired(c => c.Publisher).
-                WithMany(c => c.GameProducts).
-                HasForeignKey(gp => gp.PublisherId).
-                WillCascadeOnDelete(true);*/
         }
 
         protected void SetupGameModel(DbModelBuilder modelBuilder)
@@ -61,6 +84,26 @@ namespace Veil.DataAccess
 
         protected void SetupWebOrderModel(DbModelBuilder modelBuilder)
         {
+            // Foreign keys:
+            // ShippingInfo: (AddressId, MemberId)
+            // BillingInfo: (AddressId, MemberId) // TODO: Figure out where this info is
+            // Member: MemberId
+            // CreditCardPaymentInformation: // TODO: Figure out what this FK is
+
+            modelBuilder.Entity<WebOrder>().
+                HasRequired(wo => wo.ShippingAddress).
+                WithMany().
+                HasForeignKey(wo => new { wo.ShippingAddressId, wo.MemberId }).
+                WillCascadeOnDelete(false);
+
+            // TODO: Is BillingAddress tied to CreditCardPaymentInformation? Or is it a property on WebOrder
+
+            modelBuilder.Entity<WebOrder>().
+                HasRequired(wo => wo.Member).
+                WithMany().
+                HasForeignKey(wo => wo.MemberId).
+                WillCascadeOnDelete(false);
+
             modelBuilder.Entity<WebOrder>().
                 HasMany(wo => wo.OrderItems).
                 WithRequired().
@@ -80,20 +123,27 @@ namespace Veil.DataAccess
                 HasForeignKey(ci => ci.ProductId).
                 WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<OrderItem>().HasKey(ci => new {
-                ci.OrderId,
-                ci.ProductId
-            });
+            modelBuilder.Entity<OrderItem>().HasKey(
+                ci => new
+                {
+                    ci.OrderId,
+                    ci.ProductId
+                });
         }
 
         protected void SetupProvinceModel(DbModelBuilder modelBuilder)
         {
+            // Foreign keys:
+            // Country: CountryCode
+
             modelBuilder.Entity<Province>().
                 HasRequired(p => p.Country).
                 WithMany(c => c.Provinces).
                 HasForeignKey(p => p.CountryCode).
                 WillCascadeOnDelete(false);
 
+            // Primary key:
+            // ProvinceCode, CountryCode
             modelBuilder.Entity<Province>().
                 HasKey(p => new { p.ProvinceCode, p.CountryCode });
         }
@@ -107,7 +157,7 @@ namespace Veil.DataAccess
             modelBuilder.Entity<Address>().
                 HasRequired(a => a.Province).
                 WithMany().
-                HasForeignKey(a => new { a.ProvinceCode, a.CountryCode}).
+                HasForeignKey(a => new { a.ProvinceCode, a.CountryCode }).
                 WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Address>().
@@ -125,6 +175,8 @@ namespace Veil.DataAccess
 
             // Foreign Keys:
             // Member: MemberId
+
+            // TODO: Will this even work? Logic says these two navigation properties will just contain all the member's addresses
             modelBuilder.Entity<MemberAddress>().
                 HasRequired(ma => ma.Member).
                 WithMany(m => m.ShippingAddresses).
@@ -150,13 +202,15 @@ namespace Veil.DataAccess
             // Location
             // Member Address
             modelBuilder.Entity<MemberAddress>().
-                Map(t => 
-                    t.MapInheritedProperties().
+                Map(
+                    t =>
+                        t.MapInheritedProperties().
                         ToTable(nameof(MemberAddress)));
 
             modelBuilder.Entity<Location>().
-                Map(t =>
-                    t.MapInheritedProperties().
+                Map(
+                    t =>
+                        t.MapInheritedProperties().
                         ToTable(nameof(Location)));
         }
 
@@ -167,23 +221,21 @@ namespace Veil.DataAccess
                 WithMany(p => p.MembersFavoritePlatform).
                 Map(
                     mToMconf =>
-                    {
-                        mToMconf.ToTable("MemberFavoritePlatform");
-                    });
+                        mToMconf.ToTable("MemberFavoritePlatform"));
 
             modelBuilder.Entity<Member>().
                 HasMany(m => m.FavoriteTags).
                 WithMany(t => t.MemberFavoriteCategory).
                 Map(
                     mToMconf =>
-                    {
-                        mToMconf.ToTable("MemberFavoriteTag");
-                    });
+                        mToMconf.ToTable("MemberFavoriteTag"));
 
             modelBuilder.Entity<Member>().
                 HasMany(m => m.Wishlist).
                 WithMany().
-                Map(t => t.MapLeftKey("MemberId").
+                Map(
+                    t =>
+                        t.MapLeftKey("MemberId").
                         MapRightKey("ProductId").
                         ToTable("MemberWishlistItem"));
 
@@ -192,9 +244,7 @@ namespace Veil.DataAccess
                 WithMany(e => e.RegisteredMembers).
                 Map(
                     mToMconf =>
-                    {
-                        mToMconf.ToTable("MemberEventMembership");
-                    });
+                        mToMconf.ToTable("MemberEventMembership"));
 
             modelBuilder.Entity<Member>().
                 HasMany(m => m.PaymentInformation).
@@ -205,8 +255,6 @@ namespace Veil.DataAccess
                 HasKey(m => m.PersonId).
                 Property(m => m.PersonId).
                 HasColumnName("MemberId");
-
-            modelBuilder.Entity<Member>().ToTable("Member");
 
             // Member => BillingAddress is setup in SetupAddressAndDerivedModels
             // Member => ShippingAddress is setup in SetupAddressAndDerivedModels
@@ -231,13 +279,34 @@ namespace Veil.DataAccess
                         new IndexAttribute("IX_EmployeeId")
                         {
                             IsUnique = true
-                        }
-                    )
-                );
+                        }));
+
+            // Table Per Concrete Type:
+            // Member
+            // Employee
+            // TODO: Figure out how this will work with Identity
+
+            modelBuilder.Entity<Member>().
+                Map(
+                    t =>
+                        t.MapInheritedProperties().
+                        ToTable(nameof(Member)));
+
+            modelBuilder.Entity<Employee>().
+                Map(
+                    t =>
+                        t.MapInheritedProperties().
+                        ToTable(nameof(Employee)));
         }
 
         protected void SetupProductAndDerivedModels(DbModelBuilder modelBuilder)
         {
+            // Foreign keys:
+            // Platform: PlatformCode
+            // Game: GameId
+            // GameProducts: PublisherId is setup in SetupCompanyModel
+            // GameProducts: DeveloperId is setup in SetupCompanyModel
+
             modelBuilder.Entity<GameProduct>().
                 HasRequired(gp => gp.Platform).
                 WithMany(p => p.GameProducts).
@@ -286,6 +355,8 @@ namespace Veil.DataAccess
 
             // TODO: GameReview -> Game Product or Review -> Product with a collection navigation property on the review
 
+            // Foreign keys:
+            // GameProduct: GameProductId
             modelBuilder.Entity<GameReview>().
                 HasRequired(gr => gr.GameProduct).
                 WithMany().
@@ -300,31 +371,36 @@ namespace Veil.DataAccess
                 HasKey(g => new { g.MemberId, g.GameProductId });
 
             modelBuilder.Entity<GameReview>().
-                Map(t => 
-                    t.MapInheritedProperties().
+                Map(
+                    t =>
+                        t.MapInheritedProperties().
                         ToTable(nameof(GameReview)));
+        }
+
+        protected void SetupProductLocationInventoryModel(DbModelBuilder modelBuilder)
+        {
+            // Foreign keys:
+            // Product: ProductId
+            // Location: LocationId
+
+            modelBuilder.Entity<ProductLocationInventory>().
+                HasRequired(pli => pli.Product).
+                WithMany(p => p.LocationInventories).
+                HasForeignKey(pli => pli.ProductId);
+
+            modelBuilder.Entity<ProductLocationInventory>().
+                HasRequired(pli => pli.Location).
+                WithMany().
+                // TODO: Do we want to be able to get a locations inventory levels from the location?
+                HasForeignKey(pli => pli.LocationId);
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            // TODO: Tables per concrete type for:
-            // Address: Location & Member Address
-            // Person: Employee & Member TODO: Figure out how this will work with Identity
-
             // TODO: Foreign keys:
-            // Address: (ProvinceCode, CountryCode), CountryCode
-            //      Location: LocationTypeName
-            //      MemberAddress: MemberId
-            // GameProduct: PublisherId, DeveloperId, PlatformCode, GameId
-            // GameReview: GameProductId
-            // ProductLocationInventory: ProductId, LocationId
-            // Province: CountryCode
-            // WebOrder: (AddressId, MemberId), MemberId, CreditCardPaymentInformation
             // CreditCardPaymentInformation: MemberId
 
             // TODO: Composite keys:
-            // MemberAddress: Id, MemberId
-            // Province: ProvinceCode, CountryCode
             // CreditCardPaymentInformation: MemberId, CardNumber
 
             // TODO: No navigation property:
@@ -345,6 +421,7 @@ namespace Veil.DataAccess
             SetupOrderItemModel(modelBuilder);
             SetupProductAndDerivedModels(modelBuilder);
             SetupReviewAndDerivedModels(modelBuilder);
+            SetupProductLocationInventoryModel(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
         }

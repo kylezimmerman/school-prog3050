@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace Veil.Models.Validation
+namespace Veil.DataModels.Validation
 {
     // Note: Modified version of 
     // http://cncrrnt.com/blog/index.php/2011/01/custom-validationattribute-for-comparing-properties/
@@ -53,12 +53,13 @@ namespace Veil.Models.Validation
         /// </summary>
         /// <param name="otherProperty">The other property to compare to</param>
         /// <param name="criteria">The <see cref="ComparisonCriteria"/> to use when comparing</param>
+        /// <exception cref="ArgumentNullException"><paramref name="otherProperty"/> is <see langword="null" />.</exception>
         public CompareValuesAttribute(string otherProperty, ComparisonCriteria criteria)
             : base("{0} must be {1} {2}")
         {
             if (otherProperty == null)
             {
-                throw new ArgumentNullException("otherProperty");
+                throw new ArgumentNullException(nameof(otherProperty));
             }
 
             OtherProperty = otherProperty;
@@ -121,7 +122,7 @@ namespace Veil.Models.Validation
                     SetOtherPropertyDisplayName(otherPropertyInfo);
 
                     throw new InvalidOperationException(
-                        String.Format(
+                        string.Format(
                             "The types of the properties {0} and {1} must be the same.",
                             validationContext.DisplayName,
                             OtherPropertyDisplayName));
@@ -135,7 +136,7 @@ namespace Veil.Models.Validation
 
                     return
                         new ValidationResult(
-                            String.Format(
+                            string.Format(
                                 "{0} and {1} must both implement IComparable",
                                 validationContext.DisplayName, OtherProperty));
                 }
@@ -177,7 +178,7 @@ namespace Veil.Models.Validation
         /// <returns></returns>
         public override string FormatErrorMessage(string name)
         {
-            return String.Format(
+            return string.Format(
                 CultureInfo.CurrentCulture, ErrorMessageString, name,
                 GetCriteriaDescription(Criteria), OtherPropertyDisplayName ?? OtherProperty);
         }
