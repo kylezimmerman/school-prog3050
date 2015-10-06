@@ -66,13 +66,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Cart.cs" />
+    <Compile Include="Models\CreditCardBillingInfo.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Models\CartItem.cs" />
     <Compile Include="Models\Company.cs" />
     <Compile Include="Models\Country.cs" />
-    <Compile Include="Models\CreditCardPaymentInformation.cs" />
+    <Compile Include="Models\MemberCreditCard.cs" />
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\DownloadGameProduct.cs" />
     <Compile Include="Models\Employee.cs" />

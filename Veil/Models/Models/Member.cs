@@ -45,13 +45,8 @@ namespace Veil.DataModels.Models
         public virtual ICollection<MemberAddress> ShippingAddresses { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the Member's saved billing addresses
-        /// </summary>
-        public virtual ICollection<MemberAddress> BillingAddresses{ get; set; }
-
-        /// <summary>
         /// Collection navigation property for the Member's saved payment information
         /// </summary>
-        public virtual ICollection<CreditCardPaymentInformation> PaymentInformation { get; set; }
+        public virtual ICollection<MemberCreditCard> CreditCards { get; set; }
     }
 }

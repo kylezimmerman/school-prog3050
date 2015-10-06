@@ -25,7 +25,6 @@ namespace Veil.DataModels.Models
         Accepted
     }
 
-    // TODO: Figure out how to make it unique (requester, requestee) (requestee, requester)
     /// <summary>
     /// Represents a friendship between to members
     /// </summary>
@@ -46,12 +45,12 @@ namespace Veil.DataModels.Models
         /// The member Id of the person receiving the friend request
         /// </summary>
         [Key]
-        public string RequesteeId { get; set; }
+        public string ReceiverId { get; set; }
 
         /// <summary>
         /// Navigation property for the Member receiving the friend request
         /// </summary>
-        public virtual Member Requestee { get; set; }
+        public virtual Member Receiver { get; set; }
 
         /// <summary>
         /// The status of the friend request. If the request is denied, the request is deleted.

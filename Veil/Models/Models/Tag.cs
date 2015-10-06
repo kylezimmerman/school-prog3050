@@ -30,5 +30,10 @@ namespace Veil.DataModels.Models
         /// Collection navigation property for the Product's with this tag
         /// </summary>
         public virtual ICollection<Product> TaggedProducts { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for the Game's with this tag
+        /// </summary>
+        public virtual ICollection<Game> TaggedGames { get; set; }
     }
 }

@@ -30,9 +30,14 @@ namespace Veil.DataModels.Models
         Available,
 
         /// <summary>
-        /// The game has been discontinued
+        /// The game has been discontinued by the manufacturer
         /// </summary>
-        Discontinued
+        DiscontinuedByManufacturer,
+
+        /// <summary>
+        /// We are no longer selling the game
+        /// </summary>
+        NotForSale
     }
 
     /// <summary>
@@ -55,7 +60,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's availability status
         /// </summary>
-        public virtual GameAvailabilityStatus GameAvailabilityStatus { get; set; }
+        public GameAvailabilityStatus GameAvailabilityStatus { get; set; }
 
         /// <summary>
         /// The Id for the Game's ESRB rating

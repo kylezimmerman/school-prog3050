@@ -29,8 +29,13 @@ namespace Veil.DataModels.Models
         public string Name { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the GameProducts the company has published or developed
+        /// Collection navigation property for the GameProducts the company has published
         /// </summary>
-        public virtual ICollection<GameProduct> GameProducts { get; set; }
+        public virtual ICollection<GameProduct> PublishedGameProducts { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for the GameProducts the company has developed
+        /// </summary>
+        public virtual ICollection<GameProduct> DevelopedGameProducts { get; set; } 
     }
 }

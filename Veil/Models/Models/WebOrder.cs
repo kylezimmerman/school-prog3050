@@ -32,7 +32,6 @@ namespace Veil.DataModels.Models
         Processed
     }
 
-    // TODO: Add FKs for CreditCardPaymentInformation, and ShippingAddress
     /// <summary>
     /// A web order for a Member
     /// </summary>
@@ -56,9 +55,15 @@ namespace Veil.DataModels.Models
         public virtual Member Member { get; set; }
 
         /// <summary>
+        /// The credit card number used for this order.
+        /// This is part of the composite key for MemberCreditCard
+        /// </summary>
+        public string CreditCardNumber { get; set; }
+
+        /// <summary>
         /// Navigation property for the payment information for the order
         /// </summary>
-        public virtual CreditCardPaymentInformation CreditCardPaymentInformation { get; set; }
+        public virtual MemberCreditCard MemberCreditCard { get; set; }
 
         /// <summary>
         /// The Id of the shipping address the member used to make the order

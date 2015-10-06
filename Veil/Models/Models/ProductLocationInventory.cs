@@ -5,6 +5,7 @@
  *      Drew Matheson, 2015.10.03: Created
  */
 
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -18,13 +19,13 @@ namespace Veil.DataModels.Models
         /// The Id of the product for this ProductLocationInventory
         /// </summary>
         [Key]
-        public string ProductId { get; set; }
+        public Guid ProductId { get; set; }
 
         /// <summary>
         /// The Id of the location this ProductLocationInventory
         /// </summary>
         [Key]
-        public string LocationId { get; set; }
+        public Guid LocationId { get; set; }
 
         /// <summary>
         /// Navigation property for the product 

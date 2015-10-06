@@ -1,8 +1,8 @@
-/* Address.cs
- * Purpose: A abstract class which acts as a base for classes which store address information
+﻿/* CreditCardBillingInfo.cs
+ * Purpose: A class for credit card billing information
  * 
  * Revision History:
- *      Drew Matheson, 2015.10.02: Created
+ *      Drew Matheson, 2015.10.06: Created
  */
 
 using System;
@@ -11,54 +11,52 @@ using System.ComponentModel.DataAnnotations;
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// An address with street info, city, postal code, province, country, and optional PO box number
+    /// Credit Card Billing Information
     /// </summary>
-    public abstract class Address
+    public class CreditCardBillingInfo
     {
         [Key]
-        public virtual Guid Id { get; set; }
+        public Guid MemberId { get; set; }
+
+        [Key]
+        public string CardNumber { get; set; }
 
         /// <summary>
-        /// The Address's street address, including apartment number
+        /// The street address for the billing information
         /// </summary>
         public string StreetAddress { get; set; }
 
         /// <summary>
-        /// The Addresses optional post office box number
-        /// </summary>
-        public string POBoxNumber { get; set; }
-
-        /// <summary>
-        /// The Address's city
+        /// The city for the billing information
         /// </summary>
         public string City { get; set; }
 
         /// <summary>
-        /// The Address's postal or zip code
+        /// The postal or zip code for the billing information
         /// </summary>
         public string PostalCode { get; set; }
 
         /// <summary>
-        /// The province code for this Address's Province
+        /// The province code for the billing information
         /// </summary>
         [StringLength(2, MinimumLength = 2)]
         [Required]
         public string ProvinceCode { get; set; }
 
         /// <summary>
-        /// Navigation property for this Address's Province
+        /// Navigation property for this CreditCardBillingInfo's Province
         /// </summary>
         public virtual Province Province { get; set; }
 
         /// <summary>
-        /// The country code for this Address's Country
+        /// The country code for the billing information
         /// </summary>
         [StringLength(2, MinimumLength = 2)]
         [Required]
         public string CountryCode { get; set; }
 
         /// <summary>
-        /// Navigation property for this Address's Country
+        /// Navigation property for this CreditCardBillingInfo's Country
         /// </summary>
         public virtual Country Country { get; set; }
     }
