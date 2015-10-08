@@ -5,7 +5,10 @@
  *      Drew Matheson, 2015.10.02: Created
  */
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataModels.Models
 {
@@ -33,8 +36,19 @@ namespace Veil.DataModels.Models
     /// <summary>
     /// A member of the website
     /// </summary>
-    public class Member : Person
+    public class Member
     {
+        /// <summary>
+        /// The Member's Id. This is the same Id as their User Id
+        /// </summary>
+        [Key]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Navigation property for the Member's User account
+        /// </summary>
+        public virtual User UserAccount { get; set; }
+
         /// <summary>
         /// Navigation property for the Member's cart
         /// </summary>

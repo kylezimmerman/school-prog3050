@@ -1,5 +1,5 @@
 /* Employee.cs
- * Purpose: Class for employee and employee account information
+ * Purpose: Class for employee information
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.02: Created
@@ -7,11 +7,23 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataModels.Models
 {
-    public class Employee : Person
+    public class Employee
     {
+        /// <summary>
+        /// The Id for the Employee's User account
+        /// </summary>
+        [Key]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Navigation property for the Employee's User account
+        /// </summary>
+        public virtual User UserAccount { get; set; }
+
         /// <summary>
         /// The employee's internal Id number
         /// </summary>

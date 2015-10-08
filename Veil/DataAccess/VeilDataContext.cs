@@ -9,16 +9,17 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Annotations;
-using System.Data.Entity.ModelConfiguration.Configuration;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using System.Linq;
 using JetBrains.Annotations;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataAccess
 {
-    public class VeilDataContext : DbContext, IVeilDataAccess
+
+    public class VeilDataContext : IdentityDbContext<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>, IVeilDataAccess
     {
         [UsedImplicitly]
         public VeilDataContext() : base("name=VeilDatabase") { }
@@ -49,8 +50,39 @@ namespace Veil.DataAccess
         public IDbSet<Tag> Tags { get; set; }
         public IDbSet<WebOrder> WebOrders { get; set; }
 
+        protected void SetupUserModel(DbModelBuilder modelBuilder)
+        {
+            /* Primary Key:
+             *
+             * Id
+             */
+            modelBuilder.Entity<User>().
+                HasKey(u => u.Id).
+                Property(u => u.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
+            modelBuilder.Entity<User>().ToTable(nameof(User));
+        }
+
+        protected void SetupIdentityModels(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<GuidIdentityRole>().ToTable("Role");
+            modelBuilder.Entity<GuidIdentityUserClaim>().ToTable("UserClaim");
+            modelBuilder.Entity<GuidIdentityUserLogin>().ToTable("UserLogin");
+            modelBuilder.Entity<GuidIdentityUserRole>().ToTable("UserRole");
+        }
+
         protected void SetupGameModel(DbModelBuilder modelBuilder)
         {
+            /* Primary Key:
+             *
+             * Id
+             */
+            modelBuilder.Entity<Game>().
+                HasKey(g => g.Id).
+                Property(g => g.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
             /* Foreign Keys:
              *
              * ESRBRating: ESRBRatingId
@@ -79,6 +111,15 @@ namespace Veil.DataAccess
 
         protected void SetupWebOrderModel(DbModelBuilder modelBuilder)
         {
+            /* Primary Key:
+             *
+             * Id
+             */
+            modelBuilder.Entity<WebOrder>().
+                HasKey(wo => wo.Id).
+                Property(wo => wo.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
             /* Foreign keys:
              *
              * Member: MemberId
@@ -105,11 +146,6 @@ namespace Veil.DataAccess
                 HasMany(wo => wo.OrderItems).
                 WithRequired().
                 HasForeignKey(oi => oi.OrderId);
-
-            // TODO: Remove if EF is setup to generate Ids by default
-            /*modelBuilder.Entity<WebOrder>().
-                Property(wo => wo.Id).
-                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);*/
         }
 
         protected void SetupOrderItemModel(DbModelBuilder modelBuilder)
@@ -118,7 +154,8 @@ namespace Veil.DataAccess
              *
              * OrderId, ProductId
              */
-            modelBuilder.Entity<OrderItem>().HasKey(ci => new { ci.OrderId, ci.ProductId });
+            modelBuilder.Entity<OrderItem>().
+                HasKey(ci => new { ci.OrderId, ci.ProductId });
 
             /* Foreign Key:
              *
@@ -158,7 +195,9 @@ namespace Veil.DataAccess
              * MemberId, AddressId
              */
             modelBuilder.Entity<MemberAddress>().
-                HasKey(ma => new { ma.AddressId, ma.MemberId });
+                HasKey(ma => new { ma.AddressId, ma.MemberId }).
+                Property(ma => ma.AddressId).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 
             /* Foreign keys: 
              *
@@ -168,14 +207,14 @@ namespace Veil.DataAccess
              */
 
             modelBuilder.Entity<MemberAddress>().
-                HasRequired(a => a.Province).
+                HasRequired(ma => ma.Province).
                 WithMany().
-                HasForeignKey(a => new { a.ProvinceCode, a.CountryCode });
+                HasForeignKey(ma => new { ma.ProvinceCode, ma.CountryCode });
 
             modelBuilder.Entity<MemberAddress>().
-                HasRequired(a => a.Country).
+                HasRequired(ma => ma.Country).
                 WithMany().
-                HasForeignKey(a => a.CountryCode);
+                HasForeignKey(ma => ma.CountryCode);
 
             modelBuilder.Entity<MemberAddress>().
                 HasRequired(ma => ma.Member).
@@ -186,6 +225,15 @@ namespace Veil.DataAccess
 
         protected void SetupLocationModel(DbModelBuilder modelBuilder)
         {
+            /* Primary Key:
+             *
+             * Id
+             */
+            modelBuilder.Entity<Location>().
+                HasKey(l => l.Id).
+                Property(l => l.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
             /* Foreign keys: 
              *
              * Province: (ProvinceCode, CountryCode)
@@ -209,22 +257,27 @@ namespace Veil.DataAccess
                 HasForeignKey(l => l.LocationTypeName);
         }
 
-        protected void SetupPersonAndDerivedModels(DbModelBuilder modelBuilder)
+        protected void SetupMemberModel(DbModelBuilder modelBuilder)
         {
             /* Primary Key:
              *
-             * PersonId (mapped as MemberId)
+             * UserId (mapped as MemberId)
              */
 
             modelBuilder.Entity<Member>().
-                HasKey(m => m.PersonId).
-                Property(m => m.PersonId).
-                HasColumnName("MemberId");
+                HasKey(m => m.UserId).
+                Property(m => m.UserId).
+                HasColumnName("MemberId").
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
             /* Foreign Keys:
              *
-             * Cart: PersonId (mapped as MemberId and setup in SetupCartModel)
+             * User: UserId
+             * Cart: UserId (mapped as MemberId and setup in SetupCartModel)
              */
+            modelBuilder.Entity<Member>().
+                HasRequired(m => m.UserAccount).
+                WithOptional(au => au.Member);
 
             /* Many to Many relationships:
              *
@@ -264,11 +317,32 @@ namespace Veil.DataAccess
                     manyToManyConfig =>
                         manyToManyConfig.ToTable("MemberEventMembership"));
 
+            modelBuilder.Entity<Member>().ToTable(nameof(Member));
+        }
+
+        protected void SetupEmployeeModel(DbModelBuilder modelBuilder)
+        {
+            /* Primary Key:
+             *
+             * UserId (mapped as EmployeeUserId)
+             */
+
+            modelBuilder.Entity<Employee>().
+                HasKey(emp => emp.UserId).
+                Property(emp => emp.UserId).
+                HasColumnName("EmployeeUserId").
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+
             /* Foreign Keys:
              *
+             * User: UserId
              * Location: StoreLocationId
              * Department: DepartmentId
              */
+
+            modelBuilder.Entity<Employee>().
+                HasRequired(emp => emp.UserAccount).
+                WithOptional(au => au.Employee);
 
             modelBuilder.Entity<Employee>().
                 HasRequired(emp => emp.StoreLocation).
@@ -292,25 +366,20 @@ namespace Veil.DataAccess
                             IsUnique = true
                         }));
 
-            // Table Per Concrete Type:
-            // Member
-            // Employee
-            // TODO: Figure out how this will work with Identity
-            modelBuilder.Entity<Member>().
-                Map(
-                    t =>
-                        t.MapInheritedProperties().
-                        ToTable(nameof(Member)));
-
-            modelBuilder.Entity<Employee>().
-                Map(
-                    t =>
-                        t.MapInheritedProperties().
-                        ToTable(nameof(Employee)));
+            modelBuilder.Entity<Employee>().ToTable(nameof(Employee));
         }
 
         protected void SetupProductAndDerivedModels(DbModelBuilder modelBuilder)
         {
+            /* Primary Key:
+             *
+             * Id
+             */
+            modelBuilder.Entity<Product>().
+                HasKey(p => p.Id).
+                Property(p => p.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
             /* Many to Many Relationships:
              *
              * Product <=> Tag
@@ -360,6 +429,10 @@ namespace Veil.DataAccess
              *
              * MemberId
              */
+            modelBuilder.Entity<Cart>().
+                HasKey(c => c.MemberId).
+                Property(c => c.MemberId).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
             /* Foreign Key:
              *
@@ -466,7 +539,8 @@ namespace Veil.DataAccess
              * Member: ReceiverId
              * Member: RequesterId
              */
-            modelBuilder.Entity<Friendship>().HasKey(f => new { f.ReceiverId, f.RequesterId });
+            modelBuilder.Entity<Friendship>().
+                HasKey(f => new { f.ReceiverId, f.RequesterId });
 
             // Add unique constraint on (RequesterId, ReceiverId). 
             // PK already adds unique for (ReceiverId, RequesterId)
@@ -530,9 +604,14 @@ namespace Veil.DataAccess
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>(); // Delete the one, cascade delete the many
             //modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>(); // Delete on either side cascade deletes the joining table
 
+            base.OnModelCreating(modelBuilder);
+
+            SetupUserModel(modelBuilder);
+            SetupIdentityModels(modelBuilder);
             SetupGameModel(modelBuilder);
             SetupProvinceModel(modelBuilder);
-            SetupPersonAndDerivedModels(modelBuilder);
+            SetupEmployeeModel(modelBuilder);
+            SetupMemberModel(modelBuilder);
             SetupMemberCreditCardModel(modelBuilder);
             SetupMemberAddressModel(modelBuilder);
             SetupLocationModel(modelBuilder);
@@ -544,8 +623,6 @@ namespace Veil.DataAccess
             SetupReviewAndDerivedModels(modelBuilder);
             SetupProductLocationInventoryModel(modelBuilder);
             SetupFriendshipModel(modelBuilder);
-
-            base.OnModelCreating(modelBuilder);
         }
     }
 }
