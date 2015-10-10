@@ -1,234 +1,241 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
-  <Class Name="Veil.Models.Address">
-    <Position X="7.75" Y="7.5" Width="2" />
-    <TypeIdentifier>
-      <HashCode>ACACAAAEAAAAAAAIIAAAAAAIAAIAAAAAAAAAAgAAABA=</HashCode>
-      <FileName>Address.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Veil.Models.Cart">
-    <Position X="21.75" Y="3.75" Width="2.25" />
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Veil.DataModels.Models.Cart">
+    <Position X="9" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAACAAAAAAAAQAAAAAIAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Cart.cs</FileName>
+      <FileName>Models\Cart.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.CartItem">
-    <Position X="24.25" Y="4.75" Width="1.75" />
+  <Class Name="Veil.DataModels.Models.CartItem">
+    <Position X="7.25" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>EAACAAAAAAAAAAAAAAAAAQAAAAAAAAAAAEAAgAAAAAA=</HashCode>
-      <FileName>CartItem.cs</FileName>
+      <FileName>Models\CartItem.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Company">
-    <Position X="4.25" Y="5" Width="3" />
+  <Class Name="Veil.DataModels.Models.Company">
+    <Position X="16.5" Y="4.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAgAAAAAAAAA=</HashCode>
-      <FileName>Company.cs</FileName>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAEAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Models\Company.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Country">
-    <Position X="20.5" Y="0.5" Width="2.5" />
+  <Class Name="Veil.DataModels.Models.Country">
+    <Position X="17.5" Y="0.5" Width="1.75" />
     <TypeIdentifier>
       <HashCode>ICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAABAg=</HashCode>
-      <FileName>Country.cs</FileName>
+      <FileName>Models\Country.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.CreditCardPaymentInformation">
-    <Position X="21.75" Y="9.5" Width="2.5" />
+  <Class Name="Veil.DataModels.Models.CreditCardBillingInfo">
+    <Position X="21.75" Y="9.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>IAAACAAAAAAACAAAAAAAAQAAAAEIAAAAAAAAAAAAEAA=</HashCode>
-      <FileName>CreditCardPaymentInformation.cs</FileName>
+      <HashCode>ICAAAAAEAAAAAAAIIAAAAQAAAAIAAAAAAAAAAgAAABA=</HashCode>
+      <FileName>Models\CreditCardBillingInfo.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Department">
-    <Position X="8.5" Y="5.5" Width="1.5" />
+  <Class Name="Veil.DataModels.Models.Department">
+    <Position X="9.75" Y="6.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Department.cs</FileName>
+      <FileName>Models\Department.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.DownloadGameProduct">
-    <Position X="0.5" Y="7.25" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.DownloadGameProduct">
+    <Position X="0.75" Y="12.75" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAIAAACAAAAAAAAAAA=</HashCode>
-      <FileName>DownloadGameProduct.cs</FileName>
+      <FileName>Models\DownloadGameProduct.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Employee">
-    <Position X="8.5" Y="3" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.Employee">
+    <Position X="8" Y="6.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAIAAAAAAgAAAAAAAAAAAECAAAAAAAAAAABAGAAA=</HashCode>
-      <FileName>Employee.cs</FileName>
+      <HashCode>AAAAAIAAAAAAgAAAAAAAAAgIECAAAAAAAAAAABAGAAA=</HashCode>
+      <FileName>Models\Employee.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.ESRBContentDescriptor">
-    <Position X="19" Y="5" Width="2" />
+  <Class Name="Veil.DataModels.Models.ESRBContentDescriptor">
+    <Position X="21" Y="4.25" Width="2" />
     <TypeIdentifier>
       <HashCode>AEACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>ESRBContentDescriptor.cs</FileName>
+      <FileName>Models\ESRBContentDescriptor.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.ESRBRating">
-    <Position X="16.5" Y="5" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.ESRBRating">
+    <Position X="17" Y="6.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>ESRBRating.cs</FileName>
+      <FileName>Models\ESRBRating.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Event">
-    <Position X="16.5" Y="0.5" Width="3.25" />
+  <Class Name="Veil.DataModels.Models.Event">
+    <Position X="13" Y="0.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAgAAAAAIAAAAQAAAAAAAABAAAAAAAAAAA=</HashCode>
-      <FileName>Event.cs</FileName>
+      <HashCode>AAACAAAAAAAiAAAAAIAAAAQAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Event.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Friendship">
-    <Position X="12.25" Y="11" Width="3" />
+  <Class Name="Veil.DataModels.Models.Friendship">
+    <Position X="9" Y="3.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ACAAAAAAQAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
-      <FileName>Friendship.cs</FileName>
+      <HashCode>ACAAAAAAQAAAAAAAAAAAAAAAAAAEAAQAAAAABAAAAAA=</HashCode>
+      <FileName>Models\Friendship.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Game">
-    <Position X="16.5" Y="6.5" Width="4" />
+  <Class Name="Veil.DataModels.Models.Game">
+    <Position X="18.75" Y="4.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAgCIAAAAAgAAAAAIAAABAUCEAAAAAEAAAAACQAAAAA=</HashCode>
-      <FileName>Game.cs</FileName>
+      <HashCode>gAgCIAAAAAgAAAAAIAAABAUCEAAAAAEAAAAACAAAAAA=</HashCode>
+      <FileName>Models\Game.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.GameProduct">
-    <Position X="2.25" Y="3.5" Width="1.75" />
+  <Class Name="Veil.DataModels.Models.GameProduct">
+    <Position X="2.5" Y="9" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAABAAAAACAEAAAQAAYgAAAAACAAAAAAAAAA=</HashCode>
-      <FileName>GameProduct.cs</FileName>
+      <HashCode>AAAAAEAAAABAAAAACAEAAAQAAYgAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Models\GameProduct.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.GameReview">
-    <Position X="0.5" Y="13" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.GameReview">
+    <Position X="0.5" Y="3.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
-      <FileName>GameReview.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\GameReview.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Location">
-    <Position X="6.25" Y="11" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.Location">
+    <Position X="7.75" Y="9" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAABAAAAAAAQAAAAAAAIAAABgAAAEAAAAA=</HashCode>
-      <FileName>Location.cs</FileName>
+      <HashCode>ACACAAAEAAAABAAIIAAAQAAIAAIAIAAABgAAAkAAABA=</HashCode>
+      <FileName>Models\Location.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.LocationType">
-    <Position X="6.25" Y="13.5" Width="2.5" />
+  <Class Name="Veil.DataModels.Models.LocationType">
+    <Position X="9.75" Y="11.5" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
-      <FileName>LocationType.cs</FileName>
+      <FileName>Models\LocationType.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Member">
-    <Position X="11.5" Y="3" Width="4.5" />
+  <Class Name="Veil.DataModels.Models.Member">
+    <Position X="10.75" Y="1.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>ACAAIEAAAAAAAAAAAgAAAAAAAAAAAABAIAAACAAAAAA=</HashCode>
-      <FileName>Member.cs</FileName>
+      <HashCode>ACEAIEAAAAAAAAAAAAAIAIgIAAAAAABAIAAACAIAAAA=</HashCode>
+      <FileName>Models\Member.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.MemberAddress">
-    <Position X="9.25" Y="11" Width="1.75" />
+  <Class Name="Veil.DataModels.Models.MemberAddress">
+    <Position X="15.25" Y="9.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAQAAAAAIAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>MemberAddress.cs</FileName>
+      <HashCode>QCAAAAAEAAAAAAAIIAAAAQAIAAIIAAAAAAAAAgAAABA=</HashCode>
+      <FileName>Models\MemberAddress.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Person">
-    <Position X="11.25" Y="0.5" Width="2" />
+  <Class Name="Veil.DataModels.Models.MemberCreditCard">
+    <Position X="19.75" Y="9.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAEAAACAAAAAEAAAAQAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
-      <FileName>Person.cs</FileName>
+      <HashCode>IAAAAAAAAAAACAAAAAAAAQEAAAMIAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>Models\MemberCreditCard.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.PhysicalGameProduct">
-    <Position X="3.5" Y="7.25" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.OrderItem">
+    <Position X="19.75" Y="12.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAABAIAEAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAw=</HashCode>
-      <FileName>PhysicalGameProduct.cs</FileName>
+      <HashCode>EAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAgAAAAAA=</HashCode>
+      <FileName>Models\OrderItem.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Platform">
-    <Position X="4.25" Y="3" Width="3.5" />
+  <Class Name="Veil.DataModels.Models.PhysicalGameProduct">
+    <Position X="3.5" Y="12.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIBAAAAQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Models\PhysicalGameProduct.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Veil.DataModels.Models.Platform">
+    <Position X="21" Y="5.75" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAACBAAAAAAAgAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
-      <FileName>Platform.cs</FileName>
+      <FileName>Models\Platform.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Product">
-    <Position X="1.25" Y="0.5" Width="2" />
+  <Class Name="Veil.DataModels.Models.Product">
+    <Position X="2.25" Y="5.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAIAAAAAAAAAAQAAAIAAEAAQACAAAAAAAA=</HashCode>
-      <FileName>Product.cs</FileName>
+      <HashCode>AQACAAAAAAAIAAAAQAAAAAQAAAIAAEAACCCAAAAAAAA=</HashCode>
+      <FileName>Models\Product.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.ProductLocationInventory">
-    <Position X="9.25" Y="13.5" Width="2" />
+  <Class Name="Veil.DataModels.Models.ProductLocationInventory">
+    <Position X="5.5" Y="8.75" Width="2" />
     <TypeIdentifier>
       <HashCode>EAAKCAAAAAAAAAEAAAIAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
-      <FileName>ProductLocationInventory.cs</FileName>
+      <FileName>Models\ProductLocationInventory.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Province">
-    <Position X="23.75" Y="0.5" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.Province">
+    <Position X="19.5" Y="0.5" Width="2" />
     <TypeIdentifier>
       <HashCode>ACAAAAAEAAAQAAAAAAAAAAQAAAIAAACAAAAAAAAAAAA=</HashCode>
-      <FileName>Province.cs</FileName>
+      <FileName>Models\Province.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Review">
-    <Position X="0.5" Y="10.5" Width="2.25" />
+  <Class Name="Veil.DataModels.Models.Review&lt;TProduct, TKey&gt;">
+    <Position X="0.5" Y="0.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAIAAAAAAAEAAAAAAAAAQAAAAAIAAEAAAAAAAAAAAA=</HashCode>
-      <FileName>Review.cs</FileName>
+      <HashCode>AAAIAAAAAAAEAAEAAAAAAQAAAAAoAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Review.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.Tag">
-    <Position X="3.5" Y="0.5" Width="3.5" />
+  <Class Name="Veil.DataModels.Models.Tag">
+    <Position X="4.5" Y="5.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAQAAAAAAAAAAAAAAAIA=</HashCode>
-      <FileName>Tag.cs</FileName>
+      <FileName>Models\Tag.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Veil.Models.WebOrder">
-    <Position X="21.75" Y="6.75" Width="4.25" />
+  <Class Name="Veil.DataModels.Models.WebOrder">
+    <Position X="17" Y="9.75" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>CAACAAAAQAEAAAAAAAAEQQAAAAAIAAABAAAAAAAAAAA=</HashCode>
-      <FileName>WebOrder.cs</FileName>
+      <HashCode>qAACAAAASAEAAAAAAAAEQQAAAAAIAABAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\WebOrder.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Enum Name="Veil.Models.FriendshipRequestStatus">
-    <Position X="15.5" Y="11.75" Width="2" />
+  <Enum Name="Veil.DataModels.Models.FriendshipRequestStatus">
+    <Position X="6.75" Y="3.75" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
-      <FileName>Friendship.cs</FileName>
+      <FileName>Models\Friendship.cs</FileName>
     </TypeIdentifier>
   </Enum>
-  <Enum Name="Veil.Models.GameAvailabilityStatus">
-    <Position X="14.25" Y="8.5" Width="2" />
+  <Enum Name="Veil.DataModels.Models.WishListVisibility">
+    <Position X="13" Y="3.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AEAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Game.cs</FileName>
+      <HashCode>AAAAAAAAAAAQAAAAAAAAAAAAEAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Models\Member.cs</FileName>
     </TypeIdentifier>
   </Enum>
-  <Enum Name="Veil.Models.ReviewStatus">
-    <Position X="3" Y="11.25" Width="1.5" />
+  <Enum Name="Veil.DataModels.Models.AvailabilityStatus">
+    <Position X="0.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAABAAAAAIAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Product.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Veil.DataModels.Models.ReviewStatus">
+    <Position X="2.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAACAAAAAAAAAAAAAAIAAAAAAAAAAAAAIAAAAAA=</HashCode>
-      <FileName>Review.cs</FileName>
+      <FileName>Models\Review.cs</FileName>
     </TypeIdentifier>
   </Enum>
-  <Enum Name="Veil.Models.OrderStatus">
-    <Position X="26.25" Y="8" Width="1.5" />
+  <Enum Name="Veil.DataModels.Models.OrderStatus">
+    <Position X="18" Y="13.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AABAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAQAA=</HashCode>
-      <FileName>WebOrder.cs</FileName>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAEAAABAAAAABAAAAAAAAQAA=</HashCode>
+      <FileName>Models\WebOrder.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Font Name="Segoe UI" Size="9" />
