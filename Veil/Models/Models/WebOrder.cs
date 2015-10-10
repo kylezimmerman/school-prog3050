@@ -98,7 +98,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// OrderStatus indicating the current status of the order
         /// </summary>
-        public OrderStatus HasBeenProcessed { get; set; }
+        public OrderStatus OrderStatus { get; set; }
 
         /// <summary>
         /// The date and time of when the order was processed and shipped out
