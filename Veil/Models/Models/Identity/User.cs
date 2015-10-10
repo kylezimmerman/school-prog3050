@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -20,11 +21,15 @@ namespace Veil.DataModels.Models.Identity
         /// <summary>
         /// The Person's first name
         /// </summary>
+        [Required]
+        [StringLength(maximumLength:64, MinimumLength = 1)]
         public string FirstName { get; set; }
 
         /// <summary>
         /// The Person's last name
         /// </summary>
+        [Required]
+        [StringLength(maximumLength: 64, MinimumLength = 1)]
         public string LastName { get; set; }
 
         public virtual Member Member { get; set; }

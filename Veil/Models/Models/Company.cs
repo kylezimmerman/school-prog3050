@@ -26,6 +26,7 @@ namespace Veil.DataModels.Models
         /// The company's full name
         /// </summary>
         [Required]
+        [StringLength(maximumLength:512, MinimumLength = 1)]
         public string Name { get; set; }
 
         /// <summary>

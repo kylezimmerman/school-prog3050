@@ -20,6 +20,7 @@ namespace Veil.DataModels.Models
         /// The credit card's number
         /// </summary>
         [Key]
+        [MaxLength(19)]
         public string CardNumber { get; set; }
 
         /// <summary>
@@ -35,11 +36,14 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The security code found on the card
         /// </summary>
+        [MaxLength(8)]
         public string CardSecurityCode { get; set; } 
 
         /// <summary>
         /// The name of the cardholder as it appears on the credit card
         /// </summary>
+        [Required]
+        [MaxLength(255)]
         public string CardholderName { get; set; }
 
         /// <summary>

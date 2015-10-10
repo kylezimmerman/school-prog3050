@@ -5,6 +5,7 @@
  *      Drew Matheson, 2015.10.02: Created
  */
 
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -34,7 +35,7 @@ namespace Veil.DataModels.Models
         /// The member Id of the person making the friend request
         /// </summary>
         [Key]
-        public string RequesterId { get; set; }
+        public Guid RequesterId { get; set; }
 
         /// <summary>
         /// Navigation property for the Member making the friend request
@@ -45,7 +46,7 @@ namespace Veil.DataModels.Models
         /// The member Id of the person receiving the friend request
         /// </summary>
         [Key]
-        public string ReceiverId { get; set; }
+        public Guid ReceiverId { get; set; }
 
         /// <summary>
         /// Navigation property for the Member receiving the friend request

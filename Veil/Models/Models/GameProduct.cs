@@ -6,6 +6,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -63,5 +64,10 @@ namespace Veil.DataModels.Models
         /// Gets the name for this GameProduct
         /// </summary>
         public override string Name => Game.Name;
+
+        /// <summary>
+        /// Collection navigation property for the reviews for this game product
+        /// </summary>
+        public virtual ICollection<GameReview> Reviews { get; set; }
     }
 }

@@ -26,6 +26,7 @@ namespace Veil.DataModels.Models
         /// The country's full name
         /// </summary>
         [Required]
+        [MaxLength(255)]
         public string CountryName { get; set; }
 
         /// <summary>
@@ -36,6 +37,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The acronym for the federal tax
         /// </summary>
+        [MaxLength(16)]
         public string FederalTaxAcronym { get; set; }
 
         /// <summary>

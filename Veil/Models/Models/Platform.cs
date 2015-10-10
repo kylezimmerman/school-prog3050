@@ -27,6 +27,7 @@ namespace Veil.DataModels.Models
         /// The Platform's full name
         /// </summary>
         [Required]
+        [MaxLength(128)]
         public string PlatformName { get; set; }
 
         /// <summary>

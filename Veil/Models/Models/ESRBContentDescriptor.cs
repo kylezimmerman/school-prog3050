@@ -23,6 +23,8 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The content descriptor's name
         /// </summary>
+        [Required]
+        [StringLength(maximumLength: 64, MinimumLength = 1)]
         public string DescriptorName { get; set; }
     }
 }

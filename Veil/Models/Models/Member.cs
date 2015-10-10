@@ -88,5 +88,20 @@ namespace Veil.DataModels.Models
         /// Collection navigation property for the Member's saved payment information
         /// </summary>
         public virtual ICollection<MemberCreditCard> CreditCards { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for the Member's web orders
+        /// </summary>
+        public virtual ICollection<WebOrder> WebOrders { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for Friendship's where the Member was the requester
+        /// </summary>
+        public virtual ICollection<Friendship> RequestedFriendships { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for Friendship's where the Member was the receiver
+        /// </summary>
+        public virtual ICollection<Friendship> ReceivedFriendships { get; set; }
     }
 }

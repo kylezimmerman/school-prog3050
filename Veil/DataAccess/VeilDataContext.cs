@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using EfEnumToLookup.LookupGenerator;
 using JetBrains.Annotations;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -22,7 +23,17 @@ namespace Veil.DataAccess
     public class VeilDataContext : IdentityDbContext<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>, IVeilDataAccess
     {
         [UsedImplicitly]
-        public VeilDataContext() : base("name=VeilDatabase") { }
+        public VeilDataContext() : base("name=VeilDatabase")
+        {
+            EnumToLookup enumToLookup = new EnumToLookup
+            {
+                TableNamePrefix = "",
+                TableNameSuffix = "_Lookup",
+                NameFieldLength = 64
+            };
+
+            enumToLookup.Apply(this);
+        }
 
         public IDbSet<Cart> Carts { get; set; }
         public IDbSet<Company> Companies { get; set; }
@@ -35,7 +46,7 @@ namespace Veil.DataAccess
         public IDbSet<Event> Events { get; set; }
         public IDbSet<Friendship> Friendships { get; set; }
         public IDbSet<Game> Games { get; set; }
-        public IDbSet<GameProduct> GameProducts { get; set; } // TODO: Do we want this for making a list of all product SKUs regardless of if they are DL or physical?
+        public IDbSet<GameProduct> GameProducts { get; set; }
         public IDbSet<GameReview> GameReviews { get; set; }
         public IDbSet<Location> Locations { get; set; }
         public IDbSet<LocationType> LocationTypes { get; set; }
@@ -43,10 +54,8 @@ namespace Veil.DataAccess
         public IDbSet<MemberAddress> MemberAddresses { get; set; }
         public IDbSet<PhysicalGameProduct> PhysicalGameProducts { get; set; }
         public IDbSet<Platform> Platforms { get; set; }
-        public IDbSet<Product> Products { get; set; } // TODO: Do we want this?
         public IDbSet<ProductLocationInventory> ProductLocationInventories { get; set; }
         public IDbSet<Province> Provinces { get; set; }
-        //public IDbSet<Review> Reviews { get; set; } // TODO: Do we want this?
         public IDbSet<Tag> Tags { get; set; }
         public IDbSet<WebOrder> WebOrders { get; set; }
 
@@ -60,6 +69,8 @@ namespace Veil.DataAccess
                 HasKey(u => u.Id).
                 Property(u => u.Id).
                 HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
+            modelBuilder.Entity<User>().Property(u => u.Email).IsRequired();
 
             modelBuilder.Entity<User>().ToTable(nameof(User));
         }
@@ -102,11 +113,6 @@ namespace Veil.DataAccess
             modelBuilder.Entity<Game>().
                 HasMany(g => g.ContentDescriptors).
                 WithMany();
-
-            modelBuilder.Entity<Game>().
-                HasMany(g => g.GameCategories).
-                WithMany(t => t.TaggedGames).
-                Map(manyToManyConfig => manyToManyConfig.ToTable("GameCategory"));
         }
 
         protected void SetupWebOrderModel(DbModelBuilder modelBuilder)
@@ -129,7 +135,7 @@ namespace Veil.DataAccess
 
             modelBuilder.Entity<WebOrder>().
                 HasRequired(wo => wo.Member).
-                WithMany().
+                WithMany(m => m.WebOrders).
                 HasForeignKey(wo => wo.MemberId);
 
             modelBuilder.Entity<WebOrder>().
@@ -220,7 +226,7 @@ namespace Veil.DataAccess
                 HasRequired(ma => ma.Member).
                 WithMany(m => m.ShippingAddresses).
                 HasForeignKey(ma => ma.MemberId).
-                WillCascadeOnDelete(true);
+                WillCascadeOnDelete(true); // TODO: Figure out what this cascade delete actually means
         }
 
         protected void SetupLocationModel(DbModelBuilder modelBuilder)
@@ -273,7 +279,6 @@ namespace Veil.DataAccess
             /* Foreign Keys:
              *
              * User: UserId
-             * Cart: UserId (mapped as MemberId and setup in SetupCartModel)
              */
             modelBuilder.Entity<Member>().
                 HasRequired(m => m.UserAccount).
@@ -303,7 +308,7 @@ namespace Veil.DataAccess
 
             modelBuilder.Entity<Member>().
                 HasMany(m => m.Wishlist).
-                WithMany(). // TODO: Do we want Product to have a collection of members with the product on with wishlist?
+                WithMany().
                 Map(
                     t =>
                         t.MapLeftKey("MemberId").
@@ -361,7 +366,7 @@ namespace Veil.DataAccess
                 HasColumnAnnotation(
                     IndexAnnotation.AnnotationName,
                     new IndexAnnotation(
-                        new IndexAttribute("IX_EmployeeId")
+                        new IndexAttribute("Employee_IX_EmployeeId_UQ")
                         {
                             IsUnique = true
                         }));
@@ -417,6 +422,26 @@ namespace Veil.DataAccess
                 WithMany(p => p.PublishedGameProducts).
                 HasForeignKey(gp => gp.PublisherId);
 
+            /* PhysicalGameProduct Unique Constraints:
+             *
+             * InternalNewSKU 
+             * InternalUsedSKU
+             */
+
+            modelBuilder.Entity<PhysicalGameProduct>().Property(pgp => pgp.InternalNewSKU).HasColumnAnnotation(
+                    IndexAnnotation.AnnotationName,
+                    new IndexAnnotation(new IndexAttribute("PhysicalGameProduct_IX_InternalNewSKU_UQ")
+                    {
+                        IsUnique = true
+                    }));
+
+            modelBuilder.Entity<PhysicalGameProduct>().Property(pgp => pgp.InteralUsedSKU).HasColumnAnnotation(
+                    IndexAnnotation.AnnotationName,
+                    new IndexAnnotation(new IndexAttribute("PhysicalGameProduct_IX_InternalUsedSKU_UQ")
+                    {
+                        IsUnique = true
+                    }));
+
             // Table per type for Products
             modelBuilder.Entity<GameProduct>().ToTable(nameof(GameProduct));
             modelBuilder.Entity<PhysicalGameProduct>().ToTable(nameof(PhysicalGameProduct));
@@ -470,19 +495,12 @@ namespace Veil.DataAccess
 
         protected void SetupReviewAndDerivedModels(DbModelBuilder modelBuilder)
         {
-            /*modelBuilder.Entity<Review>().
-                HasRequired(r => r.Member).
-                WithMany().
-                HasForeignKey(r => r.MemberId);*/
-
-            // TODO: GameReview -> Game Product and/or Review -> Product with a collection navigation property on the review
-
             /* Primary Key:
              *
              * MemberId, GameProductId
              */
             modelBuilder.Entity<GameReview>().
-                HasKey(g => new { g.MemberId, g.GameProductId });
+                HasKey(g => new { g.MemberId, g.ProductReviewedId });
 
             /* Foreign keys:
              *
@@ -490,9 +508,9 @@ namespace Veil.DataAccess
              */
 
             modelBuilder.Entity<GameReview>().
-                HasRequired(gr => gr.GameProduct).
-                WithMany().
-                HasForeignKey(gr => gr.GameProductId);
+                HasRequired(gr => gr.ProductReviewed).
+                WithMany(g => g.Reviews).
+                HasForeignKey(gr => gr.ProductReviewedId);
 
             modelBuilder.Entity<GameReview>().
                 HasRequired(g => g.Member).
@@ -528,7 +546,7 @@ namespace Veil.DataAccess
 
             modelBuilder.Entity<ProductLocationInventory>().
                 HasRequired(pli => pli.Location).
-                WithMany(). // TODO: Do we want to be able to get a locations inventory levels from the location?
+                WithMany().
                 HasForeignKey(pli => pli.LocationId);
         }
 
@@ -542,11 +560,27 @@ namespace Veil.DataAccess
             modelBuilder.Entity<Friendship>().
                 HasKey(f => new { f.ReceiverId, f.RequesterId });
 
-            // Add unique constraint on (RequesterId, ReceiverId). 
-            // PK already adds unique for (ReceiverId, RequesterId)
-            const string FRIENDSHIP_UNIQUE_INDEX = "IX_Friendship_UQ";
+            /* Foreign Keys:
+             *
+             * Member: RequesterId
+             * Member: ReceiverId
+             */
+            modelBuilder.Entity<Friendship>().
+                HasRequired(f => f.Requester).
+                WithMany(m => m.RequestedFriendships).
+                HasForeignKey(f => f.RequesterId);
 
             modelBuilder.Entity<Friendship>().
+                HasRequired(f => f.Receiver).
+                WithMany(m => m.ReceivedFriendships).
+                HasForeignKey(f => f.ReceiverId);
+
+            // NOTE: This doesn't work as expected. It causes RequesterId to become a 1..1 with Member
+            // TODO: Add unique constraint on (RequesterId, ReceiverId). 
+            // PK already adds unique for (ReceiverId, RequesterId)
+            //const string FRIENDSHIP_UNIQUE_INDEX = "Friendship_IX_Friendship_UQ";
+
+            /*modelBuilder.Entity<Friendship>().
                 Property(f => f.RequesterId).
                 HasColumnAnnotation(
                     IndexAnnotation.AnnotationName,
@@ -562,7 +596,7 @@ namespace Veil.DataAccess
                     new IndexAnnotation(new IndexAttribute(FRIENDSHIP_UNIQUE_INDEX, 1)
                     {
                         IsUnique = true
-                    }));
+                    }));*/
         }
 
         protected void SetupMemberCreditCardModel(DbModelBuilder modelBuilder)
@@ -595,11 +629,22 @@ namespace Veil.DataAccess
             modelBuilder.Entity<CreditCardBillingInfo>().ToTable(nameof(MemberCreditCard));
         }
 
+        protected void SetupCompanyModel(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Company>().
+                Property(c => c.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+        }
+
+        protected void SetupESRBRatingModel(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ESRBRating>().
+                Property(er => er.RatingId).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+        }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            // TODO: Missing navigation properties we will want:
-            // Product -> Review and/or GameProduct -> Review
-
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>(); // Delete the one, cascade delete the many
             //modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>(); // Delete on either side cascade deletes the joining table
@@ -623,6 +668,8 @@ namespace Veil.DataAccess
             SetupReviewAndDerivedModels(modelBuilder);
             SetupProductLocationInventoryModel(modelBuilder);
             SetupFriendshipModel(modelBuilder);
+            SetupCompanyModel(modelBuilder);
+            SetupESRBRatingModel(modelBuilder);
         }
     }
 }

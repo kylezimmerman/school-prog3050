@@ -25,6 +25,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Key]
         [Required]
+        [MaxLength(64)]
         public string LocationTypeName { get; set; }
 
         /// <summary>

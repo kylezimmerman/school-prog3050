@@ -19,21 +19,29 @@ namespace Veil.DataModels.Models
         public Guid MemberId { get; set; }
 
         [Key]
+        [MaxLength(19)]
         public string CardNumber { get; set; }
 
         /// <summary>
         /// The street address for the billing information
         /// </summary>
+        [Required]
+        [MaxLength(255)]
         public string StreetAddress { get; set; }
 
         /// <summary>
         /// The city for the billing information
         /// </summary>
+        [Required]
+        [MaxLength(255)]
         public string City { get; set; }
 
         /// <summary>
         /// The postal or zip code for the billing information
         /// </summary>
+        [Required]
+        [DataType(DataType.PostalCode)]
+        [MaxLength(16)]
         public string PostalCode { get; set; }
 
         /// <summary>

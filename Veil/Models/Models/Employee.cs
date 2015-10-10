@@ -27,7 +27,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The employee's internal Id number
         /// </summary>
-        [Required] // TODO: Do we want this to be required? Or do we leave it optional and generate an ID if it isn't provided
+        [Required]
         public int EmployeeId { get; set; }
 
         /// <summary>

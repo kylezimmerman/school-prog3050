@@ -3,7 +3,9 @@
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.03: Created
- */ 
+ */
+
+using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
 {
@@ -13,7 +15,6 @@ namespace Veil.DataModels.Models
     public class PhysicalGameProduct : GameProduct
     {
         public override string Name => $"{base.Name} {SKUNameSuffix}";
-        // TODO: Maybe this isn't the best way to do this?
 
         /// <summary>
         /// The optional suffix for this specific SKU of the game.
@@ -21,23 +22,20 @@ namespace Veil.DataModels.Models
         ///     Collector's Edition
         /// </example>
         /// </summary>
+        [MaxLength(256)]
         public string SKUNameSuffix { get; set; }
 
-        public string NewSKU { get; set; } // TODO: This needs to be unique
-
-        public string UsedSKU { get; set; } // TODO: This needs to be unique
-
-        // TODO: Do we actually need this info? Why is the price different in-store vs web
         /// <summary>
-        /// The in-store price for a pre-used version of this product.
-        /// null if the product doesn't have a pre-used version.
+        /// The internal SKU number for a new version of this product
         /// </summary>
-        public decimal? UsedStorePrice { get; set; }
+        [MaxLength(128)]
+        public string InternalNewSKU { get; set; }
 
         /// <summary>
-        /// The in-store price for a new version of this product.
+        /// The internal SKU number for a used version of this product
         /// </summary>
-        public decimal NewStorePrice { get; set; }
+        [MaxLength(128)]
+        public string InteralUsedSKU { get; set; }
 
         /// <summary>
         /// Flag which indicates if we will buy pre-used copies from customers

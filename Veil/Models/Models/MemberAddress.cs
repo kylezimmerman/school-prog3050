@@ -35,28 +35,36 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Address's street address, including apartment number
         /// </summary>
+        [Required]
+        [MaxLength(255)]
         public string StreetAddress { get; set; }
 
         /// <summary>
         /// The Addresses optional post office box number
         /// </summary>
+        [MaxLength(16)]
         public string POBoxNumber { get; set; }
 
         /// <summary>
         /// The Address's city
         /// </summary>
+        [Required]
+        [MaxLength(255)]
         public string City { get; set; }
 
         /// <summary>
         /// The Address's postal or zip code
         /// </summary>
+        [Required]
+        [DataType(DataType.PostalCode)]
+        [MaxLength(16)]
         public string PostalCode { get; set; }
 
         /// <summary>
         /// The province code for this Address's Province
         /// </summary>
-        [StringLength(2, MinimumLength = 2)]
         [Required]
+        [StringLength(2, MinimumLength = 2)]
         public string ProvinceCode { get; set; }
 
         /// <summary>

@@ -17,7 +17,9 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The game's download url
         /// </summary>
+        [Required]
         [DataType(DataType.Url)]
+        [MaxLength(2048)]
         public string DownloadLink { get; set; }
 
         /// <summary>

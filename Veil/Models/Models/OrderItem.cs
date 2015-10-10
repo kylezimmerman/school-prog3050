@@ -19,7 +19,7 @@ namespace Veil.DataModels.Models
         /// The Id of the order this item is part of.
         /// </summary>
         [Key]
-        public Guid OrderId { get; set; }
+        public long OrderId { get; set; }
 
         /// <summary>
         /// The Id of the product this OrderItem is for

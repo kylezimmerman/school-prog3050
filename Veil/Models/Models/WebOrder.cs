@@ -29,7 +29,17 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The order has been processed
         /// </summary>
-        Processed
+        Processed,
+
+        /// <summary>
+        /// The user cancelled the order.
+        /// </summary>
+        UserCancelled,
+
+        /// <summary>
+        /// An employee cancelled the order
+        /// </summary>
+        EmployeeCancelled
     }
 
     /// <summary>
@@ -41,7 +51,7 @@ namespace Veil.DataModels.Models
         /// The Id for the order
         /// </summary>
         [Key]
-        public Guid Id { get; set; } // TODO: Do we want to stick with GUID or should be use int?
+        public long Id { get; set; }
 
         /// <summary>
         /// The Id of the member who made the order
@@ -94,5 +104,11 @@ namespace Veil.DataModels.Models
         /// The date and time of when the order was processed and shipped out
         /// </summary>
         public DateTime ProcessedDate { get; set; }
+
+        /// <summary>
+        /// A message explaining why the order was cancelled by an employee
+        /// </summary>
+        [MaxLength(512)]
+        public string ReasonForCancellationMessage { get; set; }
     }
 }

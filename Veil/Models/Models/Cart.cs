@@ -11,7 +11,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
 {
-    // TODO: Do we care that we don't support carts for people who aren't logged in?
     /// <summary>
     /// A shopping cart containing the cart items for a specific member
     /// </summary>

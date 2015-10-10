@@ -37,6 +37,7 @@ namespace Veil.DataModels.Models
         /// The province's full name
         /// </summary>
         [Required]
+        [MaxLength(255)]
         public string Name { get; set; }
 
         /// <summary>
@@ -47,6 +48,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The acronym for the province's tax
         /// </summary>
+        [MaxLength(16)]
         public string ProvincialTaxAcronym { get; set; }
     }
 }

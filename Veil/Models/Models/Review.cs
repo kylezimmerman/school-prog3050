@@ -21,11 +21,12 @@ namespace Veil.DataModels.Models
         Denied
     }
 
-    // TODO: How do we handle editting reviews?
     /// <summary>
     /// Base class for a product review by a Member
     /// </summary>
-    public abstract class Review
+    /// <typeparam name="TProduct">The type of the product being reviewed.</typeparam>
+    /// <typeparam name="TKey">The type of the Key for the product being reviewed</typeparam>
+    public abstract class Review<TProduct, TKey> where TProduct : Product
     {
         /// <summary>
         /// The Id of the Member who created this review
@@ -48,11 +49,24 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The review's text
         /// </summary>
+        [MaxLength(4000)] // Note: SQL Server maximum specifiable size. 
+            // MAX (which is used above 4000) allows 2GB of text which I'd rather not allow the user to do
         public string ReviewText { get; set; }
 
         /// <summary>
         /// The moderation status of the review
         /// </summary>
         public ReviewStatus ReviewStatus { get; set; }
+
+        /// <summary>
+        /// The <see cref="TKey"/> Id for the <see cref="TProduct"/> this review is for
+        /// </summary>
+        [Key]
+        public TKey ProductReviewedId { get; set; }
+
+        /// <summary>
+        /// Navigation property for the <see cref="TProduct"/> this review is for
+        /// </summary>
+        public virtual TProduct ProductReviewed { get; set; }
     }
 }
