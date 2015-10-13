@@ -35,11 +35,19 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// Flag indicating if the product is a new or used product
         /// </summary>
+        [Required]
         public bool IsNew { get; set; }
 
         /// <summary>
         /// Quantity of the product for this OrderItem
         /// </summary>
+        [Required]
         public int Quantity { get; set; }
+
+        /// <summary>
+        /// The price the product was sold for
+        /// </summary>
+        [Required]
+        public decimal ListPrice { get; set; }
     }
 }
