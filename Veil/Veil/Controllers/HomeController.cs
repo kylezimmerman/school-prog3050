@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
+using Veil.DataAccess;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.DataModels.Models.Identity;
 
 namespace Veil.Controllers
 {
@@ -17,8 +21,6 @@ namespace Veil.Controllers
 
         public ActionResult Index()
         {
-            List<Member> members = db.Members.ToList();
-
             return View();
         }
 

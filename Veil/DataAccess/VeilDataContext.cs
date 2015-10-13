@@ -33,31 +33,38 @@ namespace Veil.DataAccess
             };
 
             enumToLookup.Apply(this);
+
+            RequireUniqueEmail = true;
         }
 
-        public IDbSet<Cart> Carts { get; set; }
-        public IDbSet<Company> Companies { get; set; }
-        public IDbSet<Country> Countries { get; set; }
-        public IDbSet<Department> Departments { get; set; }
-        public IDbSet<DownloadGameProduct> DownloadGameProducts { get; set; }
-        public IDbSet<Employee> Employees { get; set; }
-        public IDbSet<ESRBContentDescriptor> ESRBContentDescriptors { get; set; }
-        public IDbSet<ESRBRating> ESRBRatings { get; set; }
-        public IDbSet<Event> Events { get; set; }
-        public IDbSet<Friendship> Friendships { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<DownloadGameProduct> DownloadGameProducts { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<ESRBContentDescriptor> ESRBContentDescriptors { get; set; }
+        public DbSet<ESRBRating> ESRBRatings { get; set; }
+        public DbSet<Event> Events { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Game> Games { get; set; }
-        public IDbSet<GameProduct> GameProducts { get; set; }
-        public IDbSet<GameReview> GameReviews { get; set; }
-        public IDbSet<Location> Locations { get; set; }
-        public IDbSet<LocationType> LocationTypes { get; set; }
-        public IDbSet<Member> Members { get; set; }
-        public IDbSet<MemberAddress> MemberAddresses { get; set; }
-        public IDbSet<PhysicalGameProduct> PhysicalGameProducts { get; set; }
-        public IDbSet<Platform> Platforms { get; set; }
-        public IDbSet<ProductLocationInventory> ProductLocationInventories { get; set; }
-        public IDbSet<Province> Provinces { get; set; }
-        public IDbSet<Tag> Tags { get; set; }
-        public IDbSet<WebOrder> WebOrders { get; set; }
+        public DbSet<GameProduct> GameProducts { get; set; }
+        public DbSet<GameReview> GameReviews { get; set; }
+        public DbSet<Location> Locations { get; set; }
+        public DbSet<LocationType> LocationTypes { get; set; }
+        public DbSet<Member> Members { get; set; }
+        public DbSet<MemberAddress> MemberAddresses { get; set; }
+        public DbSet<PhysicalGameProduct> PhysicalGameProducts { get; set; }
+        public DbSet<Platform> Platforms { get; set; }
+        public DbSet<ProductLocationInventory> ProductLocationInventories { get; set; }
+        public DbSet<Province> Provinces { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<WebOrder> WebOrders { get; set; }
+
+        public void MarkAsModified(Game game)
+        {
+            Entry(game).State = EntityState.Modified;
+        }
 
         protected void SetupUserModel(DbModelBuilder modelBuilder)
         {

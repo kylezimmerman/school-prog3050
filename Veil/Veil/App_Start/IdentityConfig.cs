@@ -30,16 +30,16 @@ namespace Veil
     }
 
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
-    public class ApplicationUserManager : UserManager<User, Guid>
+    public class VeilUserManager : UserManager<User, Guid>
     {
-        public ApplicationUserManager(IUserStore<User, Guid> store)
+        public VeilUserManager(IUserStore<User, Guid> store)
             : base(store)
         {
         }
 
-        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 
+        public static VeilUserManager Create(IdentityFactoryOptions<VeilUserManager> options, IOwinContext context) 
         {
-            var manager = new ApplicationUserManager(new UserStore<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>(context.Get<VeilDataContext>()));
+            var manager = new VeilUserManager(new UserStore<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>(context.Get<VeilDataContext>()));
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<User, Guid>(manager)
             {
@@ -86,21 +86,21 @@ namespace Veil
     }
 
     // Configure the application sign-in manager which is used in this application.
-    public class ApplicationSignInManager : SignInManager<User, Guid>
+    public class VeilSignInManager : SignInManager<User, Guid>
     {
-        public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
+        public VeilSignInManager(VeilUserManager userManager, IAuthenticationManager authenticationManager)
             : base(userManager, authenticationManager)
         {
         }
 
         public override Task<ClaimsIdentity> CreateUserIdentityAsync(User user)
         {
-            return user.GenerateUserIdentityAsync((ApplicationUserManager)UserManager);
+            return user.GenerateUserIdentityAsync((VeilUserManager)UserManager);
         }
 
-        public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
+        public static VeilSignInManager Create(IdentityFactoryOptions<VeilSignInManager> options, IOwinContext context)
         {
-            return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+            return new VeilSignInManager(context.GetUserManager<VeilUserManager>(), context.Authentication);
         }
     }
 }

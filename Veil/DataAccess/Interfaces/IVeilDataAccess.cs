@@ -3,39 +3,41 @@
  * 
  * Revision History:
  *      Drew Matheson, 2015.09.29: Created
- */ 
+ */
 
+using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataAccess.Interfaces
 {
-    public interface IVeilDataAccess
+    public interface IVeilDataAccess : IDisposable
     {
-        IDbSet<Cart> Carts { get; }
-        IDbSet<Company> Companies { get; }
-        IDbSet<Country> Countries { get; }
-        IDbSet<Department> Departments { get; }
-        IDbSet<DownloadGameProduct> DownloadGameProducts { get; }
-        IDbSet<Employee> Employees { get; }
-        IDbSet<ESRBContentDescriptor> ESRBContentDescriptors { get; }
-        IDbSet<ESRBRating> ESRBRatings { get; }
-        IDbSet<Event> Events { get; }
-        IDbSet<Friendship> Friendships { get; }
+        DbSet<Cart> Carts { get; }
+        DbSet<Company> Companies { get; }
+        DbSet<Country> Countries { get; }
+        DbSet<Department> Departments { get; }
+        DbSet<DownloadGameProduct> DownloadGameProducts { get; }
+        DbSet<Employee> Employees { get; }
+        DbSet<ESRBContentDescriptor> ESRBContentDescriptors { get; }
+        DbSet<ESRBRating> ESRBRatings { get; }
+        DbSet<Event> Events { get; }
+        DbSet<Friendship> Friendships { get; }
         DbSet<Game> Games { get; }
-        IDbSet<GameProduct> GameProducts { get; }
-        IDbSet<GameReview> GameReviews { get; }
-        IDbSet<Location> Locations { get; }
-        IDbSet<LocationType> LocationTypes { get; }
-        IDbSet<Member> Members { get; }
-        IDbSet<MemberAddress> MemberAddresses { get; }
-        IDbSet<PhysicalGameProduct> PhysicalGameProducts { get; }
-        IDbSet<Platform> Platforms { get; }
-        IDbSet<ProductLocationInventory> ProductLocationInventories { get; }
-        IDbSet<Province> Provinces { get; }
-        IDbSet<Tag> Tags { get; }
-        IDbSet<WebOrder> WebOrders { get; }
+        DbSet<GameProduct> GameProducts { get; }
+        DbSet<GameReview> GameReviews { get; }
+        DbSet<Location> Locations { get; }
+        DbSet<LocationType> LocationTypes { get; }
+        DbSet<Member> Members { get; }
+        DbSet<MemberAddress> MemberAddresses { get; }
+        DbSet<PhysicalGameProduct> PhysicalGameProducts { get; }
+        DbSet<Platform> Platforms { get; }
+        DbSet<ProductLocationInventory> ProductLocationInventories { get; }
+        DbSet<Province> Provinces { get; }
+        DbSet<Tag> Tags { get; }
+        DbSet<WebOrder> WebOrders { get; }
 
         /// <summary>
         /// IDbSet of Users
