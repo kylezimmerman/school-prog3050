@@ -45,7 +45,7 @@ namespace Veil.DataAccess
         public IDbSet<ESRBRating> ESRBRatings { get; set; }
         public IDbSet<Event> Events { get; set; }
         public IDbSet<Friendship> Friendships { get; set; }
-        public IDbSet<Game> Games { get; set; }
+        public DbSet<Game> Games { get; set; }
         public IDbSet<GameProduct> GameProducts { get; set; }
         public IDbSet<GameReview> GameReviews { get; set; }
         public IDbSet<Location> Locations { get; set; }

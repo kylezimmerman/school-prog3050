@@ -6,7 +6,7 @@
     @*Set the viewport width to device width for mobile *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>@ViewBag.Title - Welcome to Foundation</title>
+    <title>@ViewBag.Title - Veil</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     @Styles.Render("~/Content/css")
@@ -15,10 +15,23 @@
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    @RenderBody()
+    <header class="fixed">
+        @Html.Partial("_NavBarPartial")
+    </header>
+
+    <section>
+        @RenderBody()
+    </section>
+
+    <footer class="text-center">
+        <span>&copy; Veil |</span>
+        @Html.ActionLink("About", "About", "HomeController") |
+        @Html.ActionLink("Contact Us", "Contact", "HomeController")
+    </footer>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/foundation")
+
     <script>
         $(document).foundation();
     </script>

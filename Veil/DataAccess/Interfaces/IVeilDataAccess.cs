@@ -23,7 +23,7 @@ namespace Veil.DataAccess.Interfaces
         IDbSet<ESRBRating> ESRBRatings { get; }
         IDbSet<Event> Events { get; }
         IDbSet<Friendship> Friendships { get; }
-        IDbSet<Game> Games { get; }
+        DbSet<Game> Games { get; }
         IDbSet<GameProduct> GameProducts { get; }
         IDbSet<GameReview> GameReviews { get; }
         IDbSet<Location> Locations { get; }
