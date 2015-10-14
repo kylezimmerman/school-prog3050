@@ -58,7 +58,7 @@ namespace Veil.DataModels.Models
         /// Flag indicating if the member wishes to receive promotional emails
         /// </summary>
         [Required]
-        public bool ReceivedPromotionalEmails { get; set; }
+        public bool ReceivePromotionalEmails { get; set; }
 
         /// <summary>
         /// WishListVisibility indicating who can view the member's wishlist
