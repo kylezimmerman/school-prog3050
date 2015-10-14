@@ -1,28 +1,34 @@
 ﻿@model IEnumerable<Veil.DataModels.Models.Product>
 
 @{
-    ViewBag.Title = "Wishlist";
+    ViewBag.Title = "Your Wishlist";
 }
 
-<h2>@ViewBag.Title</h2>
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
 
+<div class="row">
+    <a href="#" class="button secondary text-left">
+        <div class="small-3 columns">
+            <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
+        </div>
+        <div class="small-6 columns">
+            <h4>Game Name 1</h4>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
+        </div>
+        <div class="small-3 columns">
+            <p>Average Rating: 5.0</p>
+            <p><strong>New: </strong>Starting at $50</p>
+            <p><strong>Used: </strong>Starting at $30</p>
+        </div>
+    </a>
+</div>
+
+<!--
 <table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.BoxArtImageURL)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.NewWebPrice)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UsedWebPrice)
-        </th>
-        <th></th>
-    </tr>
-
 @foreach (var item in Model) {
     <tr>
         <td>
@@ -42,5 +48,5 @@
         </td>
     </tr>
 }
-
 </table>
+-->
