@@ -1,0 +1,19 @@
+﻿@model Veil.Models.CheckoutViewModel
+
+@{
+    ViewBag.Title = "ConfirmOrder";
+}
+
+<h2>ConfirmOrder</h2>
+
+<div>
+    <h4>CheckoutViewModel</h4>
+    <hr />
+    <dl class="dl-horizontal">
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Place Your Order", "ConfirmOrder", new { /* id = Model.PrimaryKey */ }) |
+    @Html.ActionLink("Change Shipping Address", "ShippingInfo")
+    @Html.ActionLink("Change Billing Info", "BillingInfo")
+</p>

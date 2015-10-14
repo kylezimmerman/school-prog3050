@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Web.Mvc;
-using Veil.DataAccess;
+﻿using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
-using Veil.DataModels.Models;
-using Veil.DataModels.Models.Identity;
 
 namespace Veil.Controllers
 {

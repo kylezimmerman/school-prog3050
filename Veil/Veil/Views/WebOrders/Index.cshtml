@@ -1,0 +1,69 @@
+﻿@model IEnumerable<Veil.DataModels.Models.WebOrder>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Member.UserId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MemberCreditCard.CardSecurityCode)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShippingAddress.StreetAddress)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.OrderStatus)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ProcessedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ReasonForCancellationMessage)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Member.UserId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MemberCreditCard.CardSecurityCode)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ShippingAddress.StreetAddress)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.OrderDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.OrderStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProcessedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ReasonForCancellationMessage)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+        </td>
+    </tr>
+}
+
+</table>

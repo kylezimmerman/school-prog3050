@@ -199,7 +199,13 @@
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
+    <Compile Include="Controllers\CartController.cs" />
+    <Compile Include="Controllers\CheckoutController.cs" />
+    <Compile Include="Controllers\EventsController.cs" />
     <Compile Include="Controllers\GamesController.cs" />
+    <Compile Include="Models\CheckoutViewModel.cs" />
+    <Compile Include="Controllers\WebOrdersController.cs" />
+    <Compile Include="Controllers\WishlistController.cs" />
     <Compile Include="Helpers\IIdentityExtensions.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
@@ -355,6 +361,22 @@
     <Content Include="Views\Games\Details.cshtml" />
     <Content Include="Views\Games\Edit.cshtml" />
     <Content Include="Views\Games\Index.cshtml" />
+    <Content Include="Views\Events\Create.cshtml" />
+    <Content Include="Views\Events\Delete.cshtml" />
+    <Content Include="Views\Events\Details.cshtml" />
+    <Content Include="Views\Events\Edit.cshtml" />
+    <Content Include="Views\Events\Index.cshtml" />
+    <Content Include="Views\WebOrders\Create.cshtml" />
+    <Content Include="Views\WebOrders\Delete.cshtml" />
+    <Content Include="Views\WebOrders\Details.cshtml" />
+    <Content Include="Views\WebOrders\Edit.cshtml" />
+    <Content Include="Views\WebOrders\Index.cshtml" />
+    <Content Include="Views\Account\Settings.cshtml" />
+    <Content Include="Views\Wishlist\Index.cshtml" />
+    <Content Include="Views\Cart\Index.cshtml" />
+    <Content Include="Views\Checkout\ShippingInfo.cshtml" />
+    <Content Include="Views\Checkout\BillingInfo.cshtml" />
+    <Content Include="Views\Checkout\ConfirmOrder.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

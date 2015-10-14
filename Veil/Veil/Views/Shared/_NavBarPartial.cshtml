@@ -1,7 +1,7 @@
 ﻿<nav class="top-bar" data-topbar role="navigation">
     <ul class="title-area">
         <li class="name">
-            <h1><a href="#">Veil</a></h1>
+            <h1>@Html.ActionLink("Veil", "Index", new { Controller = "Home"})</h1>
         </li>
         <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
         <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
@@ -17,17 +17,34 @@
             <li class="has-dropdown">
                 <a href="#">My Stuff</a>
                 <ul class="dropdown">
-                    <li><a href="#">Wishlist</a></li>
-                    <li><a href="#">My Orders</a></li>
-                    <li><a href="#">Account Settings</a></li>
+                    <li>
+                        @Html.ActionLink("Wishlist", "Index", new { Controller = "Wishlist" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("My Orders", "Index", new { Controller = "WebOrders" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Account Settings", "Settings", new { Controller = "Account" })
+                    </li>
                 </ul>
             </li>
         </ul>
 
         <!-- Left Nav Section -->
         <ul class="left">
-            <li><a href="#">Store</a></li>
-            <li><a href="#">Events</a></li>
+            <li class="has-dropdown">
+                <a href="#">Store</a>
+                <ul class="dropdown">
+                    <li>@Html.ActionLink("Games", "Index", new { Controller = "Games"})</li>
+                    <li>@Html.ActionLink("Game Detail", "Details", new { Controller = "Games", id = "7169E5E2-AFCF-4F55-9917-207D2076457F" })</li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                @Html.ActionLink("Events", "Index", new { Controller = "Events" })
+                <ul class="dropdown">
+                    <li>@Html.ActionLink("My Events", "Index", new { Controller = "Events"})</li>
+                </ul>
+            </li>
         </ul>
     </section>
 </nav>

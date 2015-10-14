@@ -1,0 +1,74 @@
+﻿@model Veil.DataModels.Models.WebOrder
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>WebOrder</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Member.UserId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Member.UserId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MemberCreditCard.CardSecurityCode)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MemberCreditCard.CardSecurityCode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ShippingAddress.StreetAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShippingAddress.StreetAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OrderDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OrderStatus)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OrderStatus)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProcessedDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProcessedDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ReasonForCancellationMessage)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ReasonForCancellationMessage)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

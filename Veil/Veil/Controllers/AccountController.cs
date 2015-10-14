@@ -51,6 +51,12 @@ namespace Veil.Controllers
             }
         }
 
+        // GET: /Account/Settings
+        public ActionResult Settings()
+        {
+            return View();
+        }
+
         //
         // GET: /Account/Login
         [AllowAnonymous]

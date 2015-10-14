@@ -1,0 +1,43 @@
+﻿@using Veil.DataModels.Models
+@model Veil.DataModels.Models.Cart
+
+@{
+    ViewBag.Title = "Cart";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Cart</h4>
+        <hr />
+
+        @foreach (CartItem item in Model.Items)
+        {
+            <p>
+                @Html.DisplayFor(m => item.Product.Name)
+                @Html.DisplayFor(m => item.Quantity)
+
+                @(item.IsNew ?
+                    @Html.DisplayFor(m => item.Product.NewWebPrice) :
+                    @Html.DisplayFor(m => item.Product.UsedWebPrice))
+
+            </p>
+        }
+
+        <p>
+            Subtotal (@Model.Items.Count items): $20
+        </p>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button type="submit">Update Cart</button>
+            </div>
+        </div>
+    </div>
+}
+
+<button>@Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout"})</button>
