@@ -55,6 +55,12 @@ namespace Veil.DataModels.Models
         public virtual Cart Cart { get; set; }
 
         /// <summary>
+        /// Flag indicating if the member wishes to receive promotional emails
+        /// </summary>
+        [Required]
+        public bool ReceivedPromotionalEmails { get; set; }
+
+        /// <summary>
         /// WishListVisibility indicating who can view the member's wishlist
         /// </summary>
         public WishListVisibility WishListVisibility { get; set; }
