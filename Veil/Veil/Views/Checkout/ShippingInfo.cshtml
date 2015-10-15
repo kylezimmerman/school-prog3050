@@ -1,7 +1,5 @@
-﻿@model IEnumerable<Veil.DataModels.Models.MemberCreditCard>
-
-@{
-    ViewBag.Title = "Billing Inforomation";
+﻿@{
+    ViewBag.Title = "Shipping Inforomation";
 }
 
 <div class="row">
@@ -70,21 +68,20 @@
         </div>
         <div class="row collapse">
             <div class="small-4 large-2 columns">
-                <span class="prefix">Postal Code</span>
+                <span class="prefix">Phone</span>
             </div>
             <div class="small-8 large-10 columns">
                 <input type="text" />
             </div>
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="column">
-        <!-- TODO: Add payment info here -->
-    </div>
-</div>
-<div class="row">
-    <div class="column">
-        <button type="submit">Continue to Order Confirmation</button>
+        <div class="row collapse">
+            <div class="small-9 columns">
+                <label>Use shipping information for billing address?</label>
+            </div>
+            <div class="small-3 columns">
+                <input type="checkbox" />
+            </div>
+        </div>
+        <button type="submit">Continue to Billing Information</button>
     </div>
 </div>

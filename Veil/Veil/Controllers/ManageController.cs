@@ -274,6 +274,12 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        // TODO: Server error occurs when using this
+        public ActionResult FriendList()
+        {
+            return View();
+        }
+
         //
         // GET: /Manage/ManageLogins
         public async Task<ActionResult> ManageLogins(ManageMessageId? message)
