@@ -10,6 +10,9 @@
     </div>
 </div>
 
+<!-- TODO: Make inputs look nice, current layout is very rough
+    Keep consistent with ShippingInfo.cshtml -->
+
 <div class="row">
     <div class="column">
         <div class="row collapse">
@@ -76,11 +79,78 @@
                 <input type="text" />
             </div>
         </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Phone</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
     </div>
 </div>
-<div class="row">
+<div class="row panel">
     <div class="column">
-        <!-- TODO: Add payment info here -->
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Name on Card</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Card Number</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Expiry Date</span>
+            </div>
+            <div class="small-4 large-10 columns">
+                <div class="row">
+                    <div class="small-6 columns">
+                        <select>
+                            <option>01</option>
+                            <option>02</option>
+                            <option>03</option>
+                            <option>04</option>
+                            <option>05</option>
+                            <option>06</option>
+                            <option>07</option>
+                            <option>08</option>
+                            <option>09</option>
+                            <option>10</option>
+                            <option>11</option>
+                            <option>12</option>
+                        </select>
+                    </div>
+                    <div class="small-6 columns">
+                        <select>
+                            <option>15</option>
+                            <option>16</option>
+                            <option>17</option>
+                            <option>18</option>
+                            <option>19</option>
+                            <option>20</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="small-4 columns"></div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">CVV Number</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" maxlength="3" />
+            </div>
+        </div>
     </div>
 </div>
 <div class="row">
