@@ -6,16 +6,13 @@
 
 <h2>Index</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
 <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.Member.UserId)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.MemberCreditCard.CardSecurityCode)
+            @Html.DisplayNameFor(model => model.MemberCreditCard.StripeCardId)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.ShippingAddress.StreetAddress)
@@ -41,7 +38,7 @@
             @Html.DisplayFor(modelItem => item.Member.UserId)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.MemberCreditCard.CardSecurityCode)
+            @Html.DisplayFor(modelItem => item.MemberCreditCard.StripeCardId)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.ShippingAddress.StreetAddress)
@@ -59,9 +56,7 @@
             @Html.DisplayFor(modelItem => item.ReasonForCancellationMessage)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+            @Html.ActionLink("Details", "Details", new { id=item.Id })
         </td>
     </tr>
 }

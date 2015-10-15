@@ -214,6 +214,7 @@
     <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\CheckoutController.cs" />
     <Compile Include="Controllers\EventsController.cs" />
+    <Compile Include="Controllers\FriendListController.cs" />
     <Compile Include="Controllers\GamesController.cs" />
     <Compile Include="Models\CheckoutViewModel.cs" />
     <Compile Include="Controllers\WebOrdersController.cs" />
@@ -381,17 +382,14 @@
     <Content Include="Views\Events\Details.cshtml" />
     <Content Include="Views\Events\Edit.cshtml" />
     <Content Include="Views\Events\Index.cshtml" />
-    <Content Include="Views\WebOrders\Create.cshtml" />
-    <Content Include="Views\WebOrders\Delete.cshtml" />
     <Content Include="Views\WebOrders\Details.cshtml" />
-    <Content Include="Views\WebOrders\Edit.cshtml" />
     <Content Include="Views\WebOrders\Index.cshtml" />
     <Content Include="Views\Account\Settings.cshtml" />
     <Content Include="Views\Wishlist\Index.cshtml" />
     <Content Include="Views\Cart\Index.cshtml" />
     <Content Include="Views\Checkout\BillingInfo.cshtml" />
     <Content Include="Views\Checkout\ConfirmOrder.cshtml" />
-    <Content Include="Views\Manage\FriendList.cshtml" />
+    <Content Include="Views\FriendList\Index.cshtml" />
     <Content Include="Views\Checkout\ShippingInfo.cshtml" />
   </ItemGroup>
   <ItemGroup>
