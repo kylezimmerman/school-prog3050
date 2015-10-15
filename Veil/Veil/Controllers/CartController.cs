@@ -14,10 +14,11 @@ namespace Veil.Controllers
         public async Task<ActionResult> Index()
         {
             // TODO: Remove this and actually implement it
-            Member currentMember = new Member();
-            currentMember.Cart = new Cart();
+            //Member currentMember = new Member();
+            //currentMember.Cart = new Cart();
 
-            return View(currentMember.Cart);
+            //return View(currentMember.Cart);
+            return View();
         }
 
         [HttpPost]
