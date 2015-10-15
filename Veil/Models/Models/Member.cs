@@ -55,6 +55,13 @@ namespace Veil.DataModels.Models
         public virtual Cart Cart { get; set; }
 
         /// <summary>
+        /// The Id for the member as returned from Stripe
+        /// </summary>
+        [Required]
+        [MaxLength(255)]
+        public string StripeCustomerId { get; set; }
+
+        /// <summary>
         /// Flag indicating if the member wishes to receive promotional emails
         /// </summary>
         [Required]
