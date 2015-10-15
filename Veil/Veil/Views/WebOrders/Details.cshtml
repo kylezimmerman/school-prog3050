@@ -1,74 +1,68 @@
 ﻿@model Veil.DataModels.Models.WebOrder
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Order 293817184";
 }
 
-<h2>Details</h2>
-
-<div>
-    <h4>WebOrder</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Member.UserId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Member.UserId)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.MemberCreditCard.CardSecurityCode)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.MemberCreditCard.CardSecurityCode)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ShippingAddress.StreetAddress)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ShippingAddress.StreetAddress)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.OrderDate)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.OrderDate)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.OrderStatus)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.OrderStatus)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ProcessedDate)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ProcessedDate)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ReasonForCancellationMessage)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ReasonForCancellationMessage)
-        </dd>
-
-    </dl>
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+
+<div class="row">
+    <div class="medium-6 columns">
+        <dl>
+            <dt>Billing Information</dt>
+            <dd>Joe Danger</dd>
+            <dd>823 Example St.</dd>
+            <dd>City, Province A1A 2B2</dd>
+            <dd>Canada</dd>
+            <dd>519-383-2833</dd>
+            <dd>example@veil.com</dd>
+        </dl>
+    </div>
+    <div class="medium-6 columns">
+        <dl>
+            <dt>Shipping Information</dt>
+            <dd>Joe Danger</dd>
+            <dd>823 Example St.</dd>
+            <dd>City, Province A1A 2B2</dd>
+            <dd>Canada</dd>
+            <dd>519-383-2833</dd>
+            <dd>example@veil.com</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column">
+        <dl>
+            <dt>Order Details</dt>
+            <dd>
+                <table>
+                    <tr><td>Order Number</td><td>293817184</td></tr>
+                    <tr><td>Order Date</td><td>October 21, 2017</td></tr>
+                    <tr><td>Order Status</td><td>Processing</td></tr>
+                </table>
+            </dd>
+            <dd>
+                <table>
+                    <tr><th>Product ID</th><th>Title</th><th>Format</th><th>New Copy</th><th>Quantity</th><th class="text-right">Unit Price</th><th class="text-right">Total Price</th></tr>
+                    <tr><td>3828432</td><td>Wasteland 2</td><td>Windows</td><td>Yes</td><td>1</td><td class="text-right">$50.00</td><td class="text-right">$50.00</td></tr>
+                    <tr><td colspan="7"><hr /></td></tr>
+                    <tr><td colspan="6">Item Total</td><t class="text-right"d>$50.00</td></tr>
+                    <tr><td colspan="6">Shipping and Handling</td><td class="text-right">$5.00</td></tr>
+                    <tr><td colspan="6"><strong>Order Total</strong></td><td class="text-right"><strong>$55.00</strong></td></tr>
+                </table>
+            </dd>
+        </dl>
+        <button type="submit" class="alert">Cancel Order</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column">
+        @Html.ActionLink("Back to List", "Index")
+    </div>
+</div>
