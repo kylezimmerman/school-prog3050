@@ -65,10 +65,12 @@ namespace Veil.DataModels.Models
         public virtual Member Member { get; set; }
 
         /// <summary>
-        /// The credit card number used for this order.
+        /// The Stripe Card Id used for this order.
         /// This is part of the composite key for MemberCreditCard
         /// </summary>
-        public string CreditCardNumber { get; set; }
+        [Required]
+        [MaxLength(255)]
+        public string StripeCardId { get; set; }
 
         /// <summary>
         /// Navigation property for the payment information for the order
@@ -84,6 +86,13 @@ namespace Veil.DataModels.Models
         /// Navigation property for the shipping address for the order
         /// </summary>
         public virtual MemberAddress ShippingAddress { get; set; }
+
+        /// <summary>
+        /// The Id for the Charge for this WebOrder as returned from Stripe
+        /// </summary>
+        [Required]
+        [MaxLength(255)]
+        public string StripeChargeId { get; set; }
 
         /// <summary>
         /// The date and time the order was created

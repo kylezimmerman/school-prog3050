@@ -1,8 +1,18 @@
+/* MemberCreditCard.cs
+ * Purpose: A class for member credit card information
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.15: Created
+ */ 
+
 using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
 {
+    /// <summary>
+    /// Member's Stored Credit Card Information
+    /// </summary>
     public class MemberCreditCard
     {
         /// <summary>
@@ -17,15 +27,23 @@ namespace Veil.DataModels.Models
         public virtual Member Member { get; set; }
 
         /// <summary>
-        /// The credit card's number
+        /// The Id for the Card as returned from Stripe
         /// </summary>
         [Key]
-        [MaxLength(19)]
-        public string CardNumber { get; set; }
+        [MaxLength(255)]
+        public string StripeCardId { get; set; }
+
+        /// <summary>
+        /// The credit card's last 4 digits
+        /// </summary>
+        [Required]
+        [StringLength(maximumLength: 4, MinimumLength = 4)]
+        public string Last4Digits { get; set; }
 
         /// <summary>
         /// The month in which the credit card expires
         /// </summary>
+        [Range(1, 12)]
         public int ExpiryMonth { get; set; }
 
         /// <summary>
@@ -34,21 +52,10 @@ namespace Veil.DataModels.Models
         public int ExpiryYear { get; set; }
 
         /// <summary>
-        /// The security code found on the card
-        /// </summary>
-        [MaxLength(8)]
-        public string CardSecurityCode { get; set; } 
-
-        /// <summary>
         /// The name of the cardholder as it appears on the credit card
         /// </summary>
         [Required]
         [MaxLength(255)]
         public string CardholderName { get; set; }
-
-        /// <summary>
-        /// The billing information for this credit card
-        /// </summary>
-        public virtual CreditCardBillingInfo BillingInfo { get; set; }
     }
 }

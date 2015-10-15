@@ -70,17 +70,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\Cart.cs" />
-    <Compile Include="Models\CreditCardBillingInfo.cs" />
     <Compile Include="Models\Identity\User.cs" />
     <Compile Include="Models\Identity\GuidIdentityUserClaim.cs" />
     <Compile Include="Models\Identity\GuidIdentityUserLogin.cs" />
     <Compile Include="Models\Identity\GuidIdentityUserRole.cs" />
     <Compile Include="Models\Identity\GuidIdentityRole.cs" />
+    <Compile Include="Models\MemberCreditCard.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Models\CartItem.cs" />
     <Compile Include="Models\Company.cs" />
     <Compile Include="Models\Country.cs" />
-    <Compile Include="Models\MemberCreditCard.cs" />
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\DownloadGameProduct.cs" />
     <Compile Include="Models\Employee.cs" />

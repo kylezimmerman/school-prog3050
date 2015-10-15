@@ -124,6 +124,9 @@ namespace Veil.DataAccess
 
         protected void SetupWebOrderModel(DbModelBuilder modelBuilder)
         {
+            // TODO: Make StripeChargeId case sensitive in the DB
+            // TODO: Make StripeCardId case sensitive in the DB
+
             /* Primary Key:
              *
              * Id
@@ -153,7 +156,7 @@ namespace Veil.DataAccess
             modelBuilder.Entity<WebOrder>().
                 HasRequired(wo => wo.MemberCreditCard).
                 WithMany().
-                HasForeignKey(wo => new { wo.CreditCardNumber, wo.MemberId });
+                HasForeignKey(wo => new { wo.StripeCardId, wo.MemberId });
 
             modelBuilder.Entity<WebOrder>().
                 HasMany(wo => wo.OrderItems).
@@ -272,6 +275,8 @@ namespace Veil.DataAccess
 
         protected void SetupMemberModel(DbModelBuilder modelBuilder)
         {
+            // TODO: Make StripeCustomerId case sensitive in the DB
+
             /* Primary Key:
              *
              * UserId (mapped as MemberId)
@@ -608,12 +613,14 @@ namespace Veil.DataAccess
 
         protected void SetupMemberCreditCardModel(DbModelBuilder modelBuilder)
         {
+            // TODO: StripeCardId needs to be made case sensitive in the DB
+
             /* Primary Key:
              *
              * CardNumber, MemberId
              */
             modelBuilder.Entity<MemberCreditCard>().
-                HasKey(cc => new { cc.CardNumber, cc.MemberId }).
+                HasKey(cc => new { cc.StripeCardId, cc.MemberId }).
                 ToTable(nameof(MemberCreditCard));
 
             /* Foreign Keys:
@@ -624,16 +631,6 @@ namespace Veil.DataAccess
                HasRequired(cc => cc.Member).
                WithMany(m => m.CreditCards).
                HasForeignKey(cc => cc.MemberId);
-
-            /* Setup CreditCardBillingInfo to be in the same table */
-            modelBuilder.Entity<CreditCardBillingInfo>().
-                HasKey(bi => new { bi.CardNumber, bi.MemberId });
-
-            modelBuilder.Entity<MemberCreditCard>().
-                HasRequired(cc => cc.BillingInfo).
-                WithRequiredPrincipal();
-
-            modelBuilder.Entity<CreditCardBillingInfo>().ToTable(nameof(MemberCreditCard));
         }
 
         protected void SetupCompanyModel(DbModelBuilder modelBuilder)
