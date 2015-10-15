@@ -6,8 +6,9 @@ namespace Veil.DataModels.Models
     public class CreditCardViewModel
     {
         /// <summary>
-        /// A friendly name the user gave for the card
+        /// The cardholder's full name
         /// </summary>
+        [Required]
         public string Name { get; set; }
 
         /// <summary>
