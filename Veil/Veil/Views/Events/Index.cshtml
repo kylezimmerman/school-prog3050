@@ -1,51 +1,39 @@
 ﻿@model IEnumerable<Veil.DataModels.Models.Event>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Upcoming Events";
 }
 
-<h2>Index</h2>
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Date)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Duration)
-        </th>
-        <th></th>
-    </tr>
+<div class="row">
+    <a href="#" class="button secondary text-left">
+        <div class="medium-9 columns">
+            <h4>Event Name</h4>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
+        </div>
+        <div class="medium-3 columns">
+            <p><strong>Date: </strong>March 31st, 2016</p>
+            <p><strong>Time: </strong>11:00 AM</p>
+            <p><strong>Duration: </strong>2hrs</p>
+        </div>
+    </a>
+</div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Date)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Duration)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
-        </td>
-    </tr>
-}
-
-</table>
+<div class="row">
+    <a href="#" class="button secondary text-left">
+        <div class="medium-9 columns">
+            <h4>Another Event Name</h4>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
+        </div>
+        <div class="medium-3 columns">
+            <p><strong>Date: </strong>June 5th, 2016</p>
+            <p><strong>Time: </strong>8:00 PM</p>
+            <p><strong>Duration: </strong>3-4hrs</p>
+        </div>
+    </a>
+</div>
