@@ -478,12 +478,14 @@ namespace Veil.DataAccess
              */
             modelBuilder.Entity<Cart>().
                 HasRequired(c => c.Member).
-                WithOptional(m => m.Cart);
+                WithRequiredDependent(m => m.Cart);
 
             modelBuilder.Entity<Cart>().
                 HasMany(c => c.Items).
                 WithRequired().
                 HasForeignKey(ci => ci.MemberId);
+
+            modelBuilder.Entity<Cart>().ToTable(nameof(Member));
         }
 
         protected void SetupCartItemModel(DbModelBuilder modelBuilder)

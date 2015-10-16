@@ -17,7 +17,7 @@ namespace Veil.DataModels.Models
     {
         /// <summary>
         /// The Id of the member this cart is for.
-        /// As a member can only have one cart, this also acts as the primary key
+        /// As a member can only have one cart, this also acts as the primary key for the cart
         /// </summary>
         [Key]
         public Guid MemberId { get; set; }
