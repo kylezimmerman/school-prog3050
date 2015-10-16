@@ -50,11 +50,14 @@ namespace Veil
             // Configure validation logic for passwords
             manager.PasswordValidator = new PasswordValidator
             {
+                // TODO: Add these back when we are in release mode
+#if DEBUG
                 RequiredLength = 6,
                 RequireNonLetterOrDigit = true,
                 RequireDigit = true,
                 RequireLowercase = true,
                 RequireUppercase = true,
+#endif
             };
 
             // Configure user lockout defaults

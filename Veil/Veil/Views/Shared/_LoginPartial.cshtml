@@ -9,14 +9,25 @@
         <li>
             @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
         </li>
-        <li class="has-dropdown">
-            <a href="#">My Stuff</a>
-            <ul class="dropdown">
-                <li><a href="#">Wishlist</a></li>
-                <li><a href="#">My Orders</a></li>
-                <li><a href="#">Account Settings</a></li>
-            </ul>
-        </li>
+        @*
+            TODO: Add back after prototyping
+            <li class="has-dropdown">
+                <a href="#">My Stuff</a>
+                <ul class="dropdown">
+                    <li>
+                        @Html.ActionLink("Wishlist", "Index", new { Controller = "Wishlist" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("My Orders", "Index", new { Controller = "WebOrders" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Account Settings", "Settings", new { Controller = "Account" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Friends List", "Index", new { Controller = "FriendList" })
+                    </li>
+                </ul>
+            </li>*@
         <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
     </ul>
     }

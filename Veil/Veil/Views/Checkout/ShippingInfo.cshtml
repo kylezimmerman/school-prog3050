@@ -13,14 +13,26 @@
 <!-- TODO: Make inputs look nice, current layout is very rough
     Keep consistent with BillingInfo.cshtml -->
 
-<div class="row">
+<div class="row panel">
+    <div class="column">
+        <h4>Your Addresses</h4>
+        <select>
+            <option>823 Example St.</option>
+            <option>893 Example St.</option>
+            <option>15 Theother St.</option>
+        </select>
+        @Html.ActionLink("Ship to This Address", "BillingInfo", null, new { @class = "button" })
+    </div>
+</div>
+
+<div class="row panel">
     <div class="column">
         <div class="row collapse">
             <div class="small-4 large-2 columns">
                 <span class="prefix">Customer Name</span>
             </div>
             <div class="small-8 large-10 columns">
-                <input type="text" />
+                <input type="text"/>
             </div>
         </div>
         <div class="row collapse">
@@ -28,7 +40,7 @@
                 <span class="prefix">Street Address</span>
             </div>
             <div class="small-8 large-10 columns">
-                <input type="text" />
+                <input type="text"/>
             </div>
         </div>
         <div class="row collapse">
@@ -36,7 +48,7 @@
                 <span class="prefix">City</span>
             </div>
             <div class="small-8 large-10 columns">
-                <input type="text" />
+                <input type="text"/>
             </div>
         </div>
         <div class="row collapse">
@@ -76,7 +88,7 @@
                 <span class="prefix">Postal Code</span>
             </div>
             <div class="small-8 large-10 columns">
-                <input type="text" />
+                <input type="text"/>
             </div>
         </div>
         <div class="row collapse">
@@ -84,17 +96,10 @@
                 <span class="prefix">Phone</span>
             </div>
             <div class="small-8 large-10 columns">
-                <input type="text" />
+                <input type="text"/>
             </div>
         </div>
-        <div class="row collapse">
-            <div class="small-9 columns">
-                <label>Use shipping information for billing address?</label>
-            </div>
-            <div class="small-3 columns">
-                <input type="checkbox" />
-            </div>
-        </div>
-        <button type="submit">Continue to Billing Information</button>
+
+        @Html.ActionLink("Ship to This Address", "BillingInfo", null, new { @class = "button" })
     </div>
 </div>

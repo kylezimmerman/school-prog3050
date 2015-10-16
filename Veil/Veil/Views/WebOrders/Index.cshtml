@@ -13,8 +13,22 @@
 <div class="row">
     <div class="column">
         <table style="width:100%;">
-            <tr><th>Order Number</th><th>Date</th><th>Status</th><th class="text-right">Order Total</th><td></td></tr>
-            <tr><td>293817184</td><td>Octover 21, 2017</td><td>Processed</td><td class="text-right">$62.15</td><td><a href="#">View Details</a></td></tr>
+            <tr>
+                <th>Order Number</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th class="text-right">Order Total</th>
+                <td></td>
+            </tr>
+            <tr>
+                <td>293817184</td>
+                <td>Octover 21, 2017</td>
+                <td>Processed</td>
+                <td class="text-right">$62.15</td>
+                <td>
+                    @Html.ActionLink("View Details", "Details", new { Id = 1 })
+                </td>
+            </tr>
         </table>
     </div>
 </div>

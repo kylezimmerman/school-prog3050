@@ -1,15 +1,18 @@
 ﻿<nav class="top-bar" data-topbar role="navigation">
     <ul class="title-area">
         <li class="name">
-            <h1>@Html.ActionLink("Veil", "Index", new { Controller = "Home"})</h1>
+            <h1>@Html.ActionLink("Veil", "Index", new { Controller = "Home" })</h1>
         </li>
         <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
-        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+        <li class="toggle-topbar menu-icon">
+            <a href="#">
+                <span>Menu</span></a>
+        </li>
     </ul>
 
     <section class="top-bar-section">
         <!-- Right Nav Section -->
-        
+
         @Html.Partial("_LoginPartial")
         <ul class="right">
             <li class="has-form">
@@ -22,8 +25,10 @@
                     </div>
                 </div>
             </li>
-            <li class="active"><a href="#">Cart (2)</a></li>
-            <!-- TODO: Remove after prototyping -->
+            <li class="active">
+                @Html.ActionLink("Cart (2)", "Index", new { Controller = "Cart" })
+            </li>
+            <!-- TODO: Remove after prototyping as it should only exist in the logged in partial -->
             <li class="has-dropdown">
                 <a href="#">My Stuff</a>
                 <ul class="dropdown">
@@ -48,14 +53,20 @@
             <li class="has-dropdown">
                 <a href="#">Store</a>
                 <ul class="dropdown">
-                    <li>@Html.ActionLink("Games", "Index", new { Controller = "Games"})</li>
-                    <li>@Html.ActionLink("Game Detail", "Details", new { Controller = "Games", id = "7169E5E2-AFCF-4F55-9917-207D2076457F" })</li>
+                    <li>
+                        @Html.ActionLink("Games", "Index", new { Controller = "Games" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Game Detail", "Details", new { Controller = "Games", id = "7169E5E2-AFCF-4F55-9917-207D2076457F" })
+                    </li>
                 </ul>
             </li>
             <li class="has-dropdown">
                 @Html.ActionLink("Events", "Index", new { Controller = "Events" })
                 <ul class="dropdown">
-                    <li>@Html.ActionLink("My Events", "Index", new { Controller = "Events"})</li>
+                    <li>
+                        @Html.ActionLink("My Events", "Index", new { Controller = "Events" })
+                    </li>
                 </ul>
             </li>
         </ul>

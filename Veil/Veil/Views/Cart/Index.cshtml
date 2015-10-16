@@ -54,7 +54,7 @@
             <tr><th>Tax:</th><td>$7.15</td></tr>
             <tr><th>Order Total:</th><td>$62.15</td></tr>
         </table>
-        <button>Checkout</button>
+        @Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout"}, new { @class = "button"})
     </div>
 </div>
 
