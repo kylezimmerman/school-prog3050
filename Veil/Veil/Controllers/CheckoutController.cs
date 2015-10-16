@@ -68,14 +68,15 @@ namespace Veil.Controllers
             WebOrder order = new WebOrder();
             Member currentMember = new Member();
 
-            CheckoutViewModel webOrder = new CheckoutViewModel()
-            {
-                Address = order.ShippingAddress,
-                BillingInfo = order.MemberCreditCard,
-                Items = currentMember.Cart.Items
-            };
+            //CheckoutViewModel webOrder = new CheckoutViewModel()
+            //{
+            //    Address = order.ShippingAddress,
+            //    BillingInfo = order.MemberCreditCard,
+            //    Items = currentMember.Cart.Items
+            //};
 
-            return View(webOrder);
+            //return View(webOrder);
+            return View();
         }
 
         // POST: Checkout/CompleteOrder

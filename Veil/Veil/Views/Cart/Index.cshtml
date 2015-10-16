@@ -2,42 +2,95 @@
 @model Veil.DataModels.Models.Cart
 
 @{
-    ViewBag.Title = "Cart";
+    ViewBag.Title = "Shopping Cart";
 }
 
-<h2>@ViewBag.Title</h2>
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-
-    <div class="form-horizontal">
-        <h4>Cart</h4>
-        <hr />
-
-        @foreach (CartItem item in Model.Items)
-        {
-            <p>
-                @Html.DisplayFor(m => item.Product.Name)
-                @Html.DisplayFor(m => item.Quantity)
-
-                @(item.IsNew ?
-                    @Html.DisplayFor(m => item.Product.NewWebPrice) :
-                    @Html.DisplayFor(m => item.Product.UsedWebPrice))
-
-            </p>
-        }
-
-        <p>
-            Subtotal (@Model.Items.Count items): $20
-        </p>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <button type="submit">Update Cart</button>
+<div class="row panel">
+    <div class="small-3 columns">
+        <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
+    </div>
+    <div class="small-6 columns">
+        <h4>Game Name 1</h4>
+        <p>PS4</p>
+        <p>New</p>
+    </div>
+    <div class="small-3 columns">
+        <div class="row">
+            <div class="small-3 columns">
+                <p>Unit:</p>
+            </div>
+            <div class="small-9 columns">
+                <p>$50.00</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="small-3 columns">
+                <label class="inline">Qty:</label>
+            </div>
+            <div class="small-9 columns">
+                <input type="text" value="1" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <a href="#">Update Quantity</a> |
+                <a href="#">Remove</a>
             </div>
         </div>
     </div>
-}
+</div>
 
-<button>@Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout"})</button>
+<div class="row">
+    <div class="column">
+        <table>
+            <tr><th>Item Total:</th><td>$50.00</td></tr>
+            <tr><th>Shipping &amp; Handling:</th><td>$5.00</td></tr>
+            <tr><th>Tax:</th><td>$7.15</td></tr>
+            <tr><th>Order Total:</th><td>$62.15</td></tr>
+        </table>
+        <button>Checkout</button>
+    </div>
+</div>
+
+@*
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>Cart</h4>
+            <hr />
+
+            @foreach (CartItem item in Model.Items)
+            {
+                <p>
+                    @Html.DisplayFor(m => item.Product.Name)
+                    @Html.DisplayFor(m => item.Quantity)
+
+                    @(item.IsNew ?
+                        @Html.DisplayFor(m => item.Product.NewWebPrice) :
+                        @Html.DisplayFor(m => item.Product.UsedWebPrice))
+
+                </p>
+            }
+
+            <p>
+                Subtotal (@Model.Items.Count items): $20
+            </p>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <button type="submit">Update Cart</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <button>@Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout"})</button>
+*@

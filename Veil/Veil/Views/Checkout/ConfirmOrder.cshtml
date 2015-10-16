@@ -1,19 +1,74 @@
 ﻿@model Veil.Models.CheckoutViewModel
 
 @{
-    ViewBag.Title = "ConfirmOrder";
+    ViewBag.Title = "Order Confirmation";
 }
 
-<h2>ConfirmOrder</h2>
-
-<div>
-    <h4>CheckoutViewModel</h4>
-    <hr />
-    <dl class="dl-horizontal">
-    </dl>
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title </h2>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Place Your Order", "ConfirmOrder", new { /* id = Model.PrimaryKey */ }) |
-    @Html.ActionLink("Change Shipping Address", "ShippingInfo")
-    @Html.ActionLink("Change Billing Info", "BillingInfo")
-</p>
+
+<div class="row">
+    <div class="medium-6 columns">
+        <dl>
+            <dt>Billing Information</dt>
+            <dd>Joe Danger</dd>
+            <dd>823 Example St.</dd>
+            <dd>City, Province A1A 2B2</dd>
+            <dd>Canada</dd>
+            <dd>519-383-2833</dd>
+            <dd><a href="#">Modify Billing Information</a></dd>
+        </dl>
+    </div>
+    <div class="medium-6 columns">
+        <dl>
+            <dt>Shipping Information</dt>
+            <dd>Joe Danger</dd>
+            <dd>823 Example St.</dd>
+            <dd>City, Province A1A 2B2</dd>
+            <dd>Canada</dd>
+            <dd>519-383-2833</dd>
+            <dd><a href="#">Modify Shipping Information</a></dd>
+        </dl>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column">
+        <dl>
+            <dt>Order Details</dt>
+            <dd>
+                <table style="width:100%;">
+                    <tr><th>Product ID</th><th>Title</th><th>Format</th><th>New Copy</th><th>Quantity</th><th class="text-right">Unit Price</th><th class="text-right">Total Price</th></tr>
+                    <tr><td>3828432</td><td>Wasteland 2</td><td>Windows</td><td>Yes</td><td>1</td><td class="text-right">$50.00</td><td class="text-right">$50.00</td></tr>
+                    <tr><td colspan="7"><hr /></td></tr>
+                    <tr><td colspan="6">Item Total</td><td class="text-right">$50.00</td></tr>
+                    <tr><td colspan="6">Shipping and Handling</td><td class="text-right">$5.00</td></tr>
+                    <tr><td colspan="6">Tax</td><td class="text-right"><strong>$7.15</strong></td></tr>
+                    <tr><td colspan="6"><strong>Order Total</strong></td><td class="text-right"><strong>$62.15</strong></td></tr>
+                </table>
+            </dd>
+        </dl>
+    </div>
+</div>
+<div class="row">
+    <div class="column">
+        <p class="text-right"><strong>Payment Method:</strong> Card ending in 2835</p>
+    </div>
+</div>
+<div class="row">
+    <div class="column">
+        <button type="submit" class="alert">Cancel</button>
+        <button type="submit" class="right">Confirm Order</button>
+    </div>
+</div>
+
+@*
+    <p>
+        @Html.ActionLink("Place Your Order", "ConfirmOrder", new { /* id = Model.PrimaryKey */ }) |
+        @Html.ActionLink("Change Shipping Address", "ShippingInfo")
+        @Html.ActionLink("Change Billing Info", "BillingInfo")
+    </p>
+*@
