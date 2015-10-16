@@ -159,6 +159,12 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
+        /* Member only page */
+        public async Task<ActionResult> MyEvents()
+        {
+            return View("Index", await db.Events.ToListAsync());
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
