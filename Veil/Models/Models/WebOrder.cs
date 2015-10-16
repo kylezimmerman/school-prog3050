@@ -65,12 +65,10 @@ namespace Veil.DataModels.Models
         public virtual Member Member { get; set; }
 
         /// <summary>
-        /// The Stripe Card Id used for this order.
-        /// This is part of the composite key for MemberCreditCard
+        /// The Id of the MemberCreditCard used for this order.
         /// </summary>
         [Required]
-        [MaxLength(255)]
-        public string StripeCardId { get; set; }
+        public Guid MemberCreditCardId { get; set; }
 
         /// <summary>
         /// Navigation property for the payment information for the order

@@ -19,12 +19,11 @@ namespace Veil.DataModels.Models
         /// The Id for this address entry
         /// </summary>
         [Key]
-        public virtual Guid AddressId { get; set; }
+        public virtual Guid Id { get; set; }
 
         /// <summary>
         /// The Id for the member whose address this is
         /// </summary>
-        [Key]
         public Guid MemberId { get; set; }
 
         /// <summary>

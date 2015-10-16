@@ -16,9 +16,14 @@ namespace Veil.DataModels.Models
     public class MemberCreditCard
     {
         /// <summary>
-        /// The Id of the Member this credit card belongs to
+        /// The MemberCreditCard's Id
         /// </summary>
         [Key]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// The Id of the Member this credit card belongs to
+        /// </summary>
         public Guid MemberId { get; set; }
 
         /// <summary>
@@ -29,7 +34,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Id for the Card as returned from Stripe
         /// </summary>
-        [Key]
+        [Required]
         [MaxLength(255)]
         public string StripeCardId { get; set; }
 

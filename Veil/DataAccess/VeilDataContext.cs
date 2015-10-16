@@ -25,6 +25,7 @@ namespace Veil.DataAccess
         [UsedImplicitly]
         public VeilDataContext() : base("name=VeilDatabase")
         {
+            /* Enum to Lookup Tables Setup */
             EnumToLookup enumToLookup = new EnumToLookup
             {
                 TableNamePrefix = "",
@@ -34,6 +35,7 @@ namespace Veil.DataAccess
 
             enumToLookup.Apply(this);
 
+            /* ASP.NET Identity Setup */
             RequireUniqueEmail = true;
         }
 
@@ -124,8 +126,8 @@ namespace Veil.DataAccess
 
         protected void SetupWebOrderModel(DbModelBuilder modelBuilder)
         {
-            // TODO: Make StripeChargeId case sensitive in the DB
-            // TODO: Make StripeCardId case sensitive in the DB
+            // TODO: StripeChargeId should be case sensitive in the DB
+            // TODO: StripeCardId should be case sensitive in the DB
 
             /* Primary Key:
              *
@@ -139,8 +141,8 @@ namespace Veil.DataAccess
             /* Foreign keys:
              *
              * Member: MemberId
-             * MemberAddress (ShippingAddress property): (ShippingAddressId, MemberId)
-             * MemberCreditCard: (CreditCardNumber, MemberId)
+             * MemberAddress (ShippingAddress property): ShippingAddressId
+             * MemberCreditCard: MemberCreditCardId
              */
 
             modelBuilder.Entity<WebOrder>().
@@ -151,12 +153,12 @@ namespace Veil.DataAccess
             modelBuilder.Entity<WebOrder>().
                 HasRequired(wo => wo.ShippingAddress).
                 WithMany().
-                HasForeignKey(wo => new { wo.ShippingAddressId, wo.MemberId });
+                HasForeignKey(wo => wo.ShippingAddressId);
 
             modelBuilder.Entity<WebOrder>().
                 HasRequired(wo => wo.MemberCreditCard).
                 WithMany().
-                HasForeignKey(wo => new { wo.StripeCardId, wo.MemberId });
+                HasForeignKey(wo => wo.MemberCreditCardId);
 
             modelBuilder.Entity<WebOrder>().
                 HasMany(wo => wo.OrderItems).
@@ -208,11 +210,11 @@ namespace Veil.DataAccess
         {
             /* Primary Key:
              *
-             * MemberId, AddressId
+             * Id
              */
             modelBuilder.Entity<MemberAddress>().
-                HasKey(ma => new { ma.AddressId, ma.MemberId }).
-                Property(ma => ma.AddressId).
+                HasKey(ma => ma.Id).
+                Property(ma => ma.Id).
                 HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 
             /* Foreign keys: 
@@ -275,17 +277,16 @@ namespace Veil.DataAccess
 
         protected void SetupMemberModel(DbModelBuilder modelBuilder)
         {
-            // TODO: Make StripeCustomerId case sensitive in the DB
+            // TODO: StripeCustomerId should be case sensitive in the DB
 
             /* Primary Key:
              *
-             * UserId (mapped as MemberId)
+             * UserId
              */
 
             modelBuilder.Entity<Member>().
                 HasKey(m => m.UserId).
                 Property(m => m.UserId).
-                HasColumnName("MemberId").
                 HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
             /* Foreign Keys:
@@ -613,15 +614,15 @@ namespace Veil.DataAccess
 
         protected void SetupMemberCreditCardModel(DbModelBuilder modelBuilder)
         {
-            // TODO: StripeCardId needs to be made case sensitive in the DB
+            // TODO: StripeCardId should be made case sensitive in the DB
 
             /* Primary Key:
              *
-             * CardNumber, MemberId
+             * Id
              */
             modelBuilder.Entity<MemberCreditCard>().
-                HasKey(cc => new { cc.StripeCardId, cc.MemberId }).
-                ToTable(nameof(MemberCreditCard));
+                Property(cc => cc.Id).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 
             /* Foreign Keys:
              *
