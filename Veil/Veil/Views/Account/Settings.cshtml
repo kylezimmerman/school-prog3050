@@ -1,95 +1,237 @@
 ﻿@model Veil.DataModels.Models.Identity.User
 
 @{
-    ViewBag.Title = "Settings";
+    ViewBag.Title = "Account Settings";
 }
 
-<h2>@ViewBag.Title</h2>
-
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>User</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.Id)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.EmailConfirmed, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.EmailConfirmed)
-                    @Html.ValidationMessageFor(model => model.EmailConfirmed, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.PhoneNumberConfirmed, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.PhoneNumberConfirmed)
-                    @Html.ValidationMessageFor(model => model.PhoneNumberConfirmed, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.TwoFactorEnabled, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.TwoFactorEnabled)
-                    @Html.ValidationMessageFor(model => model.TwoFactorEnabled, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
-        </div>
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
     </div>
-}
+</div>
+
+<div class="row panel">
+    <div class="column">
+        <h4>Your Profile</h4>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">First Name</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" value="Joe" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Last Name</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" value="Danger" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Email</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" value="example@veil.com" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Phone</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" value="519-383-2833" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-8 large-2 columns">
+                <span class="prefix">Allow friends to see your wishlist?</span>
+            </div>
+            <div class="small-4 large-10 columns">
+                <input type="checkbox" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-8 large-2 columns">
+                <span class="prefix">Recieve promotional emails?</span>
+            </div>
+            <div class="small-4 large-10 columns">
+                <input type="checkbox" />
+            </div>
+        </div>
+        <button type="submit">Save Profile</button>
+    </div>
+</div>
+<div class="row panel">
+    <div class="column">
+        <h4>Your Addresses</h4>
+        <select>
+            <option>823 Example St.</option>
+            <option>893 Example St.</option>
+            <option>15 Theother St.</option>
+        </select>
+        <button>Delete Selected Address</button>
+    </div>
+</div>
+<div class="row panel">
+    <div class="column">
+        <h4>New Address</h4>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Street Address</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">PO Box Number (optional)</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">City</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Country</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <select>
+                    <option>Canada</option>
+                    <option>United States</option>
+                </select>
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Province/State</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <select>
+                    <option>Alberta</option>
+                    <option>British Columbia</option>
+                    <option>Manitoba</option>
+                    <option>Neew Brunswick</option>
+                    <option>Newfoundland &amp; Labrador</option>
+                    <option>Ontario</option>
+                    <option>Prince Edward Island</option>
+                    <option>Quebec</option>
+                    <option>Saskatchewan</option>
+                    <option>Northwest Territories</option>
+                    <option>Nunavut</option>
+                    <option>Yukon</option>
+                </select>
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">Postal Code</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <button type="submit">Save Address</button>
+    </div>
+</div>
+
+@*
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>User</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.EmailConfirmed, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <div class="checkbox">
+                        @Html.EditorFor(model => model.EmailConfirmed)
+                        @Html.ValidationMessageFor(model => model.EmailConfirmed, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.PhoneNumberConfirmed, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <div class="checkbox">
+                        @Html.EditorFor(model => model.PhoneNumberConfirmed)
+                        @Html.ValidationMessageFor(model => model.PhoneNumberConfirmed, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.TwoFactorEnabled, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <div class="checkbox">
+                        @Html.EditorFor(model => model.TwoFactorEnabled)
+                        @Html.ValidationMessageFor(model => model.TwoFactorEnabled, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Save" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    }
+*@

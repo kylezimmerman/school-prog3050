@@ -12,7 +12,17 @@
 
 <!-- TODO: Make inputs look nice, current layout is very rough
     Keep consistent with ShippingInfo.cshtml -->
-
+<div class="row panel">
+    <div class="column">
+        <h4>Your Addresses</h4>
+        <select>
+            <option>823 Example St.</option>
+            <option>893 Example St.</option>
+            <option>15 Theother St.</option>
+        </select>
+        <button>Use This Address</button>
+    </div>
+</div>
 <div class="row">
     <div class="column">
         <div class="row collapse">
@@ -26,6 +36,14 @@
         <div class="row collapse">
             <div class="small-4 large-2 columns">
                 <span class="prefix">Street Address</span>
+            </div>
+            <div class="small-8 large-10 columns">
+                <input type="text" />
+            </div>
+        </div>
+        <div class="row collapse">
+            <div class="small-4 large-2 columns">
+                <span class="prefix">PO Box Number (optional)</span>
             </div>
             <div class="small-8 large-10 columns">
                 <input type="text" />
