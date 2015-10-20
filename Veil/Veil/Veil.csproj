@@ -216,6 +216,7 @@
     <Compile Include="Controllers\EventsController.cs" />
     <Compile Include="Controllers\FriendListController.cs" />
     <Compile Include="Controllers\GamesController.cs" />
+    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Models\CheckoutViewModel.cs" />
     <Compile Include="Controllers\WebOrdersController.cs" />
     <Compile Include="Controllers\WishlistController.cs" />
@@ -391,6 +392,7 @@
     <Content Include="Views\Checkout\ConfirmOrder.cshtml" />
     <Content Include="Views\FriendList\Index.cshtml" />
     <Content Include="Views\Checkout\ShippingInfo.cshtml" />
+    <Content Include="Views\Reports\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
