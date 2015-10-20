@@ -447,6 +447,12 @@
     <Content Include="Views\FriendList\Index.cshtml" />
     <Content Include="Views\Checkout\ShippingInfo.cshtml" />
     <Content Include="Views\Reports\Index.cshtml" />
+    <Content Include="Views\Reports\GameList.cshtml" />
+    <Content Include="Views\Reports\GameDetail.cshtml" />
+    <Content Include="Views\Reports\MemberList.cshtml" />
+    <Content Include="Views\Reports\MemberDetail.cshtml" />
+    <Content Include="Views\Reports\Wishlist.cshtml" />
+    <Content Include="Views\Reports\Sales.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
