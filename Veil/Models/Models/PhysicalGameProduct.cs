@@ -5,6 +5,7 @@
  *      Drew Matheson, 2015.10.03: Created
  */
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models

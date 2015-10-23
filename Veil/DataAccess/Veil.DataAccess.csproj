@@ -87,6 +87,38 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\IVeilDataAccess.cs" />
+    <Compile Include="EntityConfigurations\CartEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\CartItemEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\CompanyEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\DownloadGameProductEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\EmployeeEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\ESRBRatingEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\FriendshipEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\GameEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\GameProductEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\IdentityEntitiesConfig.cs" />
+    <Compile Include="EntityConfigurations\LocationEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\LocationTypeEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\MemberAddressEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\MemberCreditCardEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\MemberEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\OrderItemEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\PhysicalGameProductEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\ProductEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\ProductLocationInventoryEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\ProvinceEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\GameReviewEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\UserEntityConfig.cs" />
+    <Compile Include="EntityConfigurations\WebOrderEntityConfig.cs" />
+    <Compile Include="Migrations\201510232059098_InitialCreate.cs" />
+    <Compile Include="Migrations\201510232059098_InitialCreate.Designer.cs">
+      <DependentUpon>201510232059098_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201510232101027_AddPhysicalGameProductSkuSequence.cs" />
+    <Compile Include="Migrations\201510232101027_AddPhysicalGameProductSkuSequence.Designer.cs">
+      <DependentUpon>201510232101027_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
   </ItemGroup>
@@ -99,6 +131,14 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201510232059098_InitialCreate.resx">
+      <DependentUpon>201510232059098_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201510232101027_AddPhysicalGameProductSkuSequence.resx">
+      <DependentUpon>201510232101027_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

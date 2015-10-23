@@ -48,5 +48,7 @@ namespace Veil.DataAccess.Interfaces
         /// IDbSet of Roles
         /// </summary>
         IDbSet<GuidIdentityRole> Roles { get; }
+
+        long GetNextPhysicalGameProductSku();
     }
 }

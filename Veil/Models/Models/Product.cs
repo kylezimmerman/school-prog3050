@@ -68,18 +68,21 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The web price for a new version of this product.
         /// </summary>
+        [DataType(DataType.Currency)]
         public decimal NewWebPrice { get; set; }
 
         /// <summary>
         /// The web price for a pre-used version of this product.
         /// null if the product doesn't have a pre-used version.
         /// </summary>
+        [DataType(DataType.Currency)]
         public decimal? UsedWebPrice { get; set; }
 
         /// <summary>
         /// The URL for the box art image for this product
         /// </summary>
         [DataType(DataType.ImageUrl)]
+        [Url]
         public string BoxArtImageURL { get; set; }
 
         /// <summary>

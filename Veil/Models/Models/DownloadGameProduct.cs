@@ -19,6 +19,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Required]
         [DataType(DataType.Url)]
+        [Url]
         [MaxLength(2048)]
         public string DownloadLink { get; set; }
 
