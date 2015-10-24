@@ -3,14 +3,19 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
-using Veil.DataAccess;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
     public class GamesController : Controller
     {
-        private VeilDataContext db = new VeilDataContext();
+        protected readonly IVeilDataAccess db;
+
+        public GamesController(IVeilDataAccess veilDataAccess)
+        {
+            db = veilDataAccess;
+        }
 
         // GET: Games
         public async Task<ActionResult> Index()
@@ -91,7 +96,7 @@ namespace Veil.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(game).State = EntityState.Modified;
+                db.MarkAsModified(game);
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
@@ -123,15 +128,6 @@ namespace Veil.Controllers
             db.Games.Remove(game);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

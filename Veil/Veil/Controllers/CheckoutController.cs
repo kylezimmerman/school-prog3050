@@ -2,15 +2,19 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using Veil.DataAccess;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
-using Veil.Models;
 
 namespace Veil.Controllers
 {
     public class CheckoutController : Controller
     {
-        private VeilDataContext db = new VeilDataContext();
+        protected readonly IVeilDataAccess db;
+
+        public CheckoutController(IVeilDataAccess veilDataAccess)
+        {
+            db = veilDataAccess;
+        }
 
         // GET: Checkout/ShippingInfo
         [HttpGet]

@@ -168,7 +168,7 @@ namespace Veil.DataAccess.Migrations
                         Id = c.Guid(nullable: false, identity: true),
                         Name = c.String(nullable: false, maxLength: 512),
                         GameAvailabilityStatus = c.Int(nullable: false),
-                        ESRBRatingId = c.String(nullable: false, maxLength: 20),
+                        ESRBRatingId = c.String(nullable: false, maxLength: 8),
                         MinimumPlayerCount = c.Int(nullable: false),
                         MaximumPlayerCount = c.Int(nullable: false),
                         TrailerURL = c.String(nullable: false, maxLength: 2048),
@@ -193,7 +193,7 @@ namespace Veil.DataAccess.Migrations
                 "dbo.ESRBRating",
                 c => new
                     {
-                        RatingId = c.String(nullable: false, maxLength: 20),
+                        RatingId = c.String(nullable: false, maxLength: 8),
                         Description = c.String(nullable: false, maxLength: 64),
                     })
                 .PrimaryKey(t => t.RatingId);

@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using Veil.DataAccess;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
     public class WishlistController : Controller
     {
-        private VeilDataContext db = new VeilDataContext();
+        private IVeilDataAccess db;
+
+        public WishlistController(IVeilDataAccess veilDataAccess)
+        {
+            db = veilDataAccess;
+        }
 
         // GET: Wishlist
         public async Task<ActionResult> Index(Guid? userId)
@@ -41,15 +46,6 @@ namespace Veil.Controllers
             // TODO: Remove the specified item from the signed in user's wish list
 
             return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

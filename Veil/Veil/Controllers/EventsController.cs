@@ -3,14 +3,19 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
-using Veil.DataAccess;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
     public class EventsController : Controller
     {
-        private VeilDataContext db = new VeilDataContext();
+        protected readonly IVeilDataAccess db;
+
+        public EventsController(IVeilDataAccess veilDataAccess)
+        {
+            db = veilDataAccess;
+        }
 
         // GET: Events
         public async Task<ActionResult> Index()
@@ -25,15 +30,15 @@ namespace Veil.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Event @event = await db.Events.FindAsync(id);
-            /*if (@event == null)
+            Event theEvent = await db.Events.FindAsync(id);
+            /*if (theEvent == null)
             {
                 return HttpNotFound();
             }*/
 
             // TODO: Remove this and add back DB usage
-            @event = new Event();
-            return View(@event);
+            theEvent = new Event();
+            return View(theEvent);
         }
 
         // TODO: Member only action
@@ -49,7 +54,7 @@ namespace Veil.Controllers
 
 
             currentMember.RegisteredEvents.Add(currentEvent);
-            db.Entry(currentMember).State = EntityState.Modified;
+            db.MarkAsModified(currentMember);
 
             await db.SaveChangesAsync();
 
@@ -69,11 +74,17 @@ namespace Veil.Controllers
 
 
             currentMember.RegisteredEvents.Remove(currentEvent);
-            db.Entry(currentMember).State = EntityState.Modified;
+            db.MarkAsModified(currentMember);
 
             await db.SaveChangesAsync();
 
             return View("Details", currentEvent);
+        }
+
+        // TODO: Member only page
+        public async Task<ActionResult> MyEvents()
+        {
+            return View("Index", await db.Events.ToListAsync());
         }
 
         // TODO: Every action after this should be employee only
@@ -122,15 +133,15 @@ namespace Veil.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Description,Date,Duration")] Event @event)
+        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Description,Date,Duration")] Event editedEvent)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(@event).State = EntityState.Modified;
+                db.MarkAsModified(editedEvent);
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            return View(@event);
+            return View(editedEvent);
         }
 
         // GET: Events/Delete/5
@@ -157,21 +168,6 @@ namespace Veil.Controllers
             db.Events.Remove(@event);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
-        }
-
-        /* Member only page */
-        public async Task<ActionResult> MyEvents()
-        {
-            return View("Index", await db.Events.ToListAsync());
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

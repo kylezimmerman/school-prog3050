@@ -3,14 +3,19 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
-using Veil.DataAccess;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
     public class WebOrdersController : Controller
     {
-        private VeilDataContext db = new VeilDataContext();
+        private IVeilDataAccess db;
+
+        public WebOrdersController(IVeilDataAccess veilDataAccess)
+        {
+            db = veilDataAccess;
+        }
 
         // GET: WebOrders
         public async Task<ActionResult> Index()
@@ -58,15 +63,6 @@ namespace Veil.Controllers
             }
 
             return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

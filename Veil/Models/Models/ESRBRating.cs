@@ -22,11 +22,14 @@ namespace Veil.DataModels.Models
         /// </example>
         /// </summary>
         [Key]
-        [StringLength(maximumLength: 20, MinimumLength = 1)]
+        [StringLength(maximumLength: 8, MinimumLength = 1)]
         public string RatingId { get; set; }
 
         /// <summary>
         /// The longer description for the rating
+        /// <example>
+        ///     Everyone 10+, Teen, Mature
+        /// </example>
         /// </summary>
         [Required]
         [StringLength(maximumLength: 64, MinimumLength = 1)]

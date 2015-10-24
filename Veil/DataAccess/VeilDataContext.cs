@@ -10,7 +10,6 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
-using EfEnumToLookup.LookupGenerator;
 using JetBrains.Annotations;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -57,23 +56,13 @@ namespace Veil.DataAccess
         [UsedImplicitly]
         public VeilDataContext() : base("name=VeilDatabase")
         {
-            /* Enum to Lookup Tables Setup */
-            EnumToLookup enumToLookup = new EnumToLookup
-            {
-                TableNamePrefix = "",
-                TableNameSuffix = "_Lookup",
-                NameFieldLength = 64
-            };
-
-            enumToLookup.Apply(this);
-
             /* ASP.NET Identity Setup */
             RequireUniqueEmail = true;
         }
 
-        public void MarkAsModified(Game game)
+        public void MarkAsModified<T>(T entity) where T : class
         {
-            Entry(game).State = EntityState.Modified;
+            Entry<T>(entity).State = EntityState.Modified;
         }
 
         public long GetNextPhysicalGameProductSku()
@@ -91,16 +80,16 @@ namespace Veil.DataAccess
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>(); // Delete the one, cascade delete the many
             //modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>(); // Delete on either side cascade deletes the joining table
+            modelBuilder.HasDefaultSchema(SCHEMA_NAME);
 
-            // The specific EntityConfig chosen here was essentially random. We just needed something in the namespace
-            modelBuilder.Configurations.AddFromAssembly(typeof(GameEntityConfig).Assembly);
+            // The specific EntityConfig chosen here was random. We just needed something in the namespace
+            modelBuilder.Configurations.AddFromAssembly(typeof(ProductEntityConfig).Assembly);
 
             base.OnModelCreating(modelBuilder);
 
             // These must come after as Identity does its own initial config which we must override
             IdentityEntitiesConfig.Setup(modelBuilder);
             UserEntityConfig.Setup(modelBuilder);
-
         }
     }
 }
