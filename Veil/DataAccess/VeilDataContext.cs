@@ -62,7 +62,7 @@ namespace Veil.DataAccess
 
         public void MarkAsModified<T>(T entity) where T : class
         {
-            Entry<T>(entity).State = EntityState.Modified;
+            Entry(entity).State = EntityState.Modified;
         }
 
         public long GetNextPhysicalGameProductSku()

@@ -1,12 +1,11 @@
+using System.Runtime.CompilerServices;
 using EfEnumToLookup.LookupGenerator;
 using Veil.DataModels.Models;
 
+[assembly: InternalsVisibleTo("Veil.DataAccess.Tests")]
 namespace Veil.DataAccess.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
     internal sealed class Configuration : DbMigrationsConfiguration<VeilDataContext>
     {
@@ -101,7 +100,8 @@ namespace Veil.DataAccess.Migrations
             {
                 TableNamePrefix = "",
                 TableNameSuffix = "_Lookup",
-                NameFieldLength = 64
+                NameFieldLength = 64,
+                UseTransaction = true
             };
 
             enumToLookup.Apply(context);
