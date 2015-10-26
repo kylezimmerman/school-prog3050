@@ -24,12 +24,6 @@ namespace Veil.Controllers
             this.signInManager = signInManager;
         }
 
-        // GET: /Account/Settings
-        public ActionResult Settings()
-        {
-            return View();
-        }
-
         //
         // GET: /Account/Login
         [AllowAnonymous]
