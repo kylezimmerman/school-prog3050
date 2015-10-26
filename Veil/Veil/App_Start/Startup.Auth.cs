@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.DataProtection;
+using Microsoft.Practices.Unity;
 using Owin;
-using Veil.DataAccess;
 using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
+using Veil.Services;
 
 namespace Veil
 {
@@ -15,10 +18,13 @@ namespace Veil
         // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
         public void ConfigureAuth(IAppBuilder app)
         {
-            // Configure the db context, user manager and signin manager to use a single instance per request
-            app.CreatePerOwinContext(() => new VeilDataContext());
-            app.CreatePerOwinContext<VeilUserManager>(VeilUserManager.Create);
-            app.CreatePerOwinContext<VeilSignInManager>(VeilSignInManager.Create);
+            // Setup Unity to Configure IDataProtectionProvider for the VeilUserManager constructor
+            UnityConfig.GetConfiguredContainer().RegisterInstance(app.GetDataProtectionProvider());
+
+            // Configure the user manager to use a single instance per request
+            // TODO: Remove this if we make it all the way through the project without issues.
+            //       The guide I used for Identity+Unity setup had this in it, but I can't see why it would be needed.
+            //app.CreatePerOwinContext(() => DependencyResolver.Current.GetService<VeilUserManager>());
 
             // Enable the application to use a cookie to store information for the signed in user
             // and to use a cookie to temporarily store information about a user logging in with a third party login provider

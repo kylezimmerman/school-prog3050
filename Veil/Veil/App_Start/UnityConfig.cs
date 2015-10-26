@@ -1,27 +1,62 @@
-using System.Web.Mvc;
+using System;
+using System.Data.Entity;
+using System.Web;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Owin.Security;
 using Microsoft.Practices.Unity;
-using Unity.Mvc5;
-using Veil.Controllers;
 using Veil.DataAccess;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels.Models.Identity;
+using Veil.Services;
 
 namespace Veil
 {
     public static class UnityConfig
     {
-        public static void RegisterComponents()
-        {
-			var container = new UnityContainer();
+        private static Lazy<IUnityContainer> container = new Lazy<IUnityContainer>(
+            () =>
+            {
+                var container = new UnityContainer();
+                RegisterComponents(container);
+                return container;
+            }); 
 
+        public static IUnityContainer GetConfiguredContainer()
+        {
+            return container.Value;
+        }
+
+        public static void RegisterComponents(IUnityContainer container)
+        {
             // register all your components with the container here
             // it is NOT necessary to register your controllers
             // e.g. container.RegisterType<ITestService, TestService>();
 
+            // Used by controllers and anywhere except UserStore contruction
             container.RegisterType<IVeilDataAccess, VeilDataContext>(new HierarchicalLifetimeManager());
 
-            container.RegisterType<AccountController>(new InjectionConstructor()); // Setup unity to use the empty constructor
+            // Used when resolving the UserStore constructor
+            container.RegisterType<DbContext, VeilDataContext>(new HierarchicalLifetimeManager());
 
-            DependencyResolver.SetResolver(new UnityDependencyResolver(container));
+            container.RegisterType<VeilUserManager>();
+            container.RegisterType<VeilSignInManager>();
+
+            // Used by VeilUserManager
+            container.RegisterType<IIdentityMessageService, EmailService>();
+
+            // Note: IDataProtectionProvider required by VeilUserManager is setup in Startup.Auth.cs
+
+            // Create the UserStore for our identity types with the DbContext as IVeilDataAccess
+            container.RegisterType<
+                IUserStore<User, Guid>,
+                UserStore<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole,
+                        GuidIdentityUserClaim>
+                >(new InjectionConstructor(typeof(DbContext)));
+
+            // This is required for VeilSignInManager's constructor
+            container.RegisterType<IAuthenticationManager>(
+                new InjectionFactory(c => HttpContext.Current.GetOwinContext().Authentication));
         }
     }
 }
