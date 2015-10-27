@@ -209,6 +209,12 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Controllers\ManageCreditCardsController.cs" />
+    <Compile Include="Helpers\CountryExtensions.cs" />
+    <Compile Include="Models\ManageAddressViewModel.cs" />
+    <Compile Include="Models\ManageCreditCardViewModel.cs" />
+    <Compile Include="Services\Interfaces\IStripeService.cs" />
+    <Compile Include="Services\StripeService.cs" />
     <Compile Include="Services\VeilSignInManager.cs" />
     <Compile Include="Services\VeilUserManager.cs" />
     <Compile Include="Services\EmailService.cs" />
@@ -245,7 +251,6 @@
     </Content>
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="Content\Site.css" />
     <Content Include="sass\_normalize.scss" />
     <Content Include="sass\_foundation.scss" />
     <Content Include="sass\_foundation.mvc.scss" />
@@ -295,7 +300,6 @@
     <Content Include="sass\foundation\components\_block-grid.scss" />
     <Content Include="sass\foundation\components\_alert-boxes.scss" />
     <Content Include="sass\foundation\components\_accordion.scss" />
-    <Content Include="App_Readme\Foundation for Sites\readme.md" />
     <Content Include="PrivateAppSettings.config">
       <SubType>Designer</SubType>
     </Content>
@@ -417,7 +421,6 @@
     <Content Include="Views\Account\ForgotPassword.cshtml" />
     <Content Include="Views\Account\ForgotPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\SendCode.cshtml" />
@@ -427,7 +430,7 @@
     <Content Include="Views\Manage\ManageLogins.cshtml" />
     <Content Include="Views\Manage\SetPassword.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
-    <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\Shared\_LoginNavBarPartial.cshtml" />
     <Content Include="Views\Shared\_NavBarPartial.cshtml" />
     <Content Include="Views\Games\Create.cshtml" />
     <Content Include="Views\Games\Delete.cshtml" />
@@ -454,6 +457,10 @@
     <Content Include="Views\Reports\MemberDetail.cshtml" />
     <Content Include="Views\Reports\Wishlist.cshtml" />
     <Content Include="Views\Reports\Sales.cshtml" />
+    <Content Include="Views\Account\_RegisterAccountPartial.cshtml" />
+    <Content Include="Views\Account\_LoginAccountPartial.cshtml" />
+    <None Include="Views\Manage\ManageAddresses.cshtml" />
+    <None Include="Views\Manage\ManageCreditCards.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

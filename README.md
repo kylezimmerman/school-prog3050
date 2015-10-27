@@ -1,12 +1,6 @@
-# PROG3050
+# PROG3050 - Veil
 
 ### Project Timeline
-
-**Sept 25**
-- Team/ Project Initiation
-
-**Oct 16**
-- Project Requirement Analysis
 
 **Nov 13**
 - Team Design
@@ -21,3 +15,9 @@ https://docs.google.com/document/d/1kHlQPMBe7dQ8jpvGUNa2ZDrAGux7Vlwn9OXq5KZhnkE/
 
 ### Solution
 The two config files needed can be found in our Drive folder. Place these in the Veil project.
+
+#### Setup
+In order to register, create credit cards, or checkout completely a Stripe Secret Key must beed added to appSettings with the entry key as ```StripeApiKey```.
+
+In order to use our GearHost SQL Server, you must add the connection string for it to ```ConnectionStrings.config``` under the ```VeilDatabase``` entry. This connection string can be found in our Google Drive folder or by asking Drew for it.  
+**DO NOT COMMIT ```ConnectionStrings.config``` with this information in it**

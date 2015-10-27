@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
+using Veil.DataModels.Models;
 
 namespace Veil.Models
 {
@@ -46,17 +49,27 @@ namespace Veil.Models
         public string Email { get; set; }
     }
 
+    /// <summary>
+    ///     View Model used for the Login page
+    /// </summary>
+    public class LoginRegisterViewModel
+    {
+        public LoginViewModel LoginViewModel { get; set; }
+
+        public RegisterViewModel RegisterViewModel { get; set; }
+    }
+
     public class LoginViewModel
     {
         [Required]
         [Display(Name = "Email")]
         [EmailAddress]
-        public string Email { get; set; }
+        public string LoginEmail { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
-        public string Password { get; set; }
+        public string LoginPassword { get; set; }
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
@@ -64,6 +77,12 @@ namespace Veil.Models
 
     public class RegisterViewModel
     {
+        public RegisterViewModel()
+        {
+            ReceivePromotionalEmail = true;
+            WishListVisibility = WishListVisibility.FriendsOnly;
+        }
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
@@ -89,8 +108,15 @@ namespace Veil.Models
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+
+        [Display(Name = "Receive Promotional Emails?")]
+        public bool ReceivePromotionalEmail { get; set; }
+
+        [Display(Name = "Wish List Visibility")]
+        [DefaultValue(WishListVisibility.FriendsOnly)]
+        public WishListVisibility WishListVisibility { get; set; }
     }
 
     public class ResetPasswordViewModel
@@ -108,7 +134,7 @@ namespace Veil.Models
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }

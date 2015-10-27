@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using Veil.DataAccess.Interfaces;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -14,12 +16,14 @@ namespace Veil.Controllers
     {
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
+        private readonly IVeilDataAccess db;
 
 
-        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager)
+        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            db = veilDataAccess;
         }
 
         //
@@ -42,7 +46,7 @@ namespace Veil.Controllers
                 PhoneNumber = await userManager.GetPhoneNumberAsync(userId),
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
-                BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString())
+                BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
             };
             return View(model);
         }
@@ -186,6 +190,26 @@ namespace Veil.Controllers
                 CurrentLogins = userLogins,
                 OtherLogins = otherLogins
             });
+        }
+
+        public async Task<ActionResult> ManageAddresses()
+        {
+            ManageAddressViewModel model = new ManageAddressViewModel
+            {
+                Countries = await db.Countries.Include(c => c.Provinces).ToListAsync()
+            };
+
+            return View(model);
+        }
+
+        public async Task<ActionResult> ManageCreditCards()
+        {
+            ManageCreditCardViewModel model = new ManageCreditCardViewModel
+            {
+                Countries = await db.Countries.Include(c => c.Provinces).ToListAsync()
+            };
+
+            return View(model);
         }
 
         //

@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNet.Identity
+
 @if (Request.IsAuthenticated)
 {
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
@@ -6,11 +7,8 @@
     @Html.AntiForgeryToken()
 
     <ul class="right">
-        <li>
-            @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
-        </li>
         @*
-            TODO: Add back after prototyping
+            TODO: Add back after prototyping and add the employee only links
             <li class="has-dropdown">
                 <a href="#">My Stuff</a>
                 <ul class="dropdown">
@@ -21,7 +19,7 @@
                         @Html.ActionLink("My Orders", "Index", new { Controller = "WebOrders" })
                     </li>
                     <li>
-                        @Html.ActionLink("Account Settings", "Settings", new { Controller = "Account" })
+                        @Html.ActionLink("Account Settings", "Index", new { Controller = "Manage" })
                     </li>
                     <li>
                         @Html.ActionLink("Friends List", "Index", new { Controller = "FriendList" })
@@ -35,6 +33,7 @@
 else
 {
     <ul class="right">
-        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
-    </ul>
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })
+    </li>
+</ul>
 }

@@ -25,6 +25,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// Only the member and their friends can view the wishlist
         /// </summary>
+        [Display(Name = "Friends Only")]
         FriendsOnly,
 
         /// <summary>

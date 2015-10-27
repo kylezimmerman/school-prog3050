@@ -1,0 +1,36 @@
+﻿@model Veil.Models.LoginViewModel
+
+<div class="row">
+    <div class="column">
+        <h2>Log In</h2>
+    </div>
+</div>
+
+@using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <hr/>
+
+    @Html.ValidationMessage("loginModel") @* This must be kept in sync with AccountController's LOGIN_MODEL_ERRORS_KEY *@
+
+    <div class="row">
+        <div class="column">
+            @Html.LabelFor(m => m.LoginEmail)
+            @Html.TextBoxFor(m => m.LoginEmail)
+            @Html.ValidationMessageFor(m => m.LoginEmail, "", new { @class = "text-danger" })
+
+            @Html.LabelFor(m => m.LoginPassword)
+            @Html.PasswordFor(m => m.LoginPassword)
+            @Html.ValidationMessageFor(m => m.LoginPassword, "", new { @class = "text-danger" })
+
+            @Html.ActionLink("Forgot your password?", "ForgotPassword")
+
+            <div class="row collapse padding-top-1 checkbox">
+                @Html.CheckBoxFor(m => m.RememberMe)
+                @Html.LabelFor(m => m.RememberMe)
+            </div>
+
+            <button type="submit" name="logIn">Log In</button>
+        </div>
+    </div>
+}
