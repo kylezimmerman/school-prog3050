@@ -6,22 +6,32 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 using Veil.Models;
 using Veil.Services;
+using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
+        /* This must be kept in sync with the value used in _LoginAccountPartial */
+        private const string LOGIN_MODEL_ERRORS_KEY = "loginModel";
+
+        /* This must be kept in sync with the value used in _RegisterAccountParial */
+        private const string REGISTER_MODEL_ERRORS_KEY = "registerModel";
+
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
+        private readonly IStripeService stripeService;
 
-        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager )
+        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.stripeService = stripeService;
         }
 
         //
@@ -30,7 +40,11 @@ namespace Veil.Controllers
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
-            return View();
+            return View(new LoginRegisterViewModel
+            {
+                LoginViewModel = new LoginViewModel(),
+                RegisterViewModel = new RegisterViewModel()
+            });
         }
 
         //
@@ -42,12 +56,19 @@ namespace Veil.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                LoginRegisterViewModel viewModel = new LoginRegisterViewModel
+                {
+                    LoginViewModel = model,
+                    RegisterViewModel = new RegisterViewModel()
+                };
+
+                return View(viewModel);
             }
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+            SignInStatus result = await signInManager.PasswordSignInAsync(model.LoginEmail, model.LoginPassword, model.RememberMe, shouldLockout: false);
+
             switch (result)
             {
                 case SignInStatus.Success:
@@ -58,60 +79,16 @@ namespace Veil.Controllers
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Invalid login attempt.");
-                    return View(model);
-            }
-        }
+                    ModelState.AddModelError(LOGIN_MODEL_ERRORS_KEY, "Invalid login attempt.");
 
-        //
-        // GET: /Account/VerifyCode
-        [AllowAnonymous]
-        public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
-        {
-            // Require that the user has already logged in via username/password or external login
-            if (!await signInManager.HasBeenVerifiedAsync())
-            {
-                return View("Error");
-            }
-            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
-        }
+                    LoginRegisterViewModel viewModel = new LoginRegisterViewModel
+                    {
+                        LoginViewModel = model,
+                        RegisterViewModel = new RegisterViewModel()
+                    };
 
-        //
-        // POST: /Account/VerifyCode
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> VerifyCode(VerifyCodeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
+                    return View(viewModel);
             }
-
-            // The following code protects for brute force attacks against the two factor codes. 
-            // If a user enters incorrect codes for a specified amount of time then the user account 
-            // will be locked out for a specified amount of time. 
-            // You can configure the account lockout settings in IdentityConfig
-            var result = await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
-            switch (result)
-            {
-                case SignInStatus.Success:
-                    return RedirectToLocal(model.ReturnUrl);
-                case SignInStatus.LockedOut:
-                    return View("Lockout");
-                case SignInStatus.Failure:
-                default:
-                    ModelState.AddModelError("", "Invalid code.");
-                    return View(model);
-            }
-        }
-
-        //
-        // GET: /Account/Register
-        [AllowAnonymous]
-        public ActionResult Register()
-        {
-            return View();
         }
 
         //
@@ -123,10 +100,30 @@ namespace Veil.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new User { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
+                var user = new User
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName
+                };
+
                 var result = await userManager.CreateAsync(user, model.Password);
+
                 if (result.Succeeded)
                 {
+                    // TODO: Figure out what happens if this fails somehow
+                    string stripeCustomerId = stripeService.CreateCustomer(user);
+
+                    user.Member = new Member
+                    {
+                        ReceivePromotionalEmails = model.ReceivePromotionalEmail,
+                        WishListVisibility = model.WishListVisibility,
+                        StripeCustomerId = stripeCustomerId
+                    };
+
+                    await userManager.UpdateAsync(user);
+
                     await signInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
@@ -137,11 +134,18 @@ namespace Veil.Controllers
 
                     return RedirectToAction("Index", "Home");
                 }
-                AddErrors(result);
+
+                AddErrors(result, REGISTER_MODEL_ERRORS_KEY);
             }
 
+            LoginRegisterViewModel viewModel = new LoginRegisterViewModel
+            {
+                LoginViewModel = new LoginViewModel(),
+                RegisterViewModel = model
+            };
+
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return View("Login", viewModel);
         }
 
         //
@@ -231,7 +235,7 @@ namespace Veil.Controllers
             {
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
-            AddErrors(result);
+            AddErrors(result, "");
             return View();
         }
 
@@ -244,6 +248,61 @@ namespace Veil.Controllers
         }
 
         //
+        // POST: /Account/LogOff
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LogOff()
+        {
+            signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            return RedirectToAction("Index", "Home");
+        }
+
+        #region Currently Unused/Unimplemented TODO: remove anything remaining here at project end
+
+        //
+        // GET: /Account/VerifyCode
+        [AllowAnonymous]
+        public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
+        {
+            // Require that the user has already logged in via username/password or external login
+            if (!await signInManager.HasBeenVerifiedAsync())
+            {
+                return View("Error");
+            }
+            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+        }
+
+        //
+        // POST: /Account/VerifyCode
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> VerifyCode(VerifyCodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // The following code protects for brute force attacks against the two factor codes. 
+            // If a user enters incorrect codes for a specified amount of time then the user account 
+            // will be locked out for a specified amount of time. 
+            // You can configure the account lockout settings in IdentityConfig
+            var result = await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
+            switch (result)
+            {
+                case SignInStatus.Success:
+                    return RedirectToLocal(model.ReturnUrl);
+                case SignInStatus.LockedOut:
+                    return View("Lockout");
+                case SignInStatus.Failure:
+                default:
+                    ModelState.AddModelError("", "Invalid code.");
+                    return View(model);
+            }
+        }
+
+        //
         // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]
@@ -251,7 +310,10 @@ namespace Veil.Controllers
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
             // Request a redirect to the external login provider
-            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
+            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new
+            {
+                ReturnUrl = returnUrl
+            }));
         }
 
         //
@@ -286,7 +348,12 @@ namespace Veil.Controllers
             {
                 return View("Error");
             }
-            return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
+            return RedirectToAction("VerifyCode", new
+            {
+                Provider = model.SelectedProvider,
+                ReturnUrl = model.ReturnUrl,
+                RememberMe = model.RememberMe
+            });
         }
 
         //
@@ -309,7 +376,11 @@ namespace Veil.Controllers
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
-                    return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
+                    return RedirectToAction("SendCode", new
+                    {
+                        ReturnUrl = returnUrl,
+                        RememberMe = false
+                    });
                 case SignInStatus.Failure:
                 default:
                     // If the user does not have an account, then prompt the user to create an account
@@ -350,21 +421,11 @@ namespace Veil.Controllers
                         return RedirectToLocal(returnUrl);
                     }
                 }
-                AddErrors(result);
+                AddErrors(result, "");
             }
 
             ViewBag.ReturnUrl = returnUrl;
             return View(model);
-        }
-
-        //
-        // POST: /Account/LogOff
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult LogOff()
-        {
-            signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-            return RedirectToAction("Index", "Home");
         }
 
         //
@@ -374,28 +435,17 @@ namespace Veil.Controllers
         {
             return View();
         }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                userManager?.Dispose();
-
-                signInManager?.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
+        #endregion
 
         #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
-        private void AddErrors(IdentityResult result)
+        private void AddErrors(IdentityResult result, string tag)
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError("", error);
+                ModelState.AddModelError(tag, error);
             }
         }
 

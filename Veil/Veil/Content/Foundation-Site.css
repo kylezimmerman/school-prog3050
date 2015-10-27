@@ -6458,3 +6458,31 @@ th.hide-for-touch {
   -webkit-border-bottom-right-radius: 2px;
   border-bottom-right-radius: 2px; }
 
+.padding-top-1 {
+  padding-top: 1rem; }
+
+.form-group {
+  margin-bottom: 15px; }
+
+.radio,
+.checkbox {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px; }
+  .radio label,
+  .checkbox label {
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-weight: normal;
+    cursor: pointer; }
+
+.radio input[type="radio"],
+.checkbox input[type="checkbox"] {
+  float: left;
+  /*margin-left: -20px;*/
+  margin-top: 4px; }
+
+.radio + .radio,
+.checkbox + .checkbox {
+  margin-top: -5px; }
+

@@ -1,5 +1,5 @@
-﻿@using Veil.Models
-@model LoginViewModel
+﻿@using System.Web.Mvc.Html
+@model Veil.Models.LoginRegisterViewModel
 @{
     ViewBag.Title = "Log In";
 }
@@ -7,38 +7,17 @@
 <div class="row">
     <div class="medium-6 columns">
         <section id="loginForm">
-            <h2>@ViewBag.Title</h2>
-            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-            {
-                @Html.AntiForgeryToken()
-                <hr />
-                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-                <div class="row">
-                    <div class="column">
-                        @Html.LabelFor(m => m.Email)
-                        @Html.TextBoxFor(m => m.Email)
-                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
-                        
-                        @Html.LabelFor(m => m.Password)
-                        @Html.PasswordFor(m => m.Password)
-                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-                        @Html.ActionLink("Forgot your password?", "ForgotPassword")
-                       
-                        <br/>
-                        @Html.LabelFor(m => m.RememberMe)
-                        @Html.CheckBoxFor(m => m.RememberMe)
-                        <br />
-
-                        <button type="submit">Log In</button>
-                    </div>
-                </div>
-            }
+            @Html.Partial("_LoginAccountPartial", Model.LoginViewModel)
         </section>
     </div>
+
     <div class="medium-6 columns">
-        @Html.Partial("Register", new RegisterViewModel())
+        <section id="registerForm">
+            @Html.Partial("_RegisterAccountPartial", Model.RegisterViewModel)
+        </section>
     </div>
-    @*
+
+    @* TODO: Remove this if we don't add support for external logins
     <div class="col-md-4">
         <section id="socialLoginForm">
             @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
