@@ -4,3 +4,26 @@
 @import "foundation/_settings.scss";
 @import "foundation";
 @import "foundation.mvc";
+
+//Allows select lists and inputs to be expandable as well
+select.expand, input.expand {
+    max-width: none;
+    width: 100%;
+}
+
+//Remove the gap between the textbox and the error box
+.field-validation-error {
+    margin-top: -1rem;
+}
+
+/* Make text areas have a larger area to emphasis they're multiline*/
+textarea { 
+    min-height: 200px;
+}
+
+/* Allow */
+@media #{$small-only} {
+    .small-12 .prefix {
+        border-right: $input-prefix-border-size $input-prefix-border-type $input-prefix-border-color;
+    }
+}
