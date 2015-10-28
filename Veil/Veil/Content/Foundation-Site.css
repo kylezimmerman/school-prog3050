@@ -6486,3 +6486,20 @@ th.hide-for-touch {
 .checkbox + .checkbox {
   margin-top: -5px; }
 
+select.expand, input.expand {
+  max-width: none;
+  width: 100%; }
+
+.expand + .error {
+  max-width: none; }
+
+.field-validation-error {
+  margin-top: -1rem; }
+
+textarea {
+  min-height: 200px; }
+
+@media only screen and (max-width: 40em) {
+  .small-12 .prefix {
+    border-right: 1px solid #cccccc; } }
+

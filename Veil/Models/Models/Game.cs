@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Veil.DataModels.Validation;
 
@@ -33,17 +34,20 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's availability status
         /// </summary>
+        [DisplayName("Game Availablility")]
         public AvailabilityStatus GameAvailabilityStatus { get; set; }
 
         /// <summary>
         /// The Id for the Game's ESRB rating
         /// </summary>
         [Required]
+        [DisplayName("ESRB Rating")]
         public string ESRBRatingId { get; set; }
 
         /// <summary>
         /// Navigation property for the Game's ESRB rating
         /// </summary>
+        [DisplayName("ESRB Rating")]
         public virtual ESRBRating Rating { get; set; }
 
         /// <summary>
@@ -51,6 +55,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Range(1, int.MaxValue)]
         [Required]
+        [DisplayName("Minimum Player Count")]
         public int MinimumPlayerCount { get; set; }
 
         /// <summary>
@@ -59,6 +64,7 @@ namespace Veil.DataModels.Models
         [CompareValues(nameof(MinimumPlayerCount), ComparisonCriteria.GreatThanOrEqualTo)]
         [Range(1, int.MaxValue)]
         [Required]
+        [DisplayName("Maximum Player Count")]
         public int MaximumPlayerCount { get; set; }
 
         /// <summary>
@@ -68,6 +74,7 @@ namespace Veil.DataModels.Models
         [DataType(DataType.Url)]
         [Url]
         [MaxLength(2048)]
+        [DisplayName("Trailer URL")]
         public string TrailerURL { get; set; }
 
         /// <summary>
@@ -75,12 +82,15 @@ namespace Veil.DataModels.Models
         /// </summary>
         [MaxLength(140)]
         [Required]
+        [DisplayName("Short Description")]
         public string ShortDescription { get; set; }
 
         /// <summary>
         /// The Game's long description
         /// </summary>
         [MaxLength(2048)]
+        [DataType(DataType.MultilineText)]
+        [DisplayName("Long Description")]
         public string LongDescription { get; set; }
 
         /// <summary>
@@ -88,6 +98,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [DataType(DataType.Url)]
         [MaxLength(2048)]
+        [DisplayName("Primary Image URL")]
         public string PrimaryImageURL { get; set; }
 
         /// <summary>
