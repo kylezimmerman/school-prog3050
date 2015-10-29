@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Veil.DataModels.Models.Game>
+﻿@using Veil.DataModels.Models
+@model IEnumerable<Veil.DataModels.Models.Game>
 
 @{
     ViewBag.Title = "Games";
@@ -14,9 +15,9 @@
 
 
 <div class="row">
-    <a href="@Url.Action("Details", new { id = "7169E5E2-AFCF-4F55-9917-207D2076457F"})" class="button secondary text-left">
+    <a href="@Url.Action("Details", new {id = "7169E5E2-AFCF-4F55-9917-207D2076457F"})" class="button secondary text-left">
         <div class="small-3 columns">
-            <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art"/>
+            <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
         </div>
         <div class="small-6 columns">
             <h4>Game Name 1</h4>
@@ -24,28 +25,61 @@
         </div>
         <div class="small-3 columns">
             <p>Average Rating: 5.0</p>
-            <p><strong>New: </strong>Starting at $50
+            <p>
+                <strong>New: </strong>Starting at $50
             </p>
-            <p><strong>Used: </strong>Starting at $30
+            <p>
+                <strong>Used: </strong>Starting at $30
             </p>
         </div>
     </a>
 </div>
 
-@*
-<table class="table">
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.PrimaryImageURL)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ShortDescription)
-        </td>
-    </tr>
+@foreach (var game in Model)
+{
+    <div class="row panel">
+        <div class="medium-3 columns">
+            <a href="@Url.Action("Details", new {id = game.Id})" class="th">
+                <img src="@game.PrimaryImageURL" alt="Box Art" />
+            </a>
+        </div>
+        <div class="medium-6 columns">
+            <h4>@Html.ActionLink(game.Name, "Details", new { id = game.Id })</h4>
+            <p>@game.ShortDescription</p>
+        </div>
+        <div class="medium-3 columns">
+            <p>Average Rating: 5.0</p>
+            @if (game.GameSKUs.Any())
+            {
+                <p>
+                    <strong>New: </strong>Starting at @($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")
+                </p>
+            }
+            @if (game.GameSKUs.Any(sku => sku.UsedWebPrice.HasValue))
+            {
+                <p>
+                    <strong>Used: </strong>Starting at @($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")
+                </p>
+            }
+        </div>
+    </div>
+
 }
-</table>
+
+@*
+    <table class="table">
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.PrimaryImageURL)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ShortDescription)
+            </td>
+        </tr>
+    }
+    </table>
 *@
