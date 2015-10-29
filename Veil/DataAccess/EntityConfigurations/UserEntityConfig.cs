@@ -26,6 +26,13 @@ namespace Veil.DataAccess.EntityConfigurations
                 Property(u => u.Id).
                 HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 
+            // Cascade delete the user's GuidIdentityUserRoles when the user is deleted
+            modelBuilder.Entity<User>().
+                HasMany(u => u.Roles).
+                WithRequired().
+                HasForeignKey(r => r.UserId).
+                WillCascadeOnDelete(true);
+
             modelBuilder.Entity<User>().
                 Property(u => u.Email).
                 IsRequired();

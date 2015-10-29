@@ -1,7 +1,7 @@
 namespace Veil.DataAccess.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     /// Migration which sets up the database to it base version. 
     /// This is equivalent to how EF sets it up without migrations enable
@@ -345,7 +345,7 @@ namespace Veil.DataAccess.Migrations
                         RoleId = c.Guid(nullable: false),
                     })
                 .PrimaryKey(t => new { t.UserId, t.RoleId })
-                .ForeignKey("dbo.User", t => t.UserId)
+                .ForeignKey("dbo.User", t => t.UserId, cascadeDelete: true)
                 .ForeignKey("dbo.Role", t => t.RoleId)
                 .Index(t => t.UserId)
                 .Index(t => t.RoleId);

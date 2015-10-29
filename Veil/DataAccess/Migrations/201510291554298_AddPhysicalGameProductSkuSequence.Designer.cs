@@ -13,7 +13,7 @@ namespace Veil.DataAccess.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201510240134180_AddPhysicalGameProductSkuSequence"; }
+            get { return "201510291554298_AddPhysicalGameProductSkuSequence"; }
         }
         
         string IMigrationMetadata.Source
