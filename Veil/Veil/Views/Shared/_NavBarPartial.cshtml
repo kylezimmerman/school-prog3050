@@ -29,24 +29,6 @@
             <li class="active">
                 @Html.ActionLink("Cart (1)", "Index", new { Controller = "Cart" })
             </li>
-            <!-- TODO: Remove after prototyping as it should only exist in the logged in partial -->
-            <li class="has-dropdown">
-                <a href="#">My Stuff</a>
-                <ul class="dropdown">
-                    <li>
-                        @Html.ActionLink("Wishlist", "Index", new { Controller = "Wishlist" })
-                    </li>
-                    <li>
-                        @Html.ActionLink("My Orders", "Index", new { Controller = "WebOrders" })
-                    </li>
-                    <li>
-                        @Html.ActionLink("Account Settings", "Index", new { Controller = "Manage" })
-                    </li>
-                    <li>
-                        @Html.ActionLink("Friends List", "Index", new { Controller = "FriendList" })
-                    </li>
-                </ul>
-            </li>
         </ul>
 
         <!-- Left Nav Section -->

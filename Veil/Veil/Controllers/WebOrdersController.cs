@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
@@ -63,6 +64,21 @@ namespace Veil.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> UnprocessedOrders()
+        {
+            var unprocessedOrders =
+                await db.WebOrders.Where(wo => wo.OrderStatus == OrderStatus.PendingProcessing).ToListAsync();
+
+            return View(unprocessedOrders);
+        }
+
+        public async Task<ActionResult> UnprocessedOrderDetails(long? id)
+        {
+            WebOrder order = await db.WebOrders.FindAsync(id);
+
+            return View(order);
         }
     }
 }

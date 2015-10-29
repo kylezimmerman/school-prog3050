@@ -8,6 +8,7 @@
 using System;
 using System.Data.Entity;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 
@@ -142,6 +143,11 @@ namespace Veil.DataAccess.Interfaces
         ///     IDbSet of Roles
         /// </summary>
         IDbSet<GuidIdentityRole> Roles { get; }
+
+        /// <summary>
+        ///     The UserStore for Veil's Data Access Layer
+        /// </summary>
+        IUserStore<User, Guid> UserStore { get; }
 
         /// <summary>
         ///     Marks an entity state as modified

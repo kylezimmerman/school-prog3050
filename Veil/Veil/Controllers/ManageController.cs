@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -30,16 +31,38 @@ namespace Veil.Controllers
         // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
-            ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : "";
+            string statusMessage;
+
+            switch (message)
+            {
+                case ManageMessageId.AddPhoneSuccess:
+                    statusMessage = "Your phone number was added.";
+                    break;
+                case ManageMessageId.ChangePasswordSuccess:
+                    statusMessage = "Your password has been changed.";
+                    break;
+                case ManageMessageId.SetTwoFactorSuccess:
+                    statusMessage = "Your two-factor authentication provider has been set.";
+                    break;
+                case ManageMessageId.SetPasswordSuccess:
+                    statusMessage = "Your password has been set.";
+                    break;
+                case ManageMessageId.RemoveLoginSuccess:
+                    statusMessage = "A login has been removed.";
+                    break;
+                case ManageMessageId.RemovePhoneSuccess:
+                    statusMessage = "Your phone number was removed.";
+                    break;
+                case ManageMessageId.Error:
+                    statusMessage = "An error has occurred.";
+                    break;
+                default:
+                    statusMessage = "";
+                    break;
+            }
 
             var userId = IIdentityExtensions.GetUserId(User.Identity);
+
             var model = new IndexViewModel
             {
                 HasPassword = HasPassword(),
@@ -47,6 +70,7 @@ namespace Veil.Controllers
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
                 BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
+                StatusMessage = statusMessage
             };
             return View(model);
         }
@@ -58,10 +82,10 @@ namespace Veil.Controllers
         public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
         {
             ManageMessageId? message;
-            var result = await userManager.RemoveLoginAsync(IIdentityExtensions.GetUserId(User.Identity), new UserLoginInfo(loginProvider, providerKey));
+            var result = await userManager.RemoveLoginAsync(GetUserId(), new UserLoginInfo(loginProvider, providerKey));
             if (result.Succeeded)
             {
-                var user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+                var user = await userManager.FindByIdAsync(GetUserId());
                 if (user != null)
                 {
                     await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -81,8 +105,8 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EnableTwoFactorAuthentication()
         {
-            await userManager.SetTwoFactorEnabledAsync(IIdentityExtensions.GetUserId(User.Identity), true);
-            var user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            await userManager.SetTwoFactorEnabledAsync(GetUserId(), true);
+            var user = await userManager.FindByIdAsync(GetUserId());
             if (user != null)
             {
                 await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -96,8 +120,8 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DisableTwoFactorAuthentication()
         {
-            await userManager.SetTwoFactorEnabledAsync(IIdentityExtensions.GetUserId(User.Identity), false);
-            var user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            await userManager.SetTwoFactorEnabledAsync(GetUserId(), false);
+            var user = await userManager.FindByIdAsync(GetUserId());
             if (user != null)
             {
                 await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -122,10 +146,10 @@ namespace Veil.Controllers
             {
                 return View(model);
             }
-            var result = await userManager.ChangePasswordAsync(IIdentityExtensions.GetUserId(User.Identity), model.OldPassword, model.NewPassword);
+            var result = await userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
             if (result.Succeeded)
             {
-                var user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+                var user = await userManager.FindByIdAsync(GetUserId());
                 if (user != null)
                 {
                     await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -151,10 +175,10 @@ namespace Veil.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await userManager.AddPasswordAsync(IIdentityExtensions.GetUserId(User.Identity), model.NewPassword);
+                var result = await userManager.AddPasswordAsync(GetUserId(), model.NewPassword);
                 if (result.Succeeded)
                 {
-                    var user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+                    var user = await userManager.FindByIdAsync(GetUserId());
                     if (user != null)
                     {
                         await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -172,23 +196,19 @@ namespace Veil.Controllers
         // GET: /Manage/ManageLogins
         public async Task<ActionResult> ManageLogins(ManageMessageId? message)
         {
-            ViewBag.StatusMessage =
-                message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : "";
+            ViewBag.StatusMessage = message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed." : message == ManageMessageId.Error ? "An error has occurred." : "";
 
-            var user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            var user = await userManager.FindByIdAsync(GetUserId());
             if (user == null)
             {
                 return View("Error");
             }
-            var userLogins = await userManager.GetLoginsAsync(IIdentityExtensions.GetUserId(User.Identity));
+            var userLogins = await userManager.GetLoginsAsync(GetUserId());
             var otherLogins = signInManager.AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
             {
-                CurrentLogins = userLogins,
-                OtherLogins = otherLogins
+                CurrentLogins = userLogins, OtherLogins = otherLogins
             });
         }
 
@@ -219,14 +239,14 @@ namespace Veil.Controllers
         public ActionResult LinkLogin(string provider)
         {
             // Request a redirect to the external login provider to link a login for the current user
-            return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), IIdentityExtensions.GetUserId(User.Identity).ToString());
+            return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), GetUserId().ToString());
         }
 
         //
         // GET: /Manage/LinkLoginCallback
         public async Task<ActionResult> LinkLoginCallback()
         {
-            var loginInfo = await signInManager.AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, IIdentityExtensions.GetUserId(User.Identity).ToString());
+            var loginInfo = await signInManager.AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, GetUserId().ToString());
             if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
@@ -235,17 +255,30 @@ namespace Veil.Controllers
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
 
-        protected override void Dispose(bool disposing)
+        //
+        // POST: /Manage/RememberBrowser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult RememberBrowser()
         {
-            if (disposing)
-            {
-                userManager?.Dispose();
-            }
+            var rememberBrowserIdentity = signInManager.AuthenticationManager.CreateTwoFactorRememberBrowserIdentity(GetUserId().ToString());
+            signInManager.AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = true }, rememberBrowserIdentity);
 
-            base.Dispose(disposing);
+            return RedirectToAction("Index", "Manage");
         }
 
-#region Helpers
+        //
+        // POST: /Manage/ForgetBrowser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ForgetBrowser()
+        {
+            signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.TwoFactorRememberBrowserCookie);
+
+            return RedirectToAction("Index", "Manage");
+        }
+
+        #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
@@ -255,6 +288,11 @@ namespace Veil.Controllers
             {
                 ModelState.AddModelError("", error);
             }
+        }
+
+        private Guid GetUserId()
+        {
+            return IIdentityExtensions.GetUserId(User.Identity);
         }
 
         private bool HasPassword()
@@ -287,7 +325,6 @@ namespace Veil.Controllers
             RemovePhoneSuccess,
             Error
         }
-
-#endregion
+        #endregion
     }
 }

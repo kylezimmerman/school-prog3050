@@ -4,7 +4,7 @@ using Microsoft.AspNet.Identity;
 
 namespace Veil.Helpers
 {
-    internal static class IIdentityExtensions
+    public static class IIdentityExtensions
     {
         public static Guid GetUserId(this IIdentity identity)
         {

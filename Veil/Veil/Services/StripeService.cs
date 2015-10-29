@@ -9,6 +9,18 @@ namespace Veil.Services
     [UsedImplicitly]
     public class StripeService : IStripeService
     {
+        /// <summary>
+        ///     Creates a Stripe customer for the given user
+        /// </summary>
+        /// <param name="user">
+        ///     The User to create a Stripe customer for
+        /// </param>
+        /// <returns>
+        ///     The Stripe customer Id for the user
+        /// </returns>
+        /// <exception cref="StripeException">
+        ///     Thrown if Stripe returns any errors
+        /// </exception>
         public string CreateCustomer(User user)
         {
             var myCustomer = new StripeCustomerCreateOptions
