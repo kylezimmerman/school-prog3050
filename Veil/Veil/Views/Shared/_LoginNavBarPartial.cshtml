@@ -1,17 +1,41 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@using Veil.DataModels
 
 @if (Request.IsAuthenticated)
 {
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {
-    @Html.AntiForgeryToken()
+        @Html.AntiForgeryToken()
+    }
+
+
 
     <ul class="right">
-        @*
-            TODO: Add back after prototyping and add the employee only links
-            <li class="has-dropdown">
-                <a href="#">My Stuff</a>
-                <ul class="dropdown">
+        <li class="has-dropdown">
+            <a href="#">My Stuff</a>
+            <ul class="dropdown">
+                @if (Context.IsDebuggingEnabled)
+                {
+                    <li style="color:white;">Debugging is Enabled</li>
+                }
+
+                @if (User.IsInRole(VeilRoles.EmployeeRole) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+                {
+                    <li>
+                        @Html.ActionLink("Create Game", "Create", new { Controller = "Games" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Create Event", "Create", new { Controller = "Events" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Reports", "Index", new { Controller = "Reports" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Unprocessed Orders", "UnprocessedOrders", new { Controller = "WebOrders" })
+                    </li>
+                }
+
+                @if (User.IsInRole(VeilRoles.MemberRole) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+                {
                     <li>
                         @Html.ActionLink("Wishlist", "Index", new { Controller = "Wishlist" })
                     </li>
@@ -24,11 +48,13 @@
                     <li>
                         @Html.ActionLink("Friends List", "Index", new { Controller = "FriendList" })
                     </li>
-                </ul>
-            </li>*@
-        <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
-    </ul>
-    }
+                }
+            </ul>
+            </li>
+            <li>
+                <a href="javascript:document.getElementById('logoutForm').submit()">Log off</a>
+            </li>
+        </ul>
 }
 else
 {

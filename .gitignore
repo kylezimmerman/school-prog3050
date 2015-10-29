@@ -255,3 +255,9 @@ bower_components/
 **/ConnectionStrings.config
 **/PrivateAppSettings.config
 **/veil.publishsettings
+
+###########
+## Compiled css files
+###########
+**/Foundation-Site.css
+**/Foundation-Site.min.css

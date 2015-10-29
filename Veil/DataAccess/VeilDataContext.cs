@@ -11,6 +11,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -53,11 +54,16 @@ namespace Veil.DataAccess
         public DbSet<Tag> Tags { get; set; }
         public DbSet<WebOrder> WebOrders { get; set; }
 
+        public IUserStore<User, Guid> UserStore { get; }
+
         [UsedImplicitly]
         public VeilDataContext() : base("name=VeilDatabase")
         {
             /* ASP.NET Identity Setup */
             RequireUniqueEmail = true;
+
+            UserStore = new UserStore<User, GuidIdentityRole, Guid, GuidIdentityUserLogin,
+                                      GuidIdentityUserRole, GuidIdentityUserClaim>(this);
         }
 
         public void MarkAsModified<T>(T entity) where T : class
@@ -90,6 +96,16 @@ namespace Veil.DataAccess
             // These must come after as Identity does its own initial config which we must override
             IdentityEntitiesConfig.Setup(modelBuilder);
             UserEntityConfig.Setup(modelBuilder);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                UserStore.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

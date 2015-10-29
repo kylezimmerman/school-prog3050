@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security.DataProtection;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models.Identity;
 
 namespace Veil.Services
@@ -13,8 +14,8 @@ namespace Veil.Services
     [UsedImplicitly]
     public class VeilUserManager : UserManager<User, Guid>
     {
-        public VeilUserManager(IUserStore<User, Guid> store, IIdentityMessageService emailService, IDataProtectionProvider dataProtectionProvider)
-            : base(store)
+        public VeilUserManager(IVeilDataAccess veilDataAccess, IIdentityMessageService emailService, IDataProtectionProvider dataProtectionProvider)
+            : base(veilDataAccess.UserStore)
         {
             // Configure the application user manager used in this application. 
 
@@ -29,8 +30,8 @@ namespace Veil.Services
             PasswordValidator = new PasswordValidator
             {
                 // TODO: Add these back when we are in release mode
-#if DEBUG
                 RequiredLength = 6,
+#if !DEBUG
                 RequireNonLetterOrDigit = true,
                 RequireDigit = true,
                 RequireLowercase = true,

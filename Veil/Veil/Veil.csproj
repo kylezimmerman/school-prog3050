@@ -98,6 +98,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -244,10 +245,6 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\Foundation-Site.css" />
-    <Content Include="Content\Foundation-Site.min.css">
-      <DependentUpon>Foundation-Site.css</DependentUpon>
-    </Content>
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="sass\_normalize.scss" />
@@ -461,9 +458,12 @@
     <Content Include="Views\Games\CreatePhysicalGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
+    <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
+    <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">

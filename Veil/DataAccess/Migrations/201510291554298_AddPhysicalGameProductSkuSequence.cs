@@ -14,7 +14,7 @@ namespace Veil.DataAccess.Migrations
                 "NO CYCLE " +
                 "CACHE 20");
         }
-        
+
         public override void Down()
         {
             Sql($"DROP SEQUENCE {VeilDataContext.SCHEMA_NAME}.{VeilDataContext.PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME}");

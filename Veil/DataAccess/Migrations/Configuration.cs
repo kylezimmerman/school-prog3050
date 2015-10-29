@@ -1,7 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
 using EfEnumToLookup.LookupGenerator;
+using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.DataModels.Models.Identity;
 
 [assembly: InternalsVisibleTo("Veil.DataAccess.Tests")]
 namespace Veil.DataAccess.Migrations
@@ -384,6 +386,24 @@ namespace Veil.DataAccess.Migrations
                     Name = "Online Operations"
                 }
             );
+
+            context.Roles.AddOrUpdate(
+                r => r.Id,
+                new GuidIdentityRole
+                {
+                    Id = Guid.ParseExact("455b072e-de7d-e511-80df-001cd8b71da6", "D"),
+                    Name = VeilRoles.AdminRole
+                },
+                new GuidIdentityRole
+                {
+                    Id = Guid.ParseExact("465b072e-de7d-e511-80df-001cd8b71da6", "D"),
+                    Name = VeilRoles.EmployeeRole
+                },
+                new GuidIdentityRole
+                {
+                    Id = Guid.ParseExact("475b072e-de7d-e511-80df-001cd8b71da6", "D"),
+                    Name = VeilRoles.MemberRole
+                });
 
             /* Enum to Lookup Tables Setup */
             EnumToLookup enumToLookup = new EnumToLookup

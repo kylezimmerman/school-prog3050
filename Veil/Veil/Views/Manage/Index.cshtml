@@ -12,7 +12,7 @@
 </div>
 
 @* TODO: This was just copy pasted from the Manage/Index view and should be styled*@
-<p class="text-success">@ViewBag.StatusMessage</p>
+<p class="text-success">@Model.StatusMessage</p>
 
 <div class="row panel">
     <div class="column">
@@ -87,14 +87,14 @@
                 <span class="prefix">Password</span>
             </div>
             <div class="small-4 large-9 columns">
-                    @if (Model.HasPassword)
-                    {
-                        @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Create", "SetPassword", null, new { @class = "button postfix"})
-                    }
+                @if (Model.HasPassword)
+                {
+                    @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
+                }
+                else
+                {
+                    @Html.ActionLink("Create", "SetPassword", null, new { @class = "button postfix"})
+                }
             </div>
         </div>
 
@@ -140,10 +140,37 @@
             </div>
         </div>
 
+        @if (Model.TwoFactor)
+        {
+            <div class="row collapse">
+                <div class="small-8 large-3 columns">
+                    <span class="prefix">Browser Remembered</span>
+                </div>
+                <div class="small-4 large-9 columns">
+                    @if (Model.BrowserRemembered)
+                    {
+                        using (Html.BeginForm("ForgetBrowser", "Manage", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="postfix">Browser is curently remembered for two factor: Forget Browser</button>
+                        }
+                    }
+                    else
+                    {
+                        using (Html.BeginForm("RememberBrowser", "Manage", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="postfix">Browser is curently not remembered for two factor: Remember Browser</button>
+                        }
+                    }
+                </div>
+            </div>
+        }
+
         <div class="row collapse">
-            <div class="small-8 large-3 columns">
-                <span>Recieve promotional emails?</span>
-                <input type="checkbox" />
+            <div class="checkbox">
+                @Html.CheckBoxFor(m => m.ReceivePromotionalEmail, new { value = Model.ReceivePromotionalEmail })
+                @Html.LabelFor(m => m.ReceivePromotionalEmail)
             </div>
         </div>
         <button type="submit">Save Profile</button>

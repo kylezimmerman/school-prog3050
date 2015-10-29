@@ -104,6 +104,7 @@
     <Compile Include="Models\Tag.cs" />
     <Compile Include="Validation\CompareValuesAttribute.cs" />
     <Compile Include="Models\WebOrder.cs" />
+    <Compile Include="VeilRoles.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

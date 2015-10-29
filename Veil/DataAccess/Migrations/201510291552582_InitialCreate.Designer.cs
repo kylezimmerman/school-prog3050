@@ -13,7 +13,7 @@ namespace Veil.DataAccess.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201510240132580_InitialCreate"; }
+            get { return "201510291552582_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

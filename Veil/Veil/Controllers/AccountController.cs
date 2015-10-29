@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using Stripe;
+using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 using Veil.Models;
@@ -26,12 +31,14 @@ namespace Veil.Controllers
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
         private readonly IStripeService stripeService;
+        private readonly IVeilDataAccess db;
 
-        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService)
+        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService, IVeilDataAccess veilDataAccess)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.stripeService = stripeService;
+            db = veilDataAccess;
         }
 
         //
@@ -69,6 +76,17 @@ namespace Veil.Controllers
             // To enable password failures to trigger account lockout, change to shouldLockout: true
             SignInStatus result = await signInManager.PasswordSignInAsync(model.LoginEmail, model.LoginPassword, model.RememberMe, shouldLockout: false);
 
+            if (result == SignInStatus.Success && await EnsureCorrectRolesAsync(model.LoginEmail))
+            {
+                /* TODO: This is an ugly hack to make the added roles be in immediate effect.
+                   I'm not sure of a better way to accomplish this */
+                signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+
+                await
+                    signInManager.PasswordSignInAsync(
+                        model.LoginEmail, model.LoginPassword, model.RememberMe, shouldLockout: false);
+            }
+
             switch (result)
             {
                 case SignInStatus.Success:
@@ -91,6 +109,25 @@ namespace Veil.Controllers
             }
         }
 
+        /// <summary>
+        ///     Redisplays the Login View
+        /// </summary>
+        /// <remarks>
+        ///     This is required because we don't redirect back to Login on failed postback to Register
+        /// </remarks>
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult Register()
+        {
+            var viewModel = new LoginRegisterViewModel
+            {
+                LoginViewModel = new LoginViewModel(),
+                RegisterViewModel = new RegisterViewModel()
+            };
+
+            return View("Login", viewModel);
+        }
+
         //
         // POST: /Account/Register
         [HttpPost]
@@ -98,6 +135,9 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            LoginRegisterViewModel viewModel;
+            bool stripeCustomerScopeSuccessful = false;
+
             if (ModelState.IsValid)
             {
                 var user = new User
@@ -108,37 +148,79 @@ namespace Veil.Controllers
                     LastName = model.LastName
                 };
 
-                var result = await userManager.CreateAsync(user, model.Password);
+                IdentityResult result;
 
-                if (result.Succeeded)
+                // We need a transaction as we don't want to create the User if we fail to create and
+                // save a Stripe customer for them
+                using (TransactionScope stripeCustomerScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    // TODO: Figure out what happens if this fails somehow
-                    string stripeCustomerId = stripeService.CreateCustomer(user);
+                    result = await userManager.CreateAsync(user, model.Password);
 
-                    user.Member = new Member
+                    if (result.Succeeded)
                     {
-                        ReceivePromotionalEmails = model.ReceivePromotionalEmail,
-                        WishListVisibility = model.WishListVisibility,
-                        StripeCustomerId = stripeCustomerId
-                    };
+                        string stripeCustomerId;
 
-                    await userManager.UpdateAsync(user);
+                        try
+                        {
+                            stripeCustomerId = stripeService.CreateCustomer(user);
+                        }
+                        catch (StripeException ex)
+                        {
+                            // TODO: We probably don't want to not show users the raw error message
+                            ModelState.AddModelError(REGISTER_MODEL_ERRORS_KEY, $"Stripe Error: {ex.Message}");
 
-                    await signInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                    // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                            viewModel = new LoginRegisterViewModel
+                            {
+                                LoginViewModel = new LoginViewModel(),
+                                RegisterViewModel = model
+                            };
 
-                    return RedirectToAction("Index", "Home");
+                            return View("Login", viewModel);
+                        }
+
+                        user.Member = new Member
+                        {
+                            ReceivePromotionalEmails = model.ReceivePromotionalEmail,
+                            WishListVisibility = model.WishListVisibility,
+                            StripeCustomerId = stripeCustomerId
+                        };
+
+                        result = await userManager.UpdateAsync(user);
+
+                        if (result.Succeeded)
+                        {
+                            // Commit the transaction as we successfully created the Stripe customer and
+                            // commited that information in a Member for the user.
+                            stripeCustomerScope.Complete();
+
+                            stripeCustomerScopeSuccessful = true;
+                        }
+                    }
+                }
+
+                // We don't need this portion to be inside stripeCustomerScope 
+                if (result.Succeeded && stripeCustomerScopeSuccessful)
+                {
+                    result = await userManager.AddToRoleAsync(user.Id, VeilRoles.MemberRole);
+
+                    if (result.Succeeded)
+                    {
+                        await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
+                        // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+                        // Send an email with this link
+                        // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                        // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                        // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+                        return RedirectToAction("Index", "Home");
+                    }
                 }
 
                 AddErrors(result, REGISTER_MODEL_ERRORS_KEY);
             }
 
-            LoginRegisterViewModel viewModel = new LoginRegisterViewModel
+            viewModel = new LoginRegisterViewModel
             {
                 LoginViewModel = new LoginViewModel(),
                 RegisterViewModel = model
@@ -157,7 +239,9 @@ namespace Veil.Controllers
             {
                 return View("Error");
             }
+
             var result = await userManager.ConfirmEmailAsync(userId, code);
+
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
@@ -436,6 +520,68 @@ namespace Veil.Controllers
             return View();
         }
         #endregion
+
+        /// <summary>
+        ///     Ensures the user is only in the member or employee roles if they are a member or an employee
+        /// </summary>
+        /// <param name="loginEmail">
+        ///     The email address for the user
+        /// </param>
+        /// <returns>
+        ///     True if roles were modified, false otherwise
+        /// </returns>
+        private async Task<bool> EnsureCorrectRolesAsync(string loginEmail)
+        {
+            bool rolesChanged = false;
+
+            var userInfo = await db.Users.
+                Where(u => u.Email == loginEmail).
+                Select(u => new
+                {
+                    Id = u.Id,
+                    IsMember = u.Member != null,
+                    IsEmployee = u.Employee != null
+                }).
+                FirstOrDefaultAsync();
+
+            if (userInfo == null)
+            {
+                return false;
+            }
+
+
+            bool isInMemberRole = await userManager.IsInRoleAsync(userInfo.Id, VeilRoles.MemberRole);
+            bool isInEmployeeRole = await userManager.IsInRoleAsync(userInfo.Id, VeilRoles.EmployeeRole);
+
+            if (!isInMemberRole && userInfo.IsMember)
+            {
+                await userManager.AddToRoleAsync(userInfo.Id, VeilRoles.MemberRole);
+                rolesChanged = true;
+            }
+            else if (isInMemberRole && !userInfo.IsMember)
+            {
+                await userManager.RemoveFromRoleAsync(userInfo.Id, VeilRoles.MemberRole);
+                rolesChanged = true;
+            }
+
+            if (!isInEmployeeRole && userInfo.IsEmployee)
+            {
+                await userManager.AddToRoleAsync(userInfo.Id, VeilRoles.EmployeeRole);
+                rolesChanged = true;
+            }
+            else if (isInEmployeeRole && !userInfo.IsEmployee)
+            {
+                await userManager.RemoveFromRoleAsync(userInfo.Id, VeilRoles.EmployeeRole);
+                rolesChanged = true;
+            }
+
+            if (rolesChanged)
+            {
+                await userManager.UpdateSecurityStampAsync(userInfo.Id);
+            }
+
+            return rolesChanged;
+        }
 
         #region Helpers
         // Used for XSRF protection when adding external logins
