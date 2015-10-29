@@ -20,7 +20,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The product is available for pre-order
         /// </summary>
-        [Description("Pre-order")]
+        [Display(Name = "Pre-Order")]
         PreOrder,
 
         /// <summary>
@@ -31,11 +31,13 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The product has been discontinued by the manufacturer
         /// </summary>
+        [Display(Name = "Discontinued By Manufacturer")]
         DiscontinuedByManufacturer,
 
         /// <summary>
         /// We are no longer selling the product
         /// </summary>
+        [Display(Name = "Not For Sale")]
         NotForSale
     }
 
@@ -58,17 +60,20 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's availability status
         /// </summary>
+        [DisplayName("Availability")]
         public AvailabilityStatus ProductAvailabilityStatus { get; set; }
 
         /// <summary>
         /// The release date of this product
         /// </summary>
+        [DisplayName("Release Date")]
         public DateTime ReleaseDate { get; set; }
 
         /// <summary>
         /// The web price for a new version of this product.
         /// </summary>
         [DataType(DataType.Currency)]
+        [DisplayName("New Web Price ($)")]
         public decimal NewWebPrice { get; set; }
 
         /// <summary>
@@ -76,6 +81,7 @@ namespace Veil.DataModels.Models
         /// null if the product doesn't have a pre-used version.
         /// </summary>
         [DataType(DataType.Currency)]
+        [DisplayName("Used Web Price ($)")]
         public decimal? UsedWebPrice { get; set; }
 
         /// <summary>
@@ -83,6 +89,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [DataType(DataType.ImageUrl)]
         [Url]
+        [DisplayName("Box Art URL")]
         public string BoxArtImageURL { get; set; }
 
         /// <summary>
@@ -90,6 +97,7 @@ namespace Veil.DataModels.Models
         /// This should only contain information that is specific to the SKU
         /// </summary>
         [MaxLength(1024)]
+        [DisplayName("SKU Description")]
         public string SKUDescription { get; set; }
 
         /// <summary>

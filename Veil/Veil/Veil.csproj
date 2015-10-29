@@ -458,6 +458,7 @@
     <Content Include="Views\Reports\Sales.cshtml" />
     <Content Include="Views\Account\_RegisterAccountPartial.cshtml" />
     <Content Include="Views\Account\_LoginAccountPartial.cshtml" />
+    <Content Include="Views\Games\CreatePhysicalGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
   </ItemGroup>

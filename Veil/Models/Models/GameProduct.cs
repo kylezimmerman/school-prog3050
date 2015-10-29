@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -20,44 +21,52 @@ namespace Veil.DataModels.Models
         /// The Id of the publishing company for this version of the game
         /// </summary>
         [Required]
+        [DisplayName("Publisher")]
         public Guid PublisherId { get; set; }
 
         /// <summary>
         /// Navigation property for the publishing company for this version of the game
         /// </summary>
+        [DisplayName("Publisher")]
         public virtual Company Publisher { get; set; }
 
         /// <summary>
         /// The Id of the development company for this version of the game
         /// </summary>
+        [DisplayName("Developer")]
         [Required]
         public Guid DeveloperId { get; set; }
 
         /// <summary>
         /// Navigation property for the development company for this version of the game
         /// </summary>
+        [DisplayName("Developer")]
         public virtual Company Developer { get; set; }
 
         /// <summary>
         /// The platform code for the Platform this GameProduct is on
         /// </summary>
         [Required]
+        [DisplayName("Platform")]
         public string PlatformCode { get; set; }
 
         /// <summary>
         /// Navigation property for the platform this GameProduct is on
         /// </summary>
+        [DisplayName("Platform")]
         public virtual Platform Platform { get; set; }
 
         /// <summary>
         /// The Id of the Game this is a product version of
         /// </summary>
         [Required]
+        [DisplayName("Game")]
         public Guid GameId { get; set; }
 
         /// <summary>
         /// Navigation property for the Game this is a product version of
         /// </summary>
+        [DisplayName("Game")]
         public virtual Game Game { get; set; }
 
         /// <summary>

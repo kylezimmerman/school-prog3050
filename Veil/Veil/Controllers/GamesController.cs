@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
@@ -129,5 +130,44 @@ namespace Veil.Controllers
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
+
+
+        #region Physical Game Product
+
+        public ActionResult CreatePhysicalGameProduct(Guid gameId)
+        {
+            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
+            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
+            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+
+            //db.Games.Where(game => game.Id == gameId);
+
+            return View();
+        }
+
+        // POST: Games/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreatePhysicalGameProduct([Bind] PhysicalGameProduct gameProduct)
+        {
+            if (ModelState.IsValid)
+            {
+                gameProduct.Id = Guid.NewGuid();
+                db.GameProducts.Add(gameProduct);
+                await db.SaveChangesAsync();
+
+                return RedirectToAction("Details", "Games", new { id = "" });
+            }
+
+            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
+            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
+            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+
+            return View(gameProduct);
+        }
+
+        #endregion
     }
 }
