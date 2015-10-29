@@ -34,13 +34,10 @@
         <!-- Left Nav Section -->
         <ul class="left">
             <li class="has-dropdown">
-                <a href="#">Store</a>
+                <a href="@Url.Action("Index", "Games")">Store</a>
                 <ul class="dropdown">
                     <li>
                         @Html.ActionLink("Games", "Index", new { Controller = "Games" })
-                    </li>
-                    <li>
-                        @Html.ActionLink("Game Detail", "Details", new { Controller = "Games", id = "7169E5E2-AFCF-4F55-9917-207D2076457F" })
                     </li>
                 </ul>
             </li>
@@ -48,8 +45,7 @@
                 @Html.ActionLink("Events", "Index", new { Controller = "Events" })
                 <ul class="dropdown">
                     <li>
-                        @Html.ActionLink("Event Detail", "Details", new { Controller = "Events", Id = "75F0C710-9864-4FDE-9074-5A2A1FFE89A7" })
-                        @Html.ActionLink("My Events", "Index", new { Controller = "Events" })
+                        @Html.ActionLink("My Events", "MyEvents", new { Controller = "Events" })
                     </li>
                 </ul>
             </li>
