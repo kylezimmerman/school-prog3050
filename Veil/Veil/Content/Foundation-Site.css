@@ -6461,6 +6461,9 @@ th.hide-for-touch {
 .padding-top-1 {
   padding-top: 1rem; }
 
+.padding-bottom-1 {
+  padding-bottom: 1rem; }
+
 .form-group {
   margin-bottom: 15px; }
 
@@ -6492,6 +6495,15 @@ select.expand, input.expand {
 
 .field-validation-error {
   margin-top: -1rem; }
+
+.indent {
+  text-indent: 2em; }
+
+.width-100 {
+  width: 100%; }
+
+.height-100 {
+  height: 100%; }
 
 /* Make text areas have a larger area to emphasis they're multiline*/
 textarea {

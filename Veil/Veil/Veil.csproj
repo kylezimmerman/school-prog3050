@@ -211,6 +211,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="Helpers\CountryExtensions.cs" />
+    <Compile Include="Models\GameDetailViewModels.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
