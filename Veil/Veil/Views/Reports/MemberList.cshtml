@@ -1,11 +1,77 @@
 ﻿
 @{
-    ViewBag.Title = "MemberList";
+    ViewBag.Title = "Member List";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
         <p><em>Generates a report of members' orders, favourite systems, and tags</em></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="medium-2 columns">
+        <span><em>Optional Filter</em></span><br />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">From:</label>
+        <input type="date" id="start-date" name="start-date" />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">To:</label>
+        <input type="date" id="end-date" name="end-date" />
+    </div>
+    <div class="medium-3 end columns">
+        <button class="expand">Refresh Report</button>
+    </div>
+</div>
+
+<style>
+    table {
+        width: 100%;
+    }
+
+    td.value-number {
+        text-align: right;
+    }
+</style>
+
+<div class="row">
+    <div class="columns">
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th class="text-right">Number of Orders</th>
+                    <th class="text-right">Total Sales ($)</th>
+                    <th class="text-right">Average Sale ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="#">dummy@gmail.com</a></td>
+                    <td>Dennis Duffy</td>
+                    <td class="value-number">554</td>
+                    <td class="value-number">$1302.46</td>
+                    <td class="value-number">$2.35</td>
+                </tr>
+                <tr>
+                    <td><a href="#">rando@outlook.com</a></td>
+                    <td>Sterling Archer</td>
+                    <td class="value-number">3</td>
+                    <td class="value-number">$300.88</td>
+                    <td class="value-number">$100.29</td>
+                </tr>
+                <tr>
+                    <td><a href="#">crime_princess@hotmail.com</a></td>
+                    <td>Harleen Quinzel</td>
+                    <td class="value-number">6</td>
+                    <td class="value-number">$30.00</td>
+                    <td class="value-number">$5.00</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
