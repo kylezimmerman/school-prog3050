@@ -27,7 +27,7 @@ namespace Veil.Controllers
             return View(await games.ToListAsync());
         }
 
-        // GET: Games/Search?{query-string}
+        // POST: Games/Search?{query-string}
         public async Task<ActionResult> Search(string keyword = "", string title = "", string platform = "", string tags = "")
         {
             IQueryable<Game> gamesFiltered;
