@@ -32,15 +32,10 @@ namespace Veil.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Game game = await db.Games.FindAsync(id);
-            /*if (game == null)
-            {
-                return HttpNotFound();
-            }*/
 
-            // TODO: Remove this and add back DB usage
-            game = new Game();
-
+            // TODO: Remove the null coalesce and handle if id doesn't match. This supports both our test and real data.
+            Game game = await db.Games.FindAsync(id) ?? new Game();
+        
             return View(game);
         }
 
@@ -132,15 +127,18 @@ namespace Veil.Controllers
         }
 
 
-        #region Physical Game Product
+        #region GameProduct Actions
 
-        public ActionResult CreatePhysicalGameProduct(Guid gameId)
+        public ActionResult CreatePhysicalGameProduct(Guid? id)
         {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
             ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
             ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
             ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
-
-            //db.Games.Where(game => game.Id == gameId);
 
             return View();
         }
@@ -150,15 +148,16 @@ namespace Veil.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreatePhysicalGameProduct([Bind] PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id, [Bind] PhysicalGameProduct gameProduct)
         {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
             if (ModelState.IsValid)
             {
-                gameProduct.Id = Guid.NewGuid();
-                db.GameProducts.Add(gameProduct);
-                await db.SaveChangesAsync();
-
-                return RedirectToAction("Details", "Games", new { id = "" });
+                return await SaveGameProduct(id.Value, gameProduct);
             }
 
             ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
@@ -166,6 +165,56 @@ namespace Veil.Controllers
             ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
 
             return View(gameProduct);
+        }
+
+        public ActionResult CreateDownloadGameProduct(Guid? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
+            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
+            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+
+            return View();
+        }
+
+        // POST: Games/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateDownloadGameProduct(Guid? id, [Bind] DownloadGameProduct gameProduct)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            if (ModelState.IsValid)
+            {
+                return await SaveGameProduct(id.Value, gameProduct);
+            }
+
+            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
+            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
+            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+
+            return View(gameProduct);
+        }
+
+
+        private async Task<ActionResult> SaveGameProduct(Guid gameId, GameProduct gameProduct)
+        {
+            gameProduct.Id = Guid.NewGuid();
+            gameProduct.Game = await db.Games.FindAsync(gameId);
+            db.GameProducts.Add(gameProduct);
+
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
         #endregion

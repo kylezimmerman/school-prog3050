@@ -36,6 +36,17 @@
     </div>
 </div>
 
+@* TODO: Only show this if the user is an employee *@
+<div class="row">
+    <div class="small-6 medium-3 medium-push-6 column">
+        @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new {id = Model.Id}, new {@class = "button expand"})
+    </div>
+
+    <div class="small-6 medium-3 column">
+        @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new {id = Model.Id}, new {@class = "button expand"})
+    </div>
+</div>
+
 <div class="row panel">
     <div class="small-1 columns">
         <h4 style="transform:rotate(-90deg) translateX(-100%)">PS4</h4>

@@ -1,7 +1,7 @@
 ﻿@model Veil.DataModels.Models.PhysicalGameProduct
 
 @{
-    ViewBag.Title = "Create Game Product";
+    ViewBag.Title = "Create Physical Game Product";
 }
 
 @using (Html.BeginForm())
@@ -150,8 +150,8 @@
                                 @Html.LabelFor(model => model.InteralUsedSKU, htmlAttributes: new { @class = "prefix" })
                             </div>
                             <div class="medium-8 columns">
-                                @Html.EditorFor(model => model.InternalNewSKU, new { htmlAttributes = new { @class = "expand" } })
-                                @Html.ValidationMessageFor(model => model.InternalNewSKU, "", new { @class = "" })
+                                @Html.EditorFor(model => model.InteralUsedSKU, new { htmlAttributes = new { @class = "expand" } })
+                                @Html.ValidationMessageFor(model => model.InteralUsedSKU, "", new { @class = "" })
                             </div>
                         </div>
 

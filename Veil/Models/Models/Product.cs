@@ -67,6 +67,7 @@ namespace Veil.DataModels.Models
         /// The release date of this product
         /// </summary>
         [DisplayName("Release Date")]
+        [DataType(DataType.Date)]
         public DateTime ReleaseDate { get; set; }
 
         /// <summary>
