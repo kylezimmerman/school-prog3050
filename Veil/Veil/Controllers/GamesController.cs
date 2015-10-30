@@ -33,6 +33,8 @@ namespace Veil.Controllers
             var gamesFiltered = db.Games
                 .Where(g => g.Name.Contains(keyword));
 
+            //TODO: filter 'Not For Sale' depending on user status
+
             ViewBag.SearchTerm = keyword;
 
             return View("Index", await gamesFiltered.ToListAsync());
@@ -44,6 +46,8 @@ namespace Veil.Controllers
             //TODO: finish implementing Advanced Search
             var gamesFiltered = db.Games
                 .Where(g => g.Name.Contains(title));
+
+            //TODO: filter 'Not For Sale' depending on user status
 
             ViewBag.SearchTerm = title + ", " + platform + ", " + tags;
 
