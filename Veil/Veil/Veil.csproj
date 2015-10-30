@@ -210,6 +210,7 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\CountryExtensions.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
@@ -459,6 +460,7 @@
     <Content Include="Views\Games\CreateDownloadGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
+    <Content Include="Views\Shared\_AlertPartial.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
   </ItemGroup>

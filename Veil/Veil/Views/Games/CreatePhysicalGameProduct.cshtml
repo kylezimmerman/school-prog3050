@@ -111,16 +111,6 @@
 
                         <div class="row collapse">
                             <div class="small-12 medium-4 columns">
-                                @Html.LabelFor(model => model.InternalNewSKU, htmlAttributes: new { @class = "prefix" })
-                            </div>
-                            <div class="medium-8 columns">
-                                @Html.EditorFor(model => model.InternalNewSKU, new { htmlAttributes = new { @class = "expand" } })
-                                @Html.ValidationMessageFor(model => model.InternalNewSKU, "", new { @class = "" })
-                            </div>
-                        </div>
-
-                        <div class="row collapse">
-                            <div class="small-12 medium-4 columns">
                                 @Html.LabelFor(model => model.NewWebPrice, htmlAttributes: new { @class = "prefix" })
                             </div>
                             <div class="medium-8 columns">
@@ -142,16 +132,6 @@
                             <div class="medium-8 columns panel">
                                 @Html.EditorFor(model => model.WillBuyBackUsedCopy, new { htmlAttributes = new { @class = "expand" } })
                                 @Html.ValidationMessageFor(model => model.WillBuyBackUsedCopy, "", new { @class = "" })
-                            </div>
-                        </div>
-
-                        <div class="row collapse">
-                            <div class="small-12 medium-4 columns">
-                                @Html.LabelFor(model => model.InteralUsedSKU, htmlAttributes: new { @class = "prefix" })
-                            </div>
-                            <div class="medium-8 columns">
-                                @Html.EditorFor(model => model.InteralUsedSKU, new { htmlAttributes = new { @class = "expand" } })
-                                @Html.ValidationMessageFor(model => model.InteralUsedSKU, "", new { @class = "" })
                             </div>
                         </div>
 
