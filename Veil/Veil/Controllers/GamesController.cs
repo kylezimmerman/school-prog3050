@@ -28,28 +28,33 @@ namespace Veil.Controllers
         }
 
         // GET: Games/Search?{query-string}
-        public async Task<ActionResult> Search(string keyword)
+        public async Task<ActionResult> Search(string keyword = "", string title = "", string platform = "", string tags = "")
         {
-            var gamesFiltered = db.Games
+            IQueryable<Game> gamesFiltered;
+
+            keyword = keyword.Trim();
+            title = title.Trim();
+            platform = platform.Trim();
+            tags = tags.Trim();
+
+            if (keyword == "")
+            {
+                gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(title)
+                    );
+
+                ViewBag.SearchTerm = title;
+            }
+            else
+            {
+                gamesFiltered = db.Games
                 .Where(g => g.Name.Contains(keyword));
+                
+                ViewBag.SearchTerm = keyword;
+            }
 
-            //TODO: filter 'Not For Sale' depending on user status
-
-            ViewBag.SearchTerm = keyword;
-
-            return View("Index", await gamesFiltered.ToListAsync());
-        }
-
-        // GET: Games/Search?{query-string}
-        public async Task<ActionResult> Search(string title, string platform, string tags)
-        {
             //TODO: finish implementing Advanced Search
-            var gamesFiltered = db.Games
-                .Where(g => g.Name.Contains(title));
-
             //TODO: filter 'Not For Sale' depending on user status
-
-            ViewBag.SearchTerm = title + ", " + platform + ", " + tags;
 
             return View("Index", await gamesFiltered.ToListAsync());
         }
