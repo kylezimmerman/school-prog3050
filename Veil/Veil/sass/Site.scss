@@ -70,3 +70,12 @@ textarea {
         border-right: $input-prefix-border-size $input-prefix-border-type $input-prefix-border-color;
     }
 }
+
+/* Formatting Header Logo/Name positioning */
+nav .title-area img,h1 {
+    display:inline-block;
+}
+nav .title-area img {
+    margin-top: -1px;
+    margin-left: 3px;
+}

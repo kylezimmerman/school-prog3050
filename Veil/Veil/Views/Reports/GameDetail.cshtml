@@ -1,11 +1,104 @@
 ﻿
 @{
-    ViewBag.Title = "GameDetail";
+    ViewBag.Title = "Game Detail";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
         <p><em>Generates a report of sales for a game by format</em></p>
+    </div>
+</div>
+
+<div class="game-information row">
+    <div class="columns">
+        <h3>Star Wars: Battlefront</h3>
+        <p><strong>Developer: </strong>Teamossum</p>
+        <p><strong>Publisher: </strong>Teamossum &amp; Co.</p>
+        <p><strong>Release Date: </strong>April 22, 2018</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="medium-2 columns">
+        <span><em>Optional Filter</em></span><br />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">From:</label>
+        <input type="date" id="start-date" name="start-date" />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">To:</label>
+        <input type="date" id="end-date" name="end-date" />
+    </div>
+    <div class="medium-3 end columns">
+        <button class="expand">Refresh Report</button>
+    </div>
+</div>
+
+<style>
+    table {
+        width: 100%;
+    }
+
+    .game-information p {
+        margin-left: 2em;
+    }
+
+    td.value-number {
+        text-align: right;
+    }
+</style>
+
+<div class="row">
+    <div class="columns">
+        <table>
+            <thead>
+                <tr>
+                    <th>Platform</th>
+                    <th>Format</th>
+                    <th>Qty New Sold</th>
+                    <th>New Sales ($)</th>
+                    <th>Qty Used Sold</th>
+                    <th>Used Sales ($)</th>
+                    <th>Qty Total Sold</th>
+                    <th>Total Sales ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PC</td>
+                    <td>Collector's Edition</td>
+                    <td class="value-number">1200000</td>
+                    <td class="value-number">$30000.00</td>
+                    <td class="value-number">1234</td>
+                    <td class="value-number">$3413.23</td>
+                    <td class="value-number">1201234</td>
+                    <td class="value-number">$33413.23</td>
+                </tr>
+                <tr>
+                    <td>Xbox One</td>
+                    <td>Standard Edition</td>
+                    <td class="value-number">445682</td>
+                    <td class="value-number">$2600.00</td>
+                    <td class="value-number">134</td>
+                    <td class="value-number">$313.23</td>
+                    <td class="value-number">134</td>
+                    <td class="value-number">$333.23</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td class="text-right">Totals:</td>
+                    <td class="value-number">1645682</td>
+                    <td class="value-number">$32600.00</td>
+                    <td class="value-number">1368</td>
+                    <td class="value-number">$3726.46</td>
+                    <td class="value-number">1201368</td>
+                    <td class="value-number">$33746.46</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 </div>

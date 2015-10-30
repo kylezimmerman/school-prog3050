@@ -1,11 +1,86 @@
 ﻿
 @{
-    ViewBag.Title = "MemberDetail";
+    ViewBag.Title = "Member Detail";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
         <p><em>Generates a report of orders made by a member</em></p>
+    </div>
+</div>
+
+<div class="game-information row">
+    <div class="columns">
+        <h3>Sterling Archer</h3>
+        <p><strong>Favourite System(s): </strong>PC, Xbox One, PS4</p>
+        <p><strong>Favourite Tag(s): </strong>RPG, FPS, RTS</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="medium-2 columns">
+        <span><em>Optional Filter</em></span><br />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">From:</label>
+        <input type="date" id="start-date" name="start-date" />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">To:</label>
+        <input type="date" id="end-date" name="end-date" />
+    </div>
+    <div class="medium-3 end columns">
+        <button class="expand">Refresh Report</button>
+    </div>
+</div>
+
+<style>
+    table {
+        width: 100%;
+    }
+
+    .game-information p {
+        margin-left: 2em;
+    }
+
+    td.value-number {
+        text-align: right;
+    }
+</style>
+
+<div class="game-information row">
+    <div class="columns">
+        <h4>Order #: 00054212358</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="columns">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>New / Used</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Price ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Star Wars: Battlefront</td>
+                    <td>New</td>
+                    <td class="value-number">2</td>
+                    <td class="value-number">$69.99</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td class="text-right">Totals:</td>
+                    <td class="value-number">2</td>
+                    <td class="value-number">$33746.46</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 </div>
