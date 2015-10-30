@@ -210,6 +210,10 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Extensions\CountryExtensions.cs" />
+    <Compile Include="Extensions\GameExtensions.cs" />
+    <Compile Include="Extensions\IIdentityExtensions.cs" />
+    <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\CountryExtensions.cs" />
     <Compile Include="Models\GameDetailViewModels.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
@@ -229,7 +233,6 @@
     <Compile Include="Models\CheckoutViewModel.cs" />
     <Compile Include="Controllers\WebOrdersController.cs" />
     <Compile Include="Controllers\WishlistController.cs" />
-    <Compile Include="Helpers\IIdentityExtensions.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\UnityConfig.cs" />
@@ -246,6 +249,8 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Foundation-Site.css" />
+    <Content Include="Content\Foundation-Site.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="sass\_normalize.scss" />
@@ -458,14 +463,15 @@
     <Content Include="Views\Account\_LoginAccountPartial.cshtml" />
     <Content Include="Views\Games\CreatePhysicalGameProduct.cshtml" />
     <Content Include="Views\Games\CreateDownloadGameProduct.cshtml" />
+    <Content Include="Views\Games\Search.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
+    <Content Include="Views\Shared\_AlertPartial.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Content\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">

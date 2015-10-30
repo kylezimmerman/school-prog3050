@@ -6,6 +6,8 @@ using System.Net;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.DataModels.Models.Identity;
+using Veil.Helpers;
 using Veil.Models;
 
 namespace Veil.Controllers
@@ -26,6 +28,38 @@ namespace Veil.Controllers
             return View(await games.ToListAsync());
         }
 
+        // POST: Games/Search?{query-string}
+        public async Task<ActionResult> Search(string keyword = "", string title = "", string platform = "", string tags = "")
+        {
+            IQueryable<Game> gamesFiltered;
+
+            keyword = keyword.Trim();
+            title = title.Trim();
+            platform = platform.Trim();
+            tags = tags.Trim();
+
+            if (keyword == "")
+            {
+                gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(title)
+                    );
+
+                ViewBag.SearchTerm = title;
+            }
+            else
+            {
+                gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(keyword));
+                
+                ViewBag.SearchTerm = keyword;
+            }
+
+            //TODO: finish implementing Advanced Search
+            //TODO: filter 'Not For Sale' depending on user status
+
+            return View("Index", await gamesFiltered.ToListAsync());
+        }
+
         // GET: Games/Details/5
         public async Task<ActionResult> Details(Guid? id)
         {
@@ -43,6 +77,11 @@ namespace Veil.Controllers
             };
 
             // TODO: Check is game is "Not For Sale"
+        
+            if (models.Game == null)
+            {
+                return HttpNotFound();
+            }
 
             return View(models);
         }
@@ -80,13 +119,17 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "Please select a game to edit.");
+                return RedirectToAction("Index");
             }
+
             Game game = await db.Games.FindAsync(id);
             if (game == null)
             {
-                return HttpNotFound();
+                this.AddAlert(AlertType.Error, "Please select a game to edit.");
+                return RedirectToAction("Index");
             }
+
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
             return View(game);
         }
@@ -113,8 +156,10 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "Please select a game to delete.");
+                return RedirectToAction("Index");
             }
+
             Game game = await db.Games.FindAsync(id);
             if (game == null)
             {
@@ -137,11 +182,12 @@ namespace Veil.Controllers
 
         #region GameProduct Actions
 
-        public ActionResult CreatePhysicalGameProduct(Guid? id)
+        public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id)
         {
-            if (id == null)
+            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
+                return RedirectToAction("Index");
             }
 
             ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
@@ -158,13 +204,19 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id, [Bind] PhysicalGameProduct gameProduct)
         {
-            if (id == null)
+            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
+                return RedirectToAction("Index");
             }
 
             if (ModelState.IsValid)
             {
+                var internalSku = db.GetNextPhysicalGameProductSku();
+
+                gameProduct.InteralUsedSKU = $"0{internalSku}";
+                gameProduct.InternalNewSKU = $"1{internalSku}";
+
                 return await SaveGameProduct(id.Value, gameProduct);
             }
 
@@ -175,11 +227,12 @@ namespace Veil.Controllers
             return View(gameProduct);
         }
 
-        public ActionResult CreateDownloadGameProduct(Guid? id)
+        public async Task<ActionResult> CreateDownloadGameProduct(Guid? id)
         {
-            if (id == null)
+            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
+                return RedirectToAction("Index");
             }
 
             ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
@@ -196,9 +249,10 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateDownloadGameProduct(Guid? id, [Bind] DownloadGameProduct gameProduct)
         {
-            if (id == null)
+            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
+                return RedirectToAction("Index");
             }
 
             if (ModelState.IsValid)
