@@ -25,6 +25,29 @@ namespace Veil.Controllers
             return View(await games.ToListAsync());
         }
 
+        // GET: Games/Search?{query-string}
+        public async Task<ActionResult> Search(string keyword)
+        {
+            var gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(keyword));
+
+            ViewBag.SearchTerm = keyword;
+
+            return View("Index", await gamesFiltered.ToListAsync());
+        }
+
+        // GET: Games/Search?{query-string}
+        public async Task<ActionResult> Search(string title, string platform, string tags)
+        {
+            //TODO: finish implementing Advanced Search
+            var gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(title));
+
+            ViewBag.SearchTerm = title + ", " + platform + ", " + tags;
+
+            return View("Index", await gamesFiltered.ToListAsync());
+        }
+
         // GET: Games/Details/5
         public async Task<ActionResult> Details(Guid? id)
         {
