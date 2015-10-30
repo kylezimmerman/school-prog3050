@@ -9,3 +9,63 @@
         <p><em>Generates a report of orders</em></p>
     </div>
 </div>
+
+<div class="row">
+    <div class="medium-2 columns">
+        <span><em>Optional Filter</em></span><br />
+    </div>
+    <div class="medium-3 columns">
+        <label for="start-date">From:</label>
+        <input type="date" id="start-date" name="start-date" />
+    </div>
+    <div class="medium-3 end columns">
+        <label for="start-date">To:</label>
+        <input type="date" id="end-date" name="end-date" />
+    </div>
+</div>
+<div class="row">
+    <div class="medium-push-2 medium-3 columns">
+        <label for="start-date">Between:</label>
+        <input type="number" id="cost-lower-bound" name="cost-lower-bound" />
+    </div>
+    <div class="medium-push-2 medium-3 columns">
+        <label for="start-date">And:</label>
+        <input type="number" id="cost-upper-bound" name="cost-upper-bound" />
+    </div>
+    <div class="medium-push-2 medium-3 end columns">
+        <button class="expand">Refresh Report</button>
+    </div>
+</div>
+
+<style>
+    table {
+        width: 100%;
+    }
+
+    td.value-number {
+        text-align: right;
+    }
+</style>
+
+<div class="row">
+    <div class="columns">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>User</th>
+                    <th class="text-right">Order Qty</th>
+                    <th class="text-right">Order Sale ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="#">00054212358</a></td>
+                    <td><a href="#">dngr_zn</a></td>
+                    <td class="value-number">2</td>
+                    <td class="value-number">$139.98</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
