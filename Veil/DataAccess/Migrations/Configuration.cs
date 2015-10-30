@@ -405,6 +405,35 @@ namespace Veil.DataAccess.Migrations
                     Name = VeilRoles.MemberRole
                 });
 
+            context.Games.AddOrUpdate(
+                g => g.Id,
+                new Game()
+                {
+                    Id = Guid.ParseExact("f6fc6194-937e-e511-80df-001cd8b71da6", "D"),
+                    Name = "Test Game",
+                    ESRBRatingId = "E",
+                    GameAvailabilityStatus = AvailabilityStatus.Available,
+                    ShortDescription = "This is the short description",
+                    LongDescription = "This is the long description",
+                    MinimumPlayerCount = 1,
+                    MaximumPlayerCount = 2,
+                    PrimaryImageURL = "http://baconmockup.com/200/140/",
+                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
+                },
+                new Game()
+                {
+                    Id = Guid.ParseExact("14c3c0c3-967e-e511-80df-001cd8b71da6", "D"),
+                    Name = "Yet Another Game",
+                    ESRBRatingId = "E",
+                    GameAvailabilityStatus = AvailabilityStatus.Available,
+                    LongDescription = "This is the long description",
+                    ShortDescription = "This is the short description",
+                    MinimumPlayerCount = 1,
+                    MaximumPlayerCount = 4,
+                    PrimaryImageURL = "http://placebacon.net/200/150",
+                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
+                });
+
             /* Enum to Lookup Tables Setup */
             EnumToLookup enumToLookup = new EnumToLookup
             {

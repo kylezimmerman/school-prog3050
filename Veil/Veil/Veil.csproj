@@ -465,6 +465,7 @@
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
     <Content Include="Views\Shared\_AlertPartial.cshtml" />
+    <Content Include="Views\Shared\_RatingStarsPartial.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
   </ItemGroup>
