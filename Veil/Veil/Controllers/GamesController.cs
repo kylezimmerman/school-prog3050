@@ -10,6 +10,7 @@ using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
+using Veil.Models;
 
 namespace Veil.Controllers
 {
@@ -82,14 +83,21 @@ namespace Veil.Controllers
             }
 
             // TODO: Remove the null coalesce and handle if id doesn't match. This supports both our test and real data.
-            Game game = await db.Games.FindAsync(id) ?? new Game();
+            GameDetailViewModels models = new GameDetailViewModels()
+            {
+                Game = await db.Games.FindAsync(id) ?? new Game(),
+                // TODO: Make this not static
+                EarliestRelease = new DateTime(2016, 12, 31)
+            };
 
-            if (game == null)
+            // TODO: Check is game is "Not For Sale"
+
+            if (models.Game == null)
             {
                 return HttpNotFound();
             }
 
-            return View(game);
+            return View(models);
         }
 
         // TODO: Every action after this should be employee only

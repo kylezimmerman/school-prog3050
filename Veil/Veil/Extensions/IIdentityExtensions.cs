@@ -2,7 +2,7 @@ using System;
 using System.Security.Principal;
 using Microsoft.AspNet.Identity;
 
-namespace Veil.Helpers
+namespace Veil.Extensions
 {
     public static class IIdentityExtensions
     {

@@ -210,8 +210,12 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Extensions\CountryExtensions.cs" />
+    <Compile Include="Extensions\GameExtensions.cs" />
+    <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\CountryExtensions.cs" />
+    <Compile Include="Models\GameDetailViewModels.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
     <Compile Include="Models\SearchViewModel.cs" />
@@ -230,7 +234,6 @@
     <Compile Include="Models\CheckoutViewModel.cs" />
     <Compile Include="Controllers\WebOrdersController.cs" />
     <Compile Include="Controllers\WishlistController.cs" />
-    <Compile Include="Helpers\IIdentityExtensions.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\UnityConfig.cs" />

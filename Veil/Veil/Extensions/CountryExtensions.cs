@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Web.Mvc;
 using Veil.DataModels.Models;
 
-namespace Veil.Helpers
+namespace Veil.Extensions
 {
     public static class CountryExtensions {
         public static IEnumerable<SelectListItem> GetProvinceItems(this IEnumerable<Country> countries)

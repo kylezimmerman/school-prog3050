@@ -36,6 +36,13 @@ namespace Veil.DataModels.Models
         public string Description { get; set; }
 
         /// <summary>
+        /// The URL for the image representation of this rating
+        /// </summary>
+        [DataType(DataType.Url)]
+        [MaxLength(2048)]
+        public string ImageURL { get; set; }
+
+        /// <summary>
         /// Collection navigation property for games with this rating
         /// </summary>
         public virtual ICollection<Game> Games { get; set; }
