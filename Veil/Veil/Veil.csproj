@@ -214,8 +214,10 @@
     <Compile Include="Extensions\GameExtensions.cs" />
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
+    <Compile Include="Models\GameDetailViewModels.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
+    <Compile Include="Models\SearchViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
     <Compile Include="Services\StripeService.cs" />
     <Compile Include="Services\VeilSignInManager.cs" />

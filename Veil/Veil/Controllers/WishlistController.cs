@@ -41,6 +41,13 @@ namespace Veil.Controllers
             return View(wishListMember.Wishlist);
         }
 
+        public async Task<ActionResult> Add(Guid? itemId)
+        {
+            // TODO: Add the specified item from the signed in user's wish list
+
+            return RedirectToAction("Index");
+        }
+
         public async Task<ActionResult> Remove(Guid? itemId)
         {
             // TODO: Remove the specified item from the signed in user's wish list

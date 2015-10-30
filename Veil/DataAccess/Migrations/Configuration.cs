@@ -30,37 +30,44 @@ namespace Veil.DataAccess.Migrations
                 new ESRBRating
                 {
                     RatingId = "EC",
-                    Description = "Early Childhood"
+                    Description = "Early Childhood",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ec.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "E",
-                    Description = "Everyone"
+                    Description = "Everyone",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "E10+",
-                    Description = "Everyone 10+"
+                    Description = "Everyone 10+",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e10.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "T",
-                    Description = "Teen"
+                    Description = "Teen",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_t.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "M",
-                    Description = "Mature"
+                    Description = "Mature",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_m.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "AO",
-                    Description = "Adults Only"
+                    Description = "Adults Only",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ao.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "RP",
-                    Description = "Rating Pending"
+                    Description = "Rating Pending",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_rp.png"
                 }
             );
 
