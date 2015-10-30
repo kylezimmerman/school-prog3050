@@ -3,6 +3,7 @@
    to making sure that Foundation works well with MVC
 -----------------------------------------------------
 */
+@import "_foundation.scss";
 
 /* Overrides: Errors */
 
@@ -16,7 +17,7 @@
   padding: 6px 4px;
   margin-top: -13px;
   margin-bottom: 12px;
-  background: #c60f13;
+  background: $alert-color;
   color: #fff;
   font-size: 12px;
   font-weight: bold;
