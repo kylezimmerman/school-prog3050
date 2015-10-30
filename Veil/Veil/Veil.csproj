@@ -214,6 +214,7 @@
     <Compile Include="Helpers\CountryExtensions.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
+    <Compile Include="Models\SearchViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
     <Compile Include="Services\StripeService.cs" />
     <Compile Include="Services\VeilSignInManager.cs" />

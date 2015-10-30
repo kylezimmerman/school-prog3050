@@ -8,6 +8,8 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
+using Veil.Models;
+using System.Collections.Generic;
 
 namespace Veil.Controllers
 {
@@ -27,15 +29,30 @@ namespace Veil.Controllers
             return View(await games.ToListAsync());
         }
 
-        // POST: Games/Search?{query-string}
-        public async Task<ActionResult> Search(string keyword = "", string title = "", string platform = "", string tags = "")
+        [HttpGet]
+        public async Task<ActionResult> Search()
         {
+            SearchViewModel searchViewModel = new SearchViewModel();
+            searchViewModel.Platforms = await db.Platforms.ToListAsync();
+            searchViewModel.Tags = await db.Tags.ToListAsync();
+
+            return View(searchViewModel);
+        }
+
+        // POST: Games/Search?{query-string}
+        [HttpPost]
+        public async Task<ActionResult> Search(List<string> tags, string keyword = "", string title = "", string platform = "")
+        {
+            //TODO: finish implementing Advanced Search
+            //TODO: filter 'Not For Sale' depending on user status
+
             IQueryable<Game> gamesFiltered;
 
             keyword = keyword.Trim();
             title = title.Trim();
             platform = platform.Trim();
-            tags = tags.Trim();
+            tags = tags ?? new List<string>();
+            tags.ForEach(t => t.Trim());
 
             if (keyword == "")
             {
@@ -52,9 +69,6 @@ namespace Veil.Controllers
                 
                 ViewBag.SearchTerm = keyword;
             }
-
-            //TODO: finish implementing Advanced Search
-            //TODO: filter 'Not For Sale' depending on user status
 
             return View("Index", await gamesFiltered.ToListAsync());
         }
