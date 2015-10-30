@@ -25,6 +25,23 @@
 </style>
 
 <div class="row">
+    <div class="medium-2 columns">
+        <span><em>Optional Filter</em></span><br />
+    </div>
+    <div class="medium-3 columns">
+        <label for="game-name">Game Name:</label>
+        <input type="text" id="game-name" name="game-name" list="games" />
+    </div>
+    <div class="medium-3 end columns">
+        <button class="expand">Refresh Report</button>
+    </div>
+    <datalist id="games">
+        <option value="Star Wars: Battlefront" />
+        <option value="The Last of Us" />
+    </datalist>
+</div>
+
+<div class="row">
     <div class="columns">
         <table>
             <thead>
