@@ -214,7 +214,6 @@
     <Compile Include="Extensions\GameExtensions.cs" />
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
-    <Compile Include="Helpers\CountryExtensions.cs" />
     <Compile Include="Models\GameDetailViewModels.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
@@ -250,8 +249,6 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\Foundation-Site.css" />
-    <Content Include="Content\Foundation-Site.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="sass\_normalize.scss" />
@@ -473,6 +470,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">
