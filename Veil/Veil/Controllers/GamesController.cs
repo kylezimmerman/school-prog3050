@@ -27,6 +27,38 @@ namespace Veil.Controllers
             return View(await games.ToListAsync());
         }
 
+        // POST: Games/Search?{query-string}
+        public async Task<ActionResult> Search(string keyword = "", string title = "", string platform = "", string tags = "")
+        {
+            IQueryable<Game> gamesFiltered;
+
+            keyword = keyword.Trim();
+            title = title.Trim();
+            platform = platform.Trim();
+            tags = tags.Trim();
+
+            if (keyword == "")
+            {
+                gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(title)
+                    );
+
+                ViewBag.SearchTerm = title;
+            }
+            else
+            {
+                gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(keyword));
+                
+                ViewBag.SearchTerm = keyword;
+            }
+
+            //TODO: finish implementing Advanced Search
+            //TODO: filter 'Not For Sale' depending on user status
+
+            return View("Index", await gamesFiltered.ToListAsync());
+        }
+
         // GET: Games/Details/5
         public async Task<ActionResult> Details(Guid? id)
         {

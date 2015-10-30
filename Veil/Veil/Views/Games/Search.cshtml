@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "Advanced Search";
+}
+
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
+
+@using (Html.BeginForm("Search", "Games", FormMethod.Post))
+{
+    <div class="row">
+        <div class="medium-3 columns">
+            <label for="game-name">Name:</label>
+        </div>
+        <div class="medium-9 columns">
+            <input type="text" id="game-name" name="title" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="medium-3 columns">
+            <label for="game-name">Platform:</label>
+        </div>
+        <div class="medium-9 columns">
+            <select id="game-platform" name="platform">
+                <option value="PC">PC</option>
+                <option value="Xbox One">Xbox One</option>
+                <option value="PS4">PS4</option>
+                <option value="WiiU">WiiU</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="medium-push-9 medium-3 columns">
+            <button class="expand">Refresh Report</button>
+        </div>
+    </div>
+}

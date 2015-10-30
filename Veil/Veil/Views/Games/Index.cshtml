@@ -11,13 +11,16 @@
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p><em>Results matching search criteria "Action"</em></p>
+        @if (ViewBag.SearchTerm != null && ViewBag.SearchTerm != "")
+        {
+            <p><em>Results matching search criteria "@ViewBag.SearchTerm"</em></p>
+        }
     </div>
 </div>
 
 
-
-<div class="row">
+@* TODO: remove this when we don't want it anymore *@
+@*<div class="row">
     <a href="@Url.Action("Details", new {id = "7169E5E2-AFCF-4F55-9917-207D2076457F"})" class="button secondary text-left">
         <div class="small-3 columns">
             <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
@@ -36,7 +39,7 @@
             </p>
         </div>
     </a>
-</div>
+</div>*@
 
 @foreach (var game in Model)
 {
