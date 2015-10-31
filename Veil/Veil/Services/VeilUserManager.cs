@@ -58,7 +58,13 @@ namespace Veil.Services
             {
                 IDataProtector dataProtector = dataProtectionProvider.Create("ASP.NET Identity");
 
-                UserTokenProvider = new DataProtectorTokenProvider<User, Guid>(dataProtector);
+                var userTokenProvider = new DataProtectorTokenProvider<User, Guid>(dataProtector)
+                {
+                    TokenLifespan = TimeSpan.FromHours(12)
+                };
+
+                UserTokenProvider = userTokenProvider;
+                
             }
         }
     }

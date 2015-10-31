@@ -7,8 +7,6 @@
         @Html.AntiForgeryToken()
     }
 
-
-
     <ul class="right">
         <li class="has-dropdown">
             <a href="#">My Stuff</a>
@@ -59,7 +57,8 @@
 else
 {
     <ul class="right">
-        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })
-    </li>
-</ul>
+        <li>
+            @Html.ActionLink("Log in", "Login", "Account", routeValues: new { returnUrl = ViewBag.ReturnUrl ?? Request.RawUrl }, htmlAttributes: new { id = "loginLink" })
+        </li>
+    </ul>
 }

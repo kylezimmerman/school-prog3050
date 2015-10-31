@@ -6,7 +6,7 @@
     </div>
 </div>
 
-@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form" }))
+@using (Html.BeginForm("Register", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
 {
     @Html.AntiForgeryToken()
     <hr/>

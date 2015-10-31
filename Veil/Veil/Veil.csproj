@@ -455,6 +455,9 @@
     <Content Include="Views\Reports\Sales.cshtml" />
     <Content Include="Views\Account\_RegisterAccountPartial.cshtml" />
     <Content Include="Views\Account\_LoginAccountPartial.cshtml" />
+    <Content Include="Views\Account\ResendConfimationEmail.cshtml" />
+    <Content Include="Views\Account\RegisterComplete.cshtml" />
+    <Content Include="Views\Account\ConfirmResendConfirmationEmail.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />

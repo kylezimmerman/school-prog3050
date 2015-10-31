@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Stripe;
-using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
@@ -31,18 +30,29 @@ namespace Veil.Controllers
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
         private readonly IStripeService stripeService;
-        private readonly IVeilDataAccess db;
 
-        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService, IVeilDataAccess veilDataAccess)
+        /// <summary>
+        ///     Instantiates a new instance of AccountController
+        /// </summary>
+        /// <param name="userManager">The UserManager for the controller to use</param>
+        /// <param name="signInManager">The SingInManager for the controller to use</param>
+        /// <param name="stripeService">The IStripeService for the controller to use</param>
+        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.stripeService = stripeService;
-            db = veilDataAccess;
         }
 
-        //
-        // GET: /Account/Login
+        /// <summary>
+        ///     Displays the combined Login/Register page
+        /// </summary>
+        /// <param name="returnUrl">
+        ///     The local url to return to if the user logs in
+        /// </param>
+        /// <returns>
+        ///     The combined Login/Register page
+        /// </returns>
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
@@ -54,8 +64,26 @@ namespace Veil.Controllers
             });
         }
 
-        //
-        // POST: /Account/Login
+        /// <summary>
+        ///     Logs in the user with the supplied credentials and redirects them to the supplied url.
+        ///     If the user's email isn't confirmed, they are shown the ConfirmResendConfirmationEmail view.
+        /// 
+        ///     This method also ensures the user is only correct roles as 
+        ///     enforced by EnsureCorrectRolesAsync
+        /// </summary>
+        /// <param name="model">
+        ///     The view model containing the log in credentials and a remember me boolean.
+        /// </param>
+        /// <param name="returnUrl">
+        ///     The local URL to return to after logging in successfully.
+        /// </param>
+        /// <returns>
+        ///     If successful, a redirection to the supplied local url.
+        ///     If two factor auth is enable, a redirection to the SendCode action.
+        ///     If login fails, the login page is reshown with a vague error message.
+        ///     If the user's email isn't verified, the resend confirmation email page is shown.
+        ///     If the user is locked out, the lockout shared view is shown. 
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -72,19 +100,35 @@ namespace Veil.Controllers
                 return View(viewModel);
             }
 
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, change to shouldLockout: true
-            SignInStatus result = await signInManager.PasswordSignInAsync(model.LoginEmail, model.LoginPassword, model.RememberMe, shouldLockout: false);
+            User user = await userManager.FindByEmailAsync(model.LoginEmail);
 
-            if (result == SignInStatus.Success && await EnsureCorrectRolesAsync(model.LoginEmail))
+            SignInStatus result = SignInStatus.Failure;
+
+            if (user != null)
             {
-                /* TODO: This is an ugly hack to make the added roles be in immediate effect.
-                   I'm not sure of a better way to accomplish this */
-                signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                if (await userManager.CheckPasswordAsync(user, model.LoginPassword))
+                {
+                    // Require the user to have a confirmed email before they can log on.
+                    if (!await userManager.IsEmailConfirmedAsync(user.Id))
+                    {
+                        return ConfirmResendConfirmationEmail(model.LoginEmail);
+                    }
 
-                await
-                    signInManager.PasswordSignInAsync(
-                        model.LoginEmail, model.LoginPassword, model.RememberMe, shouldLockout: false);
+                    await EnsureCorrectRolesAsync(user);
+
+                    // This doesn't count login failures towards account lockout
+                    // To enable password failures to trigger account lockout, change to shouldLockout: true
+                    result =
+                        await signInManager.PasswordSignInAsync(
+                                user.UserName, model.LoginPassword, model.RememberMe, shouldLockout: false);
+                }
+                else
+                {
+                    // This doesn't count login failures towards account lockout
+                    // To enable password failures to trigger account lockout, uncomment this line
+                    // NOTE: This returns an Identity result if you wish to do anything with it
+                    // await userManager.AccessFailedAsync(user.Id);
+                }
             }
 
             switch (result)
@@ -112,13 +156,18 @@ namespace Veil.Controllers
         /// <summary>
         ///     Redisplays the Login View
         /// </summary>
+        /// <param name="returnUrl">
+        ///     The local url to return to if the user logs in
+        /// </param>
         /// <remarks>
         ///     This is required because we don't redirect back to Login on failed postback to Register
         /// </remarks>
         [HttpGet]
         [AllowAnonymous]
-        public ActionResult Register()
+        public ActionResult Register(string returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
+
             var viewModel = new LoginRegisterViewModel
             {
                 LoginViewModel = new LoginViewModel(),
@@ -128,12 +177,23 @@ namespace Veil.Controllers
             return View("Login", viewModel);
         }
 
-        //
-        // POST: /Account/Register
+        /// <summary>
+        ///     Registers a user account with the provided information if it is valid
+        /// </summary>
+        /// <param name="model">
+        ///     The view model containing the information to validate and create a new account for
+        /// </param>
+        /// <param name="returnUrl">
+        ///     The local url to return to if the user logs in
+        /// </param>
+        /// <returns>
+        ///     If successful, displays the RegisterComplete page. 
+        ///     Otherwise, redisplays the login page with errors.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        public async Task<ActionResult> Register(RegisterViewModel model, string returnUrl)
         {
             LoginRegisterViewModel viewModel;
             bool stripeCustomerScopeSuccessful = false;
@@ -142,7 +202,7 @@ namespace Veil.Controllers
             {
                 var user = new User
                 {
-                    UserName = model.Email,
+                    UserName = model.Username,
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName
@@ -205,20 +265,16 @@ namespace Veil.Controllers
 
                     if (result.Succeeded)
                     {
-                        await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                        await SendConfirmationEmail(user);
 
-                        // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                        // Send an email with this link
-                        // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                        // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                        // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
-                        return RedirectToAction("Index", "Home");
+                        return View("RegisterComplete");
                     }
                 }
 
                 AddErrors(result, REGISTER_MODEL_ERRORS_KEY);
             }
+
+            ViewBag.ReturnUrl = returnUrl;
 
             viewModel = new LoginRegisterViewModel
             {
@@ -230,8 +286,68 @@ namespace Veil.Controllers
             return View("Login", viewModel);
         }
 
-        //
-        // GET: /Account/ConfirmEmail
+        /// <summary>
+        ///     Allows the user to resend an email confirmation link to them.
+        /// </summary>
+        /// <param name="emailAddress">
+        ///     The email address to be used if the user choose to resend the link
+        /// </param>
+        /// <returns>
+        ///     A view allowing the user to resend a email confirmation link
+        /// </returns>
+        [AllowAnonymous]
+        [ChildActionOnly]
+        public ActionResult ConfirmResendConfirmationEmail(string emailAddress)
+        {
+            if (string.IsNullOrWhiteSpace(emailAddress))
+            {
+                return View("Error");
+            }
+
+            // Need to cast the email to object otherwise the method 
+            // interprets it as masterName instead of model
+            return View("ConfirmResendConfirmationEmail", (object)emailAddress);
+        }
+
+        /// <summary>
+        ///     Sends an email confirmation link to the specified email address
+        ///     if it belongs to a user of the site.
+        /// </summary>
+        /// <param name="emailAddress">
+        ///     The email address to send the confirmation link to
+        /// </param>
+        /// <returns>
+        ///     A view informing the user that a confirmation email was 
+        ///     re-sent regardless of if one actually was.
+        /// </returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ResendConfirmationEmail(string emailAddress)
+        {
+            User user = await userManager.FindByEmailAsync(emailAddress);
+
+            if (user != null)
+            {
+                await SendConfirmationEmail(user);
+            }
+
+            return View("ResendConfimationEmail");
+        }
+
+        /// <summary>
+        ///     Validates the confirmation info and sets the user's email as confirmed
+        /// </summary>
+        /// <param name="userId">
+        ///     The Id of the user
+        /// </param>
+        /// <param name="code">
+        ///     The validation code
+        /// </param>
+        /// <returns>
+        ///     If successful, a view letting the user know their email has confirmed.
+        ///      Otherwise, an error view.
+        /// </returns>
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(Guid userId, string code)
         {
@@ -242,7 +358,17 @@ namespace Veil.Controllers
 
             var result = await userManager.ConfirmEmailAsync(userId, code);
 
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            if (!result.Succeeded)
+            {
+                AddErrors(result, "");
+
+                return View("Error");
+            }
+
+            // Update the security stamp to invalidate the email link
+            await userManager.UpdateSecurityStampAsync(userId);
+
+            return View("ConfirmEmail");
         }
 
         //
@@ -331,13 +457,18 @@ namespace Veil.Controllers
             return View();
         }
 
-        //
-        // POST: /Account/LogOff
+        /// <summary>
+        ///     Logs the user out
+        /// </summary>
+        /// <returns>
+        ///     The home page
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
             signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -524,63 +655,74 @@ namespace Veil.Controllers
         /// <summary>
         ///     Ensures the user is only in the member or employee roles if they are a member or an employee
         /// </summary>
-        /// <param name="loginEmail">
-        ///     The email address for the user
+        /// <param name="user">
+        ///     The user
         /// </param>
         /// <returns>
         ///     True if roles were modified, false otherwise
         /// </returns>
-        private async Task<bool> EnsureCorrectRolesAsync(string loginEmail)
+        private async Task<bool> EnsureCorrectRolesAsync([NotNull]User user)
         {
             bool rolesChanged = false;
 
-            var userInfo = await db.Users.
-                Where(u => u.Email == loginEmail).
-                Select(u => new
-                {
-                    Id = u.Id,
-                    IsMember = u.Member != null,
-                    IsEmployee = u.Employee != null
-                }).
-                FirstOrDefaultAsync();
+            bool isInMemberRole = await userManager.IsInRoleAsync(user.Id, VeilRoles.MemberRole);
+            bool isInEmployeeRole = await userManager.IsInRoleAsync(user.Id, VeilRoles.EmployeeRole);
 
-            if (userInfo == null)
+            if (!isInMemberRole && user.Member != null)
             {
-                return false;
-            }
-
-
-            bool isInMemberRole = await userManager.IsInRoleAsync(userInfo.Id, VeilRoles.MemberRole);
-            bool isInEmployeeRole = await userManager.IsInRoleAsync(userInfo.Id, VeilRoles.EmployeeRole);
-
-            if (!isInMemberRole && userInfo.IsMember)
-            {
-                await userManager.AddToRoleAsync(userInfo.Id, VeilRoles.MemberRole);
+                await userManager.AddToRoleAsync(user.Id, VeilRoles.MemberRole);
                 rolesChanged = true;
             }
-            else if (isInMemberRole && !userInfo.IsMember)
+            else if (isInMemberRole && user.Member == null)
             {
-                await userManager.RemoveFromRoleAsync(userInfo.Id, VeilRoles.MemberRole);
+                await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.MemberRole);
                 rolesChanged = true;
             }
 
-            if (!isInEmployeeRole && userInfo.IsEmployee)
+            if (!isInEmployeeRole && user.Employee != null)
             {
-                await userManager.AddToRoleAsync(userInfo.Id, VeilRoles.EmployeeRole);
+                await userManager.AddToRoleAsync(user.Id, VeilRoles.EmployeeRole);
                 rolesChanged = true;
             }
-            else if (isInEmployeeRole && !userInfo.IsEmployee)
+            else if (isInEmployeeRole && user.Member == null)
             {
-                await userManager.RemoveFromRoleAsync(userInfo.Id, VeilRoles.EmployeeRole);
+                await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.EmployeeRole);
                 rolesChanged = true;
             }
 
             if (rolesChanged)
             {
-                await userManager.UpdateSecurityStampAsync(userInfo.Id);
+                await userManager.UpdateSecurityStampAsync(user.Id);
             }
 
             return rolesChanged;
+        }
+
+        /// <summary>
+        ///     Sends a confirmation to the user's email address
+        /// </summary>
+        /// <param name="user">
+        ///     The user to send an email confirmation email to
+        /// </param>
+        /// <returns>
+        ///     The awaitable task for sending the email
+        /// </returns>
+        private async Task SendConfirmationEmail(User user)
+        {
+            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+            // Send an email with this link
+            string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
+            var callbackUrl = Url.Action("ConfirmEmail", "Account", 
+                new
+                {
+                    userId = user.Id,
+                    code = code
+                },
+                protocol: Request.Url.Scheme);
+
+            await userManager.SendEmailAsync(user.Id, "Veil - Please Confirm Your Account",
+                "<h1>Welcome to Veil!</h1>" +
+                "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
         }
 
         #region Helpers

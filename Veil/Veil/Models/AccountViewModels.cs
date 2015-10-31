@@ -94,10 +94,12 @@ namespace Veil.Models
 
         [Required]
         [Display(Name = "First Name")]
+        [StringLength(maximumLength: 64, MinimumLength = 1)]
         public string FirstName { get; set; }
 
         [Required]
         [Display(Name = "Last Name")]
+        [StringLength(maximumLength: 64, MinimumLength = 1)]
         public string LastName { get; set; }
 
         [Required]
