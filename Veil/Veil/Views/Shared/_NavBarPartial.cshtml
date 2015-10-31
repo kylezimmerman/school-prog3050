@@ -21,10 +21,10 @@
                 <div class="row collapse">
                     @using (Html.BeginForm("Search", "Games", FormMethod.Post))
                     {
-                        <div class="large-8 small-9 columns">
-                            <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name">
+                        <div id="nav-bar-search-container" class="large-8 small-9 columns">
+                            <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name" />
                         </div>
-                        <div class="large-4 small-3 columns">
+                        <div id="nav-bar-search-button-container" class="large-4 small-3 columns">
                             <button type="submit">Search</button>
                         </div>
                     }
