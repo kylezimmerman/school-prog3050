@@ -286,72 +286,20 @@ namespace Veil.DataAccess.Migrations
 
             // The GUIDs for these were taken from SQL Server as it generates sequential ones
             context.Companies.AddOrUpdate(
-                c => c.Id,
-                new Company
-                {
-                    Id = Guid.ParseExact("08C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Activision Blizzard"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("09C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Electronic Arts"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("0AC61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Ubisoft"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("0BC61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Take-Two"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("0CC61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "2K Games"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("0DC61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Blizzard Entertainment"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("0EC61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "EA DICE"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("0FC61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Rockstar Games"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("10C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Nintendo"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("11C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Sony Computer Entertainment"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("12C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Microsoft Studios"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("13C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Bungie"
-                },
-                new Company
-                {
-                    Id = Guid.ParseExact("14C61003-487C-E511-80DF-001CD8B71DA6", "D"),
-                    Name = "Treyarch"
-                }
+                c => c.Name,
+                new Company { Name = "Activision Blizzard" },
+                new Company { Name = "Electronic Arts" },
+                new Company { Name = "Ubisoft" },
+                new Company { Name = "Take-Two" },
+                new Company { Name = "2K Games" },
+                new Company { Name = "Blizzard Entertainment" },
+                new Company { Name = "EA DICE" },
+                new Company { Name = "Rockstar Games" },
+                new Company { Name = "Nintendo" },
+                new Company { Name = "Sony Computer Entertainment" },
+                new Company { Name = "Microsoft Studios" },
+                new Company { Name = "Bungie" },
+                new Company { Name = "Treyarch" }
             );
 
             context.Tags.AddOrUpdate(
@@ -413,10 +361,9 @@ namespace Veil.DataAccess.Migrations
                 });
 
             context.Games.AddOrUpdate(
-                g => g.Id,
-                new Game()
+                g => g.Name,
+                new Game
                 {
-                    Id = Guid.ParseExact("f6fc6194-937e-e511-80df-001cd8b71da6", "D"),
                     Name = "Test Game",
                     ESRBRatingId = "E",
                     ShortDescription = "This is the short description",
@@ -426,9 +373,8 @@ namespace Veil.DataAccess.Migrations
                     PrimaryImageURL = "http://baconmockup.com/200/140/",
                     TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
                 },
-                new Game()
+                new Game
                 {
-                    Id = Guid.ParseExact("14c3c0c3-967e-e511-80df-001cd8b71da6", "D"),
                     Name = "Yet Another Game",
                     ESRBRatingId = "E",
                     LongDescription = "This is the long description",
