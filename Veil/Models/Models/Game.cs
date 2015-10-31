@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
@@ -34,8 +35,45 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's availability status
         /// </summary>
-        [DisplayName("Game Availablility")]
-        public AvailabilityStatus GameAvailabilityStatus { get; set; }
+        [DisplayName("Game Availability")]
+        public AvailabilityStatus GameAvailabilityStatus
+        {
+            get
+            {
+                if (GameSKUs == null || GameSKUs.Count == 0)
+                {
+                    return AvailabilityStatus.NotForSale;
+                }
+
+                if (GameSKUs.Any(gp => gp.ProductAvailabilityStatus == AvailabilityStatus.PreOrder)) {
+                    return AvailabilityStatus.PreOrder;
+                }
+
+                if (GameSKUs.Any(gp => gp.ProductAvailabilityStatus == AvailabilityStatus.Available))
+                {
+                    return AvailabilityStatus.Available;
+                }
+
+                if (GameSKUs.Any(
+                        gp => gp.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer))
+                {
+                    return AvailabilityStatus.DiscontinuedByManufacturer;
+                }
+
+                return AvailabilityStatus.NotForSale;
+            }
+        }
+
+        /// <summary>
+        ///     The Game's SKU's average rating
+        /// </summary>
+        public double? AverageRating
+        {
+            get
+            {
+                return GameSKUs.SelectMany(g => g.Reviews).Average(r => (double?) r.Rating);
+            }
+        }
 
         /// <summary>
         /// The Id for the Game's ESRB rating
@@ -70,8 +108,6 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The URL for a trailer for the Game
         /// </summary>
-        //TODO: Remove Required
-        [Required]
         [DataType(DataType.Url)]
         [Url]
         [MaxLength(2048)]
@@ -101,6 +137,11 @@ namespace Veil.DataModels.Models
         [MaxLength(2048)]
         [DisplayName("Primary Image URL")]
         public string PrimaryImageURL { get; set; }
+
+        /// <summary>
+        /// Collection navigation property for this Game's tags
+        /// </summary>
+        public virtual ICollection<Tag> Tags { get; set; }
 
         /// <summary>
         /// Collection navigation property for the Game's ESRB content descriptors

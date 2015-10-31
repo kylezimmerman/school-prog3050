@@ -110,17 +110,13 @@
     <Compile Include="EntityConfigurations\GameReviewEntityConfig.cs" />
     <Compile Include="EntityConfigurations\UserEntityConfig.cs" />
     <Compile Include="EntityConfigurations\WebOrderEntityConfig.cs" />
-    <Compile Include="Migrations\201510291552582_InitialCreate.cs" />
-    <Compile Include="Migrations\201510291552582_InitialCreate.Designer.cs">
-      <DependentUpon>201510291552582_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\201510310134208_InitialCreate.cs" />
+    <Compile Include="Migrations\201510310134208_InitialCreate.Designer.cs">
+      <DependentUpon>201510310134208_InitialCreate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510291554298_AddPhysicalGameProductSkuSequence.cs" />
-    <Compile Include="Migrations\201510291554298_AddPhysicalGameProductSkuSequence.Designer.cs">
-      <DependentUpon>201510291554298_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201510301623367_addesrbimageurl.cs" />
-    <Compile Include="Migrations\201510301623367_addesrbimageurl.Designer.cs">
-      <DependentUpon>201510301623367_addesrbimageurl.cs</DependentUpon>
+    <Compile Include="Migrations\201510310135495_AddPhysicalGameProductSkuSequence.cs" />
+    <Compile Include="Migrations\201510310135495_AddPhysicalGameProductSkuSequence.Designer.cs">
+      <DependentUpon>201510310135495_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -137,14 +133,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201510291552582_InitialCreate.resx">
-      <DependentUpon>201510291552582_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201510310134208_InitialCreate.resx">
+      <DependentUpon>201510310134208_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510291554298_AddPhysicalGameProductSkuSequence.resx">
-      <DependentUpon>201510291554298_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510301623367_addesrbimageurl.resx">
-      <DependentUpon>201510301623367_addesrbimageurl.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201510310135495_AddPhysicalGameProductSkuSequence.resx">
+      <DependentUpon>201510310135495_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

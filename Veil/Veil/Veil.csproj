@@ -211,7 +211,6 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
-    <Compile Include="Extensions\GameExtensions.cs" />
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Models\GameDetailViewModels.cs" />

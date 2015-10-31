@@ -102,11 +102,6 @@ namespace Veil.DataModels.Models
         public string SKUDescription { get; set; }
 
         /// <summary>
-        /// Collection navigation property for this Product's tags
-        /// </summary>
-        public virtual ICollection<Tag> Tags { get; set; }
-
-        /// <summary>
         /// Collection navigation property for this Product's invetory level at locations
         /// </summary>
         public virtual ICollection<ProductLocationInventory> LocationInventories { get; set; }

@@ -7,13 +7,13 @@ namespace Veil.DataAccess.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class InitialCreate : IMigrationMetadata
+    public sealed partial class AddPhysicalGameProductSkuSequence : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(InitialCreate));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddPhysicalGameProductSkuSequence));
         
         string IMigrationMetadata.Id
         {
-            get { return "201510291552582_InitialCreate"; }
+            get { return "201510310135495_AddPhysicalGameProductSkuSequence"; }
         }
         
         string IMigrationMetadata.Source

@@ -54,7 +54,7 @@
             <p>@game.ShortDescription</p>
         </div>
         <div class="medium-3 columns">
-            @{ var rating = game.GetAverageRating(); }
+            @{ var rating = game.AverageRating; }
 
             @if (rating.HasValue)
             {

@@ -23,14 +23,6 @@ namespace Veil.DataAccess.EntityConfigurations
                 Property(p => p.Id).
                 HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 
-            /* Many to Many Relationships:
-             *
-             * Product <=> Tag
-             */
-            HasMany(p => p.Tags).
-                WithMany(t => t.TaggedProducts).
-                Map(manyToManyConfig => manyToManyConfig.ToTable("ProductCategory"));
-
             // Note: Table per type for Products
         }
     }

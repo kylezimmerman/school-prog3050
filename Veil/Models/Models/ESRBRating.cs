@@ -39,6 +39,7 @@ namespace Veil.DataModels.Models
         /// The URL for the image representation of this rating
         /// </summary>
         [DataType(DataType.Url)]
+        [Url]
         [MaxLength(2048)]
         public string ImageURL { get; set; }
 

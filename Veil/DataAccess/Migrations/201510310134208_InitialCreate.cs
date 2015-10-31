@@ -6,6 +6,9 @@ namespace Veil.DataAccess.Migrations
     /// Migration which sets up the database to it base version. 
     /// This is equivalent to how EF sets it up without migrations enable
     /// </summary>
+    /// 
+    /// NOTE: DO NOT MANUALLY MODIFY THIS FILE AS ALL CHANGES WILL BE LOST UPON COLLAPSING MIGRATIONS DOWN INTO ONE
+    /// 
     public partial class InitialCreate : DbMigration
     {
         public override void Up()
@@ -107,6 +110,52 @@ namespace Veil.DataAccess.Migrations
                 .Index(t => t.CountryCode);
             
             CreateTable(
+                "dbo.Company",
+                c => new
+                    {
+                        Id = c.Guid(nullable: false, identity: true),
+                        Name = c.String(nullable: false, maxLength: 512),
+                    })
+                .PrimaryKey(t => t.Id);
+            
+            CreateTable(
+                "dbo.Game",
+                c => new
+                    {
+                        Id = c.Guid(nullable: false, identity: true),
+                        Name = c.String(nullable: false, maxLength: 512),
+                        ESRBRatingId = c.String(nullable: false, maxLength: 8),
+                        MinimumPlayerCount = c.Int(nullable: false),
+                        MaximumPlayerCount = c.Int(nullable: false),
+                        TrailerURL = c.String(maxLength: 2048),
+                        ShortDescription = c.String(nullable: false, maxLength: 140),
+                        LongDescription = c.String(maxLength: 2048),
+                        PrimaryImageURL = c.String(maxLength: 2048),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.ESRBRating", t => t.ESRBRatingId)
+                .Index(t => t.ESRBRatingId);
+            
+            CreateTable(
+                "dbo.ESRBContentDescriptor",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        DescriptorName = c.String(nullable: false, maxLength: 64),
+                    })
+                .PrimaryKey(t => t.Id);
+            
+            CreateTable(
+                "dbo.ESRBRating",
+                c => new
+                    {
+                        RatingId = c.String(nullable: false, maxLength: 8),
+                        Description = c.String(nullable: false, maxLength: 64),
+                        ImageURL = c.String(maxLength: 2048),
+                    })
+                .PrimaryKey(t => t.RatingId);
+            
+            CreateTable(
                 "dbo.Tag",
                 c => new
                     {
@@ -151,68 +200,6 @@ namespace Veil.DataAccess.Migrations
                         PlatformName = c.String(nullable: false, maxLength: 128),
                     })
                 .PrimaryKey(t => t.PlatformCode);
-            
-            CreateTable(
-                "dbo.Company",
-                c => new
-                    {
-                        Id = c.Guid(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 512),
-                    })
-                .PrimaryKey(t => t.Id);
-            
-            CreateTable(
-                "dbo.Game",
-                c => new
-                    {
-                        Id = c.Guid(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 512),
-                        GameAvailabilityStatus = c.Int(nullable: false),
-                        ESRBRatingId = c.String(nullable: false, maxLength: 8),
-                        MinimumPlayerCount = c.Int(nullable: false),
-                        MaximumPlayerCount = c.Int(nullable: false),
-                        TrailerURL = c.String(nullable: false, maxLength: 2048),
-                        ShortDescription = c.String(nullable: false, maxLength: 140),
-                        LongDescription = c.String(maxLength: 2048),
-                        PrimaryImageURL = c.String(maxLength: 2048),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.ESRBRating", t => t.ESRBRatingId)
-                .Index(t => t.ESRBRatingId);
-            
-            CreateTable(
-                "dbo.ESRBContentDescriptor",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        DescriptorName = c.String(nullable: false, maxLength: 64),
-                    })
-                .PrimaryKey(t => t.Id);
-            
-            CreateTable(
-                "dbo.ESRBRating",
-                c => new
-                    {
-                        RatingId = c.String(nullable: false, maxLength: 8),
-                        Description = c.String(nullable: false, maxLength: 64),
-                    })
-                .PrimaryKey(t => t.RatingId);
-            
-            CreateTable(
-                "dbo.GameReview",
-                c => new
-                    {
-                        MemberId = c.Guid(nullable: false),
-                        ProductReviewedId = c.Guid(nullable: false),
-                        Rating = c.Int(nullable: false),
-                        ReviewText = c.String(maxLength: 4000),
-                        ReviewStatus = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => new { t.MemberId, t.ProductReviewedId })
-                .ForeignKey("dbo.Member", t => t.MemberId)
-                .ForeignKey("dbo.GameProduct", t => t.ProductReviewedId)
-                .Index(t => t.MemberId)
-                .Index(t => t.ProductReviewedId);
             
             CreateTable(
                 "dbo.Friendship",
@@ -389,6 +376,22 @@ namespace Veil.DataAccess.Migrations
                 .Index(t => t.ProductId);
             
             CreateTable(
+                "dbo.GameReview",
+                c => new
+                    {
+                        MemberId = c.Guid(nullable: false),
+                        ProductReviewedId = c.Guid(nullable: false),
+                        Rating = c.Int(nullable: false),
+                        ReviewText = c.String(maxLength: 4000),
+                        ReviewStatus = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => new { t.MemberId, t.ProductReviewedId })
+                .ForeignKey("dbo.Member", t => t.MemberId)
+                .ForeignKey("dbo.GameProduct", t => t.ProductReviewedId)
+                .Index(t => t.MemberId)
+                .Index(t => t.ProductReviewedId);
+            
+            CreateTable(
                 "dbo.LocationType",
                 c => new
                     {
@@ -472,16 +475,16 @@ namespace Veil.DataAccess.Migrations
                 .Index(t => t.ProductId);
             
             CreateTable(
-                "dbo.ProductCategory",
+                "dbo.GameCategory",
                 c => new
                     {
-                        Product_Id = c.Guid(nullable: false),
+                        Game_Id = c.Guid(nullable: false),
                         Tag_Name = c.String(nullable: false, maxLength: 64),
                     })
-                .PrimaryKey(t => new { t.Product_Id, t.Tag_Name })
-                .ForeignKey("dbo.Product", t => t.Product_Id, cascadeDelete: true)
+                .PrimaryKey(t => new { t.Game_Id, t.Tag_Name })
+                .ForeignKey("dbo.Game", t => t.Game_Id, cascadeDelete: true)
                 .ForeignKey("dbo.Tag", t => t.Tag_Name, cascadeDelete: true)
-                .Index(t => t.Product_Id)
+                .Index(t => t.Game_Id)
                 .Index(t => t.Tag_Name);
             
             CreateTable(
@@ -549,8 +552,10 @@ namespace Veil.DataAccess.Migrations
             DropForeignKey("dbo.Location", "LocationTypeName", "dbo.LocationType");
             DropForeignKey("dbo.CartItem", "MemberId", "dbo.Member");
             DropForeignKey("dbo.CartItem", "ProductId", "dbo.Product");
-            DropForeignKey("dbo.ProductCategory", "Tag_Name", "dbo.Tag");
-            DropForeignKey("dbo.ProductCategory", "Product_Id", "dbo.Product");
+            DropForeignKey("dbo.GameReview", "ProductReviewedId", "dbo.GameProduct");
+            DropForeignKey("dbo.GameReview", "MemberId", "dbo.Member");
+            DropForeignKey("dbo.GameCategory", "Tag_Name", "dbo.Tag");
+            DropForeignKey("dbo.GameCategory", "Game_Id", "dbo.Game");
             DropForeignKey("dbo.MemberWishlistItem", "ProductId", "dbo.Product");
             DropForeignKey("dbo.MemberWishlistItem", "MemberId", "dbo.Member");
             DropForeignKey("dbo.WebOrder", "ShippingAddressId", "dbo.MemberAddress");
@@ -576,12 +581,10 @@ namespace Veil.DataAccess.Migrations
             DropForeignKey("dbo.MemberFavoriteTag", "Member_UserId", "dbo.Member");
             DropForeignKey("dbo.MemberFavoritePlatform", "Platform_PlatformCode", "dbo.Platform");
             DropForeignKey("dbo.MemberFavoritePlatform", "Member_UserId", "dbo.Member");
-            DropForeignKey("dbo.GameReview", "ProductReviewedId", "dbo.GameProduct");
-            DropForeignKey("dbo.GameReview", "MemberId", "dbo.Member");
+            DropForeignKey("dbo.MemberCreditCard", "MemberId", "dbo.Member");
             DropForeignKey("dbo.Game", "ESRBRatingId", "dbo.ESRBRating");
             DropForeignKey("dbo.GameESRBContentDescriptor", "ESRBContentDescriptor_Id", "dbo.ESRBContentDescriptor");
             DropForeignKey("dbo.GameESRBContentDescriptor", "Game_Id", "dbo.Game");
-            DropForeignKey("dbo.MemberCreditCard", "MemberId", "dbo.Member");
             DropForeignKey("dbo.ProductLocationInventory", "ProductId", "dbo.Product");
             DropForeignKey("dbo.ProductLocationInventory", "LocationId", "dbo.Location");
             DropForeignKey("dbo.Location", new[] { "ProvinceCode", "CountryCode" }, "dbo.Province");
@@ -596,8 +599,8 @@ namespace Veil.DataAccess.Migrations
             DropIndex("dbo.GameProduct", new[] { "DeveloperId" });
             DropIndex("dbo.GameProduct", new[] { "PublisherId" });
             DropIndex("dbo.GameProduct", new[] { "Id" });
-            DropIndex("dbo.ProductCategory", new[] { "Tag_Name" });
-            DropIndex("dbo.ProductCategory", new[] { "Product_Id" });
+            DropIndex("dbo.GameCategory", new[] { "Tag_Name" });
+            DropIndex("dbo.GameCategory", new[] { "Game_Id" });
             DropIndex("dbo.MemberWishlistItem", new[] { "ProductId" });
             DropIndex("dbo.MemberWishlistItem", new[] { "MemberId" });
             DropIndex("dbo.MemberEventMembership", new[] { "Event_Id" });
@@ -609,6 +612,8 @@ namespace Veil.DataAccess.Migrations
             DropIndex("dbo.GameESRBContentDescriptor", new[] { "ESRBContentDescriptor_Id" });
             DropIndex("dbo.GameESRBContentDescriptor", new[] { "Game_Id" });
             DropIndex("dbo.Role", "RoleNameIndex");
+            DropIndex("dbo.GameReview", new[] { "ProductReviewedId" });
+            DropIndex("dbo.GameReview", new[] { "MemberId" });
             DropIndex("dbo.OrderItem", new[] { "ProductId" });
             DropIndex("dbo.OrderItem", new[] { "OrderId" });
             DropIndex("dbo.WebOrder", new[] { "ShippingAddressId" });
@@ -628,11 +633,9 @@ namespace Veil.DataAccess.Migrations
             DropIndex("dbo.MemberAddress", new[] { "MemberId" });
             DropIndex("dbo.Friendship", new[] { "RequesterId" });
             DropIndex("dbo.Friendship", new[] { "ReceiverId" });
-            DropIndex("dbo.GameReview", new[] { "ProductReviewedId" });
-            DropIndex("dbo.GameReview", new[] { "MemberId" });
-            DropIndex("dbo.Game", new[] { "ESRBRatingId" });
             DropIndex("dbo.MemberCreditCard", new[] { "MemberId" });
             DropIndex("dbo.Member", new[] { "UserId" });
+            DropIndex("dbo.Game", new[] { "ESRBRatingId" });
             DropIndex("dbo.Province", new[] { "CountryCode" });
             DropIndex("dbo.Location", new[] { "CountryCode" });
             DropIndex("dbo.Location", new[] { "ProvinceCode", "CountryCode" });
@@ -644,7 +647,7 @@ namespace Veil.DataAccess.Migrations
             DropTable("dbo.PhysicalGameProduct");
             DropTable("dbo.DownloadGameProduct");
             DropTable("dbo.GameProduct");
-            DropTable("dbo.ProductCategory");
+            DropTable("dbo.GameCategory");
             DropTable("dbo.MemberWishlistItem");
             DropTable("dbo.MemberEventMembership");
             DropTable("dbo.MemberFavoriteTag");
@@ -652,6 +655,7 @@ namespace Veil.DataAccess.Migrations
             DropTable("dbo.GameESRBContentDescriptor");
             DropTable("dbo.Role");
             DropTable("dbo.LocationType");
+            DropTable("dbo.GameReview");
             DropTable("dbo.OrderItem");
             DropTable("dbo.WebOrder");
             DropTable("dbo.UserRole");
@@ -663,15 +667,14 @@ namespace Veil.DataAccess.Migrations
             DropTable("dbo.MemberAddress");
             DropTable("dbo.Event");
             DropTable("dbo.Friendship");
-            DropTable("dbo.GameReview");
-            DropTable("dbo.ESRBRating");
-            DropTable("dbo.ESRBContentDescriptor");
-            DropTable("dbo.Game");
-            DropTable("dbo.Company");
             DropTable("dbo.Platform");
             DropTable("dbo.MemberCreditCard");
             DropTable("dbo.Member");
             DropTable("dbo.Tag");
+            DropTable("dbo.ESRBRating");
+            DropTable("dbo.ESRBContentDescriptor");
+            DropTable("dbo.Game");
+            DropTable("dbo.Company");
             DropTable("dbo.Province");
             DropTable("dbo.Country");
             DropTable("dbo.Location");

@@ -23,13 +23,13 @@ namespace Veil.DataModels.Models
         public string Name { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the Member's who have this tag as one of their favorites
+        /// Collection navigation property for the Members who have this tag as one of their favorites
         /// </summary>
         public virtual ICollection<Member> MemberFavoriteCategory { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the Product's with this tag
+        /// Collection navigation property for the Games with this tag
         /// </summary>
-        public virtual ICollection<Product> TaggedProducts { get; set; }
+        public virtual ICollection<Game> TaggedGames { get; set; }
     }
 }
