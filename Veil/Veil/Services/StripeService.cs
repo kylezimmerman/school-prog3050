@@ -38,6 +38,9 @@ namespace Veil.Services
 
         public string CreateCreditCard(Member member, CreditCardViewModel creditCard)
         {
+            // Note: Stripe says their card_error messages are safe to display to the user
+            //if (ex.StripeError.Code == "card_error")
+
             var newCard = new StripeCardCreateOptions
             {
                 Source = new StripeSourceOptions
