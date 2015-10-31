@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Veil.DataAccess.Interfaces;
+using Veil.Extensions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;

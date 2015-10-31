@@ -7,6 +7,7 @@ using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Practices.Unity;
 using Owin;
 using Veil.DataModels.Models.Identity;
+using Veil.Extensions;
 using Veil.Helpers;
 using Veil.Services;
 

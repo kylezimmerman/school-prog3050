@@ -30,37 +30,44 @@ namespace Veil.DataAccess.Migrations
                 new ESRBRating
                 {
                     RatingId = "EC",
-                    Description = "Early Childhood"
+                    Description = "Early Childhood",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ec.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "E",
-                    Description = "Everyone"
+                    Description = "Everyone",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "E10+",
-                    Description = "Everyone 10+"
+                    Description = "Everyone 10+",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e10.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "T",
-                    Description = "Teen"
+                    Description = "Teen",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_t.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "M",
-                    Description = "Mature"
+                    Description = "Mature",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_m.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "AO",
-                    Description = "Adults Only"
+                    Description = "Adults Only",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ao.png"
                 },
                 new ESRBRating
                 {
                     RatingId = "RP",
-                    Description = "Rating Pending"
+                    Description = "Rating Pending",
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_rp.png"
                 }
             );
 
@@ -403,6 +410,35 @@ namespace Veil.DataAccess.Migrations
                 {
                     Id = Guid.ParseExact("475b072e-de7d-e511-80df-001cd8b71da6", "D"),
                     Name = VeilRoles.MemberRole
+                });
+
+            context.Games.AddOrUpdate(
+                g => g.Id,
+                new Game()
+                {
+                    Id = Guid.ParseExact("f6fc6194-937e-e511-80df-001cd8b71da6", "D"),
+                    Name = "Test Game",
+                    ESRBRatingId = "E",
+                    GameAvailabilityStatus = AvailabilityStatus.Available,
+                    ShortDescription = "This is the short description",
+                    LongDescription = "This is the long description",
+                    MinimumPlayerCount = 1,
+                    MaximumPlayerCount = 2,
+                    PrimaryImageURL = "http://baconmockup.com/200/140/",
+                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
+                },
+                new Game()
+                {
+                    Id = Guid.ParseExact("14c3c0c3-967e-e511-80df-001cd8b71da6", "D"),
+                    Name = "Yet Another Game",
+                    ESRBRatingId = "E",
+                    GameAvailabilityStatus = AvailabilityStatus.Available,
+                    LongDescription = "This is the long description",
+                    ShortDescription = "This is the short description",
+                    MinimumPlayerCount = 1,
+                    MaximumPlayerCount = 4,
+                    PrimaryImageURL = "http://placebacon.net/200/150",
+                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
                 });
 
             /* Enum to Lookup Tables Setup */

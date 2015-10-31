@@ -1,0 +1,53 @@
+﻿@model Veil.Models.SearchViewModel
+
+@{
+    ViewBag.Title = "Advanced Search";
+}
+
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
+
+@using (Html.BeginForm("Search", "Games", FormMethod.Post))
+{
+    <div class="row">
+        <div class="medium-2 columns">
+            <label for="game-name">Name:</label>
+        </div>
+        <div class="medium-4 columns">
+            <input type="text" id="game-name" name="title" />
+        </div>
+        <div class="medium-2 columns">
+            <label for="game-name">Platform:</label>
+        </div>
+        <div class="medium-4 columns">
+            <select id="game-platform" name="platform">
+                @foreach (var platform in Model.Platforms)
+                {
+                    <option value="@platform.PlatformCode">@platform.PlatformName</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="medium-2 columns">
+            <label for="game-name">Tags:</label>
+        </div>
+        <div class="medium-10 columns">
+            @foreach (var tag in Model.Tags)
+            {
+                <div style="display: inline-block">
+                    <input type="checkbox" id="tag-@tag.Name" name="tags" value="@tag.Name" /><label for="tag-@tag.Name">@tag.Name</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="medium-push-9 medium-3 columns">
+            <button class="expand">Search</button>
+        </div>
+    </div>
+}

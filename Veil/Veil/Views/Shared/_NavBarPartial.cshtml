@@ -1,7 +1,8 @@
 ﻿<nav class="top-bar" data-topbar role="navigation">
     <ul class="title-area">
         <li class="name">
-            <h1>@Html.ActionLink("Veil", "Index", new { Controller = "Home" })</h1>
+            <a href="@Url.Action("Index", "Home")"><img src="https://cloud.githubusercontent.com/assets/9099866/10851581/4c0c41a8-7f02-11e5-92a6-a4d59528d6f4.png" /></a>
+            <h1><a href="@Url.Action("Index", "Home")">Veil</a></h1>
         </li>
         <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
         <li class="toggle-topbar menu-icon">
@@ -18,12 +19,15 @@
         <ul class="right">
             <li class="has-form">
                 <div class="row collapse">
-                    <div class="large-8 small-9 columns">
-                        <input type="text" placeholder="Keyword or Tag">
-                    </div>
-                    <div class="large-4 small-3 columns">
-                        <a href="#" class="alert button expand">Search</a>
-                    </div>
+                    @using (Html.BeginForm("Search", "Games", FormMethod.Post))
+                    {
+                        <div class="large-8 small-9 columns">
+                            <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name">
+                        </div>
+                        <div class="large-4 small-3 columns">
+                            <button type="submit">Search</button>
+                        </div>
+                    }
                 </div>
             </li>
             <li class="active">

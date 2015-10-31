@@ -5,6 +5,7 @@
  *      Drew Matheson, 2015.10.02: Created
  */
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -21,12 +22,14 @@ namespace Veil.DataModels.Models
         [DataType(DataType.Url)]
         [Url]
         [MaxLength(2048)]
+        [DisplayName("Download Link")]
         public string DownloadLink { get; set; }
 
         /// <summary>
         /// An approximate size in megabytes for the download
         /// </summary>
         [Range(0, int.MaxValue)]
+        [DisplayName("Approximate Size")]
         public int ApproximateSizeInMB { get; set; }
     }
 }

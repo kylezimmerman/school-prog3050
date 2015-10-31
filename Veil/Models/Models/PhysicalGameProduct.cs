@@ -5,6 +5,7 @@
  *      Drew Matheson, 2015.10.03: Created
  */
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -23,23 +24,27 @@ namespace Veil.DataModels.Models
         /// </example>
         /// </summary>
         [MaxLength(256)]
+        [DisplayName("SKU Suffix")]
         public string SKUNameSuffix { get; set; }
 
         /// <summary>
         /// The internal SKU number for a new version of this product
         /// </summary>
         [MaxLength(128)]
+        [DisplayName("Internal New SKU")]
         public string InternalNewSKU { get; set; }
 
         /// <summary>
         /// The internal SKU number for a used version of this product
         /// </summary>
         [MaxLength(128)]
+        [DisplayName("Internal Used SKU")]
         public string InteralUsedSKU { get; set; }
 
         /// <summary>
         /// Flag which indicates if we will buy pre-used copies from customers
         /// </summary>
+        [DisplayName("Will Buy Used")]
         public bool WillBuyBackUsedCopy { get; set; }
     }
 }

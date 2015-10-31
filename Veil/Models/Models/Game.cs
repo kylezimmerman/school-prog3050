@@ -70,6 +70,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The URL for a trailer for the Game
         /// </summary>
+        //TODO: Remove Required
         [Required]
         [DataType(DataType.Url)]
         [Url]
