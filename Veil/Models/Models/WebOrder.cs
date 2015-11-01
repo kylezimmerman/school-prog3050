@@ -110,7 +110,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The date and time of when the order was processed and shipped out
         /// </summary>
-        public DateTime ProcessedDate { get; set; }
+        public DateTime? ProcessedDate { get; set; }
 
         /// <summary>
         /// A message explaining why the order was cancelled by an employee

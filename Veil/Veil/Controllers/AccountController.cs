@@ -58,6 +58,11 @@ namespace Veil.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             ViewBag.ReturnUrl = returnUrl;
             return View(new LoginRegisterViewModel
             {
@@ -168,6 +173,11 @@ namespace Veil.Controllers
         [AllowAnonymous]
         public ActionResult Register(string returnUrl)
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             ViewBag.ReturnUrl = returnUrl;
 
             var viewModel = new LoginRegisterViewModel
@@ -322,7 +332,9 @@ namespace Veil.Controllers
         /// <returns>
         ///     A view allowing the user to resend a email confirmation link
         /// </returns>
-        [AllowAnonymous]
+        /// <remarks>
+        ///     This action can not be accessed directly via Url.
+        /// </remarks>
         [ChildActionOnly]
         public ActionResult ConfirmResendConfirmationEmail(string emailAddress)
         {
@@ -352,6 +364,11 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResendConfirmationEmail(string emailAddress)
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             User user = await userManager.FindByEmailAsync(emailAddress);
 
             if (user != null)

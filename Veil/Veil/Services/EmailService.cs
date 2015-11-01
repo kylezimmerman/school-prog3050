@@ -5,19 +5,16 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Exceptions;
+using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using SendGrid;
 
 namespace Veil.Services
 {
+    [UsedImplicitly]
     public class EmailService : IIdentityMessageService
     {
-        public Task SendAsync(IdentityMessage message)
-        {
-            return SendEmail(message);
-        }
-
-        private Task SendEmail(IdentityMessage message)
+        public async Task SendAsync(IdentityMessage message)
         {
             SendGridMessage mail = new SendGridMessage
             {
@@ -34,12 +31,18 @@ namespace Veil.Services
 
             try
             {
-                return transport.DeliverAsync(mail);
+                await transport.DeliverAsync(mail);
             }
             catch (InvalidApiRequestException ex)
             {
                 // TODO: We would want to log this, but don't really have any course of action for resolving
                 Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.ResponseStatusCode);
+
+                foreach (var error in ex.Errors)
+                {
+                    Debug.WriteLine(error);
+                }
             }
             catch (ProtocolViolationException ex)
             {
@@ -51,9 +54,6 @@ namespace Veil.Services
                 // TODO: We would want to log this, but don't really have any course of action for resolving
                 Debug.WriteLine(ex.Message);
             }
-
-            // Return a completed result
-            return Task.FromResult(0);
         }
     }
 }

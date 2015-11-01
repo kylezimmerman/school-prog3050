@@ -91,6 +91,7 @@ namespace Veil.DataModels.Models
         [DataType(DataType.ImageUrl)]
         [Url]
         [DisplayName("Box Art URL")]
+        [MaxLength(2048)]
         public string BoxArtImageURL { get; set; }
 
         /// <summary>

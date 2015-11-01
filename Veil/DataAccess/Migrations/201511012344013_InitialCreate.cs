@@ -37,7 +37,7 @@ namespace Veil.DataAccess.Migrations
                         ReleaseDate = c.DateTime(nullable: false),
                         NewWebPrice = c.Decimal(nullable: false, precision: 18, scale: 2),
                         UsedWebPrice = c.Decimal(precision: 18, scale: 2),
-                        BoxArtImageURL = c.String(),
+                        BoxArtImageURL = c.String(maxLength: 2048),
                         SKUDescription = c.String(maxLength: 1024),
                     })
                 .PrimaryKey(t => t.Id);
@@ -253,9 +253,10 @@ namespace Veil.DataAccess.Migrations
                 c => new
                     {
                         Id = c.Guid(nullable: false, identity: true),
+                        Email = c.String(nullable: false, maxLength: 256),
+                        UserName = c.String(nullable: false, maxLength: 256),
                         FirstName = c.String(nullable: false, maxLength: 64),
                         LastName = c.String(nullable: false, maxLength: 64),
-                        Email = c.String(nullable: false, maxLength: 256),
                         EmailConfirmed = c.Boolean(nullable: false),
                         PasswordHash = c.String(),
                         SecurityStamp = c.String(),
@@ -265,7 +266,6 @@ namespace Veil.DataAccess.Migrations
                         LockoutEndDateUtc = c.DateTime(),
                         LockoutEnabled = c.Boolean(nullable: false),
                         AccessFailedCount = c.Int(nullable: false),
-                        UserName = c.String(nullable: false, maxLength: 256),
                     })
                 .PrimaryKey(t => t.Id)
                 .Index(t => t.UserName, unique: true, name: "UserNameIndex");
@@ -348,7 +348,7 @@ namespace Veil.DataAccess.Migrations
                         StripeChargeId = c.String(nullable: false, maxLength: 255),
                         OrderDate = c.DateTime(nullable: false),
                         OrderStatus = c.Int(nullable: false),
-                        ProcessedDate = c.DateTime(nullable: false),
+                        ProcessedDate = c.DateTime(),
                         ReasonForCancellationMessage = c.String(maxLength: 512),
                     })
                 .PrimaryKey(t => t.Id)
@@ -526,7 +526,7 @@ namespace Veil.DataAccess.Migrations
                 c => new
                     {
                         Id = c.Guid(nullable: false),
-                        SKUNameSuffix = c.String(maxLength: 256),
+                        SKUNameSuffix = c.String(maxLength: 255),
                         InternalNewSKU = c.String(maxLength: 128),
                         InteralUsedSKU = c.String(maxLength: 128),
                         WillBuyBackUsedCopy = c.Boolean(nullable: false),

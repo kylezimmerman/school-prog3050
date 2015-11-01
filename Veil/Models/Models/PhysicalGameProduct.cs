@@ -23,7 +23,7 @@ namespace Veil.DataModels.Models
         ///     Collector's Edition
         /// </example>
         /// </summary>
-        [MaxLength(256)]
+        [MaxLength(255)]
         [DisplayName("SKU Suffix")]
         public string SKUNameSuffix { get; set; }
 

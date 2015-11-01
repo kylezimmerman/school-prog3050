@@ -110,13 +110,13 @@
     <Compile Include="EntityConfigurations\GameReviewEntityConfig.cs" />
     <Compile Include="EntityConfigurations\UserEntityConfig.cs" />
     <Compile Include="EntityConfigurations\WebOrderEntityConfig.cs" />
-    <Compile Include="Migrations\201510310134208_InitialCreate.cs" />
-    <Compile Include="Migrations\201510310134208_InitialCreate.Designer.cs">
-      <DependentUpon>201510310134208_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\201511012344013_InitialCreate.cs" />
+    <Compile Include="Migrations\201511012344013_InitialCreate.Designer.cs">
+      <DependentUpon>201511012344013_InitialCreate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510310135495_AddPhysicalGameProductSkuSequence.cs" />
-    <Compile Include="Migrations\201510310135495_AddPhysicalGameProductSkuSequence.Designer.cs">
-      <DependentUpon>201510310135495_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
+    <Compile Include="Migrations\201511012345026_AddPhysicalGameProductSkuSequence.cs" />
+    <Compile Include="Migrations\201511012345026_AddPhysicalGameProductSkuSequence.Designer.cs">
+      <DependentUpon>201511012345026_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -133,11 +133,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201510310134208_InitialCreate.resx">
-      <DependentUpon>201510310134208_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201511012344013_InitialCreate.resx">
+      <DependentUpon>201511012344013_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510310135495_AddPhysicalGameProductSkuSequence.resx">
-      <DependentUpon>201510310135495_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201511012345026_AddPhysicalGameProductSkuSequence.resx">
+      <DependentUpon>201511012345026_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

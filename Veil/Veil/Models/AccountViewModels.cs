@@ -89,6 +89,7 @@ namespace Veil.Models
         public string Email { get; set; }
 
         [Required]
+        [MaxLength(255)]
         [Display(Name = "Username")]
         public string Username { get; set; }
 

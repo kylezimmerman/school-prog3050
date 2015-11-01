@@ -1,4 +1,5 @@
-﻿<nav class="top-bar" data-topbar role="navigation">
+﻿@using Veil.DataModels
+<nav class="top-bar" data-topbar role="navigation">
     <ul class="title-area">
         <li class="name">
             <a href="@Url.Action("Index", "Home")"><img src="https://cloud.githubusercontent.com/assets/9099866/10851581/4c0c41a8-7f02-11e5-92a6-a4d59528d6f4.png" /></a>
@@ -22,7 +23,7 @@
                     @using (Html.BeginForm("Search", "Games", FormMethod.Post))
                     {
                         <div id="nav-bar-search-container" class="large-8 small-9 columns">
-                            <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name" />
+                            <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name"/>
                         </div>
                         <div id="nav-bar-search-button-container" class="large-4 small-3 columns">
                             <button type="submit">Search</button>
@@ -30,9 +31,13 @@
                     }
                 </div>
             </li>
-            <li class="active">
-                @Html.ActionLink("Cart (1)", "Index", new { Controller = "Cart" })
-            </li>
+
+            @if (User.IsInRole(VeilRoles.MemberRole) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+            {
+                <li class="active">
+                    @Html.ActionLink("Cart (1)", "Index", new { Controller = "Cart" })
+                </li>
+            }
         </ul>
 
         <!-- Left Nav Section -->
