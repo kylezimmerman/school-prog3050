@@ -24,7 +24,10 @@
         }
     </div>
     <div class="small-10 medium-5 columns" data-equalizer-watch>
-        <p class="margin-bottom-0"><strong>Release Date: @Model.Game.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
+        @if (Model.Game.GameSKUs.Any())
+        {
+            <p class="margin-bottom-0"><strong>Release Date: @Model.Game.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
+        }
         <p class="margin-bottom-0">
             <strong>Players: @Model.Game.MinimumPlayerCount</strong>
             @if (Model.Game.MaximumPlayerCount > Model.Game.MinimumPlayerCount)
@@ -37,7 +40,7 @@
             @foreach (var tag in Model.Game.Tags)
             {
                 @* TODO: Make this link to something that actually filters by tag *@
-                <li><a href="@Url.Action("Index")" class="button tiny secondary">@tag.Name</a></li>
+                <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
             }
             @if (User.IsInRole(VeilRoles.ADMIN_ROLE) ||
                 User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
@@ -97,9 +100,13 @@
             @{ var rating = gameProduct.AverageRating; }
             @if (rating.HasValue)
             {
-                <div class="rating panel">
-                    <strong>Average Rating:</strong><br />
-                    @Html.Partial("_RatingStarsPartial", rating)
+                <div class="row">
+                    <strong class="label info column bordered">Average Rating</strong>
+                </div>
+                <div class="row">
+                    <div class="column text-center margin-bottom-1 bordered rating">
+                        @Html.Partial("_RatingStarsPartial", rating)
+                    </div>
                 </div>
             }
 
@@ -114,11 +121,11 @@
                 if (gameProduct.UsedWebPrice.HasValue)
                 {
                     @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = "button expand small success margin-bottom-0" })
-                    @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = false }, new { @class = "button expand small" });
+                    @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = false }, new { @class = "button expand small margin-bottom-0" });
                 }
                 else
                 {
-                    @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success" })
+                    @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = "button expand small success margin-bottom-0" })
                 }
                 @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = gameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
             }
