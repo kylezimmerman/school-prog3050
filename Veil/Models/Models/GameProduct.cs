@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Veil.DataModels.Models
 {
@@ -73,6 +74,17 @@ namespace Veil.DataModels.Models
         /// Gets the name for this GameProduct
         /// </summary>
         public override string Name => Game.Name;
+
+        /// <summary>
+        ///     The Game's SKU's average rating
+        /// </summary>
+        public double? AverageRating
+        {
+            get
+            {
+                return Reviews.Average(r => (double?) r.Rating);
+            }
+        }
 
         /// <summary>
         /// Collection navigation property for the reviews for this game product

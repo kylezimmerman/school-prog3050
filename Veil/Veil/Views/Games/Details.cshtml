@@ -9,12 +9,12 @@
         <h2>@ViewBag.Title</h2>
     </div>
 </div>
-<div class="row" data-equalizer>
-    <div class="small-6 columns" data-equalizer-watch>
+<div class="row padding-bottom-1" data-equalizer>
+    <div class="small-12 medium-6 columns" data-equalizer-watch>
         @{
-            if (Model.Game.TrailerURL != null && Model.Game.TrailerURL != "")
+            if (!string.IsNullOrWhiteSpace(Model.Game.TrailerURL))
             {
-                <embed class="width-100 height-100 padding-bottom-1" src="@Model.Game.TrailerURL" />
+                <embed class="width-100 height-100 min-height-14" src="@Model.Game.TrailerURL" />
             }
             else
             {
@@ -22,19 +22,20 @@
             }
         }
     </div>
-    <div class="small-2 columns" data-equalizer-watch>
-        <img class="right width-100" src="@Model.Game.Rating.ImageURL" alt="@Model.Game.Rating.Description" />
-        @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = Model.Game.Id }, new { @class="button small" })
-    </div>
-    <div class="small-4 columns" data-equalizer-watch>
-        <p><strong>Release Date: @Model.EarliestRelease.ToString("MMM dd, yyyy")</strong></p>
+    <div class="small-10 medium-5 columns" data-equalizer-watch>
+        <p class="margin-bottom-0"><strong>Release Date: @Model.EarliestRelease.ToString("MMM dd, yyyy")</strong></p>
+        <p class="margin-bottom-0"><strong>Players: @Model.Game.MinimumPlayerCount - @Model.Game.MaximumPlayerCount</strong></p>
         <h4>Tags</h4>
         <ul class="inline-list">
-            <li><a href="#" class="button secondary tiny">Action</a></li>
-            <li><a href="#" class="button secondary tiny">Post-apocalypse</a></li>
-            <li><a href="#" class="button secondary tiny">Adventure</a></li>
-            <li><a href="#" class="button secondary tiny">6 More...</a></li>
+            @foreach (var tag in Model.Game.Tags)
+            {
+                @* TODO: Make this link to something that actually filters by tag *@
+                <li><a href="@Url.Action("Index")">@tag.Name</a></li>
+            }
         </ul>
+    </div>
+    <div class="small-2 medium-1 columns" data-equalizer-watch>
+        <img class="right width-100" src="@Model.Game.Rating.ImageURL" alt="@Model.Game.Rating.Description" />
     </div>
 </div>
 <div class="row">
@@ -54,35 +55,57 @@
     </div>
 
     <div class="small-4 medium-3 columns">
-        @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Game.Id }, new { @class="button expand small" })
+        @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
     </div>
 
     <div class="small-4 medium-3 columns">
-        @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Game.Id }, new { @class="button expand small" })
+        @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
     </div>
 </div>
 
-@{ 
-    foreach (var gameProduct in Model.Game.GameSKUs)
-    {
-        <div class="row panel">
-            <div class="small-1 columns">
-                <h4 style="transform:rotate(-90deg) translateX(-100%)">@gameProduct.PlatformCode</h4>
-            </div>
-            <div class="small-2 columns">
-                <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art" />
-            </div>
-            <div class="small-5 columns">
-                <p>@gameProduct.SKUDescription</p>
-            </div>
-            <div class="small-3 columns">
-                <button class="expand">Buy New @gameProduct.NewWebPrice</button>
-                <button class="expand success">Buy Used @gameProduct.UsedWebPrice</button>
-                @*TODO: Get average rating*@
-                <p>Average Rating: 5.0</p>
-            </div>
+@foreach (var gameProduct in Model.Game.GameSKUs)
+{
+    <div class="row panel">
+        <div class="small-1 columns">
+            <h4 style="transform:rotate(-90deg) translateX(-150%)">@gameProduct.PlatformCode</h4>
         </div>
-    }
+        <div class="small-2 columns">
+            <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art" />
+        </div>
+        <div class="small-5 columns">
+            <h5>@gameProduct.Name</h5>
+            <p class="margin-bottom-0 padding-bottom-half-em">@gameProduct.SKUDescription</p>
+            <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@gameProduct.Developer.Name</p>
+            <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@gameProduct.Publisher.Name</p>
+        </div>
+        <div class="small-3 columns">
+            @{ var rating = gameProduct.AverageRating; }
+            @if (rating.HasValue)
+            {
+                <div class="rating panel">
+                    <strong>Average Rating:</strong><br />
+                    @Html.Partial("_RatingStarsPartial", rating)
+                </div>
+            }
+
+            @*TODO: Only for Employees*@
+            @Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
+            @Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
+
+            @*TODO: Only for members*@
+            @*TODO: Change ActionLink to distinguish New/Used*@
+            @if (gameProduct.UsedWebPrice.HasValue)
+            {
+                @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success margin-bottom-0" })
+                @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small" });
+            }
+            else
+            {
+                @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success" })
+            }
+            @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = gameProduct.Id }, new { @class = "button expand small margin-bottom-0" })
+        </div>
+    </div>
 }
 
 <div class="row">
