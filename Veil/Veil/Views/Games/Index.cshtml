@@ -18,35 +18,12 @@
     </div>
 </div>
 
-
-@* TODO: remove this when we don't want it anymore *@
-@*<div class="row">
-    <a href="@Url.Action("Details", new {id = "7169E5E2-AFCF-4F55-9917-207D2076457F"})" class="button secondary text-left">
-        <div class="small-3 columns">
-            <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
-        </div>
-        <div class="small-6 columns">
-            <h4>Game Name 1</h4>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-        </div>
-        <div class="small-3 columns">
-            <p>Average Rating: 5.0</p>
-            <p>
-                <strong>New: </strong>Starting at $50
-            </p>
-            <p>
-                <strong>Used: </strong>Starting at $30
-            </p>
-        </div>
-    </a>
-</div>*@
-
 @foreach (var game in Model)
 {
     <div class="row panel">
         <div class="medium-3 columns">
-            <a href="@Url.Action("Details", new {id = game.Id})" class="th">
-                <img src="@game.PrimaryImageURL" alt="Box Art" />
+            <a href="@Url.Action("Details", new {id = game.Id})" class="th width-100 small-centered">
+                <img src="@game.PrimaryImageURL" alt="Box Art" class="width-100" />
             </a>
         </div>
         <div class="medium-6 columns">
@@ -54,49 +31,45 @@
             <p>@game.ShortDescription</p>
         </div>
         <div class="medium-3 columns">
-            @{ var rating = game.AverageRating; }
+            <div class="row">
+                <div class="column">
+                    @{ double? rating = game.AverageRating; }
 
-            @if (rating.HasValue)
-            {
-                <div class="rating panel">
-                    <strong>Average Rating:</strong><br/>
-                    @Html.Partial("_RatingStarsPartial", rating)
+                    @if (rating.HasValue)
+                    {
+                        <div class="row">
+                            <strong class="label info column bordered">Average Rating</strong>
+                        </div>
+                        <div class="row">
+                            <div class="column text-center margin-bottom-1 bordered rating">
+                                @Html.Partial("_RatingStarsPartial", rating)
+                            </div>
+                        </div>
+                    }
                 </div>
-            }
+            </div>
 
             @if (game.GameSKUs.Any())
             {
-                <p>
-                    <strong class="label success">New</strong>
-                    <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
-                </p>
+                <div class="row">
+                    <strong class="label success column">New</strong>
+                </div>
+                <div class="row">
+                    <div class="column text-center margin-bottom-1 bordered">
+                        <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
+                    </div>
+                </div>
             }
             @if (game.GameSKUs.Any(sku => sku.UsedWebPrice.HasValue))
             {
-                <p>
-                    <strong class="label">Used</strong>
-                    <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")</strong>
-                </p>
+                <div class="row">
+                    <strong class="label column">Used</strong>
+                    <div class="column text-center bordered">
+                        <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")</strong>
+                    </div>
+                </div>
             }
         </div>
     </div>
 
 }
-
-@*
-    <table class="table">
-    @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.PrimaryImageURL)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ShortDescription)
-            </td>
-        </tr>
-    }
-    </table>
-*@
