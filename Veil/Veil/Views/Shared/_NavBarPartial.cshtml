@@ -42,14 +42,7 @@
 
         <!-- Left Nav Section -->
         <ul class="left">
-            <li class="has-dropdown">
-                <a href="@Url.Action("Index", "Games")">Store</a>
-                <ul class="dropdown">
-                    <li>
-                        @Html.ActionLink("Games", "Index", new { Controller = "Games" })
-                    </li>
-                </ul>
-            </li>
+            <li>@Html.ActionLink("Games", "Index", new { Controller = "Games" }) </li>
             <li class="has-dropdown">
                 @Html.ActionLink("Events", "Index", new { Controller = "Events" })
                 <ul class="dropdown">
