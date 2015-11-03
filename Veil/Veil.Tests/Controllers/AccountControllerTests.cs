@@ -38,10 +38,10 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
         }
 
+        #region Register Tests
         [Test]
         public async void Register_WithValidModel_CallsUserManagerCreateAsync()
         {
-            // Auth Mocks
             Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerMock.
                 Setup(um => um.CreateAsync(It.IsAny<User>(), It.IsAny<string>())).
@@ -428,6 +428,216 @@ namespace Veil.Tests.Controllers
             };
 
             var result = controller.Register(null) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo("Home"));
+        }
+        #endregion Register Tests
+
+        [Test]
+        public async void ConfirmEmail_DefaultId_ReturnsErrorView()
+        {
+            AccountController controller = new AccountController(userManager: null, signInManager: null, stripeService: null);
+
+            var result = await controller.ConfirmEmail(Guid.Empty, "token") as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.EqualTo("Error"));
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public async void ConfirmEmail_InvalidCode_ReturnsErrorView(string code)
+        {
+            AccountController controller = new AccountController(userManager: null, signInManager: null, stripeService: null);
+
+            var result = await controller.ConfirmEmail(Guid.ParseExact("3F14F913-9540-43EA-8F1A-5B08F89A3560", "D"), code) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.EqualTo("Error"));
+        }
+
+        [Test]
+        public async void ConfirmEmail_ValidIdAndCodeButFailedEmailConfirmResult_ReturnsErrorView()
+        {
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.ConfirmEmailAsync(It.IsAny<Guid>(), It.IsAny<string>())).
+                ReturnsAsync(IdentityResult.Failed());
+
+            AccountController controller = new AccountController(userManager: userManagerMock.Object, signInManager: null, stripeService: null);
+
+            var result = await controller.ConfirmEmail(Guid.ParseExact("3F14F913-9540-43EA-8F1A-5B08F89A3560", "D"), "token") as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.EqualTo("Error"));
+        }
+
+        [Test]
+        public async void ConfirmEmail_ValidIdAndCode_CallsUserManagerConfirmEmailAsync()
+        {
+            Guid userId = Guid.ParseExact("3F14F913-9540-43EA-8F1A-5B08F89A3560", "D");
+            string token = "token";
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.ConfirmEmailAsync(It.IsAny<Guid>(), It.IsAny<string>())).
+                ReturnsAsync(IdentityResult.Failed() /* Return a failed result to minimize the code executed */).
+                Verifiable();
+
+            AccountController controller = new AccountController(userManager: userManagerMock.Object, signInManager: null, stripeService: null);
+
+            await controller.ConfirmEmail(userId, token);
+
+            Assert.That(
+                () => 
+                    userManagerMock.Verify(um => um.ConfirmEmailAsync(It.Is<Guid>(val => val == userId), It.Is<string>(val => val == token)), Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void ConfirmEmail_ValidIdAndCodeAndSuccessfulEmailConfirmResult_ReturnsConfirmEmailView()
+        {
+            Guid userId = Guid.ParseExact("3F14F913-9540-43EA-8F1A-5B08F89A3560", "D");
+            string token = "token";
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.ConfirmEmailAsync(It.Is<Guid>(val => val == userId), It.Is<string>(val => val == token))).
+                ReturnsAsync(IdentityResult.Success);
+            userManagerMock.
+                Setup(um => um.UpdateSecurityStampAsync(It.Is<Guid>(val => val == userId))).
+                ReturnsAsync(IdentityResult.Success);
+
+            AccountController controller = new AccountController(userManager: userManagerMock.Object, signInManager: null, stripeService: null);
+
+            var result = await controller.ConfirmEmail(userId, token) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.EqualTo("ConfirmEmail"));
+        }
+
+        [Test]
+        public async void ConfirmEmail_ValidIdAndCodeAndSuccessfulEmailConfirmResult_InvalidatesEmailToken()
+        {
+            Guid userId = Guid.ParseExact("3F14F913-9540-43EA-8F1A-5B08F89A3560", "D");
+            string token = "token";
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.ConfirmEmailAsync(It.Is<Guid>(val => val == userId), It.Is<string>(val => val == token))).
+                ReturnsAsync(IdentityResult.Success);
+            userManagerMock.
+                Setup(um => um.UpdateSecurityStampAsync(It.Is<Guid>(val => val == userId))).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            AccountController controller = new AccountController(userManager: userManagerMock.Object, signInManager: null, stripeService: null);
+
+            await controller.ConfirmEmail(userId, token);
+            
+            Assert.That(
+                () => 
+                    userManagerMock.Verify(um => um.UpdateSecurityStampAsync(It.Is<Guid>(val => val == userId)), Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void ConfirmResendConfirmationEmail_InvalidEmails_ReturnsErrorView(string emailAddress)
+        {
+            AccountController controller = new AccountController(userManager: null, signInManager: null, stripeService: null);
+
+            var result = controller.ConfirmResendConfirmationEmail(emailAddress) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.EqualTo("Error"));
+        }
+
+        [Test]
+        public void ConfirmResendConfirmationEmail_ValidEmail_ReturnsViewWithEmailAddModel()
+        {
+            string emailAddress = "fake@example.com";
+
+            AccountController controller = new AccountController(userManager: null, signInManager: null, stripeService: null);
+
+            var result = controller.ConfirmResendConfirmationEmail(emailAddress) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.EqualTo(emailAddress));
+            Assert.That(result.ViewName, Is.EqualTo("ConfirmResendConfirmationEmail"));
+        }
+
+        [Test]
+        public async void ResendConfirmationEmail_UnauthenticatedValidUserEmail_CallsUserManageSendEmailAsync()
+        {
+            string emailAddress = "fake@example.com";
+            User user = new User
+            {
+                Email = emailAddress,
+                Id = Guid.ParseExact("CF4A34A7-4246-48CF-81A7-5EE79A216E02", "D")
+            };
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.Is<string>(val => val == emailAddress))).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.GenerateEmailConfirmationTokenAsync(It.Is<Guid>(val => val == user.Id))).
+                ReturnsAsync("token");
+            userManagerMock.
+                Setup(um => um.SendEmailAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>())).
+                Returns(Task.FromResult(0)).
+                Verifiable();
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+
+            Uri requestUrl = new Uri("http://localhost/");
+
+            Mock<HttpRequestBase> requestStub = new Mock<HttpRequestBase>();
+            requestStub.
+                SetupGet(r => r.Url).
+                Returns(requestUrl);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.
+                Setup(c => c.HttpContext.User.Identity.IsAuthenticated).
+                Returns(false);
+            contextStub.
+                SetupGet(c => c.HttpContext.Request).
+                Returns(requestStub.Object);
+
+            AccountController controller = new AccountController(userManager: userManagerMock.Object, signInManager: null, stripeService: null)
+            {
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.ResendConfirmationEmail(emailAddress);
+
+            Assert.That(
+                () => 
+                    userManagerMock.Verify(um => um.SendEmailAsync(It.Is<Guid>(val => val == user.Id), It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void ResendConfirmationEmail_AuthenticatedUser_RedirectsToHomeIndex()
+        {
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.
+                Setup(c => c.HttpContext.User.Identity.IsAuthenticated).
+                Returns(true);
+
+            AccountController controller = new AccountController(userManager: null, signInManager: null, stripeService: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.ResendConfirmationEmail(null) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));

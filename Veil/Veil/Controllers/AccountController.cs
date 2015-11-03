@@ -395,7 +395,7 @@ namespace Veil.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(Guid userId, string code)
         {
-            if (userId == Guid.Empty || code == null)
+            if (userId == Guid.Empty || string.IsNullOrWhiteSpace(code))
             {
                 return View("Error");
             }
@@ -517,7 +517,7 @@ namespace Veil.Controllers
         }
 
         #region Currently Unused/Unimplemented TODO: remove anything remaining here at project end
-
+        /*
         //
         // GET: /Account/VerifyCode
         [AllowAnonymous]
@@ -694,6 +694,7 @@ namespace Veil.Controllers
         {
             return View();
         }
+        */
         #endregion
 
         /// <summary>
