@@ -68,14 +68,14 @@
             {
                 <p>
                     <strong class="label success">New</strong>
-                    <small>Starting at</small><strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
+                    <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
                 </p>
             }
             @if (game.GameSKUs.Any(sku => sku.UsedWebPrice.HasValue))
             {
                 <p>
                     <strong class="label">Used</strong>
-                    <small>Starting at</small> <strong>@($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")</strong>
+                    <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")</strong>
                 </p>
             }
         </div>
