@@ -120,6 +120,14 @@ nav .title-area img {
     color: #ffa400;
 }
 
+.platform-transform {
+    text-align: center;
+    vertical-align: central;
+    transform:rotate(-90deg)translateX(-125%);
+    transform-origin: left top 0;
+    float: left;
+}
+
 strong.label {
     font-size: 1em;
     font-weight: bold;
