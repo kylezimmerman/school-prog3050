@@ -29,7 +29,7 @@ namespace Veil.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> AddItem(Guid? productId)
+        public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
         {
             // TODO: Actually implement this
             return RedirectToAction("Index");
