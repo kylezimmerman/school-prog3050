@@ -145,6 +145,7 @@ namespace Veil.Controllers
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
+                    // ReSharper disable once Mvc.ActionNotResolved TODO: Remove this if we don't add the SendCode action
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 case SignInStatus.Failure:
                 default:

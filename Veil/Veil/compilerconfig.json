@@ -1,6 +1,6 @@
 ﻿[
   {
-    "outputFile": "Content/Foundation-Site.css",
+    "outputFile": "Content/FoundationSite.css",
     "inputFile": "sass/Site.scss"
   }
 ]
