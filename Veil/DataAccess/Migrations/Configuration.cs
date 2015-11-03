@@ -347,17 +347,17 @@ namespace Veil.DataAccess.Migrations
                 new GuidIdentityRole
                 {
                     Id = Guid.ParseExact("455b072e-de7d-e511-80df-001cd8b71da6", "D"),
-                    Name = VeilRoles.AdminRole
+                    Name = VeilRoles.ADMIN_ROLE
                 },
                 new GuidIdentityRole
                 {
                     Id = Guid.ParseExact("465b072e-de7d-e511-80df-001cd8b71da6", "D"),
-                    Name = VeilRoles.EmployeeRole
+                    Name = VeilRoles.EMPLOYEE_ROLE
                 },
                 new GuidIdentityRole
                 {
                     Id = Guid.ParseExact("475b072e-de7d-e511-80df-001cd8b71da6", "D"),
-                    Name = VeilRoles.MemberRole
+                    Name = VeilRoles.MEMBER_ROLE
                 });
 
             context.Games.AddOrUpdate(

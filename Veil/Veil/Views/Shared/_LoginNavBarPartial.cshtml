@@ -16,7 +16,7 @@
                     <li style="color:white;">Debugging is Enabled</li>
                 }
 
-                @if (User.IsInRole(VeilRoles.EmployeeRole) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+                @if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
                 {
                     <li>
                         @Html.ActionLink("Create Game", "Create", new { Controller = "Games" })
@@ -32,7 +32,7 @@
                     </li>
                 }
 
-                @if (User.IsInRole(VeilRoles.MemberRole) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+                @if (User.IsInRole(VeilRoles.MEMBER_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
                 {
                     <li>
                         @Html.ActionLink("Wishlist", "Index", new { Controller = "Wishlist" })

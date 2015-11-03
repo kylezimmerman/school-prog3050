@@ -298,7 +298,7 @@ namespace Veil.Controllers
                 // We don't need this portion to be inside stripeCustomerScope 
                 if (result.Succeeded && stripeCustomerScopeSuccessful)
                 {
-                    result = await userManager.AddToRoleAsync(user.Id, VeilRoles.MemberRole);
+                    result = await userManager.AddToRoleAsync(user.Id, VeilRoles.MEMBER_ROLE);
 
                     if (result.Succeeded)
                     {
@@ -709,28 +709,28 @@ namespace Veil.Controllers
         {
             bool rolesChanged = false;
 
-            bool isInMemberRole = await userManager.IsInRoleAsync(user.Id, VeilRoles.MemberRole);
-            bool isInEmployeeRole = await userManager.IsInRoleAsync(user.Id, VeilRoles.EmployeeRole);
+            bool isInMemberRole = await userManager.IsInRoleAsync(user.Id, VeilRoles.MEMBER_ROLE);
+            bool isInEmployeeRole = await userManager.IsInRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE);
 
             if (!isInMemberRole && user.Member != null)
             {
-                await userManager.AddToRoleAsync(user.Id, VeilRoles.MemberRole);
+                await userManager.AddToRoleAsync(user.Id, VeilRoles.MEMBER_ROLE);
                 rolesChanged = true;
             }
             else if (isInMemberRole && user.Member == null)
             {
-                await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.MemberRole);
+                await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.MEMBER_ROLE);
                 rolesChanged = true;
             }
 
             if (!isInEmployeeRole && user.Employee != null)
             {
-                await userManager.AddToRoleAsync(user.Id, VeilRoles.EmployeeRole);
+                await userManager.AddToRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE);
                 rolesChanged = true;
             }
             else if (isInEmployeeRole && user.Member == null)
             {
-                await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.EmployeeRole);
+                await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE);
                 rolesChanged = true;
             }
 
@@ -764,7 +764,8 @@ namespace Veil.Controllers
                 },
                 protocol: Request.Url.Scheme);
 
-            await userManager.SendEmailAsync(user.Id, "Veil - Please Confirm Your Account",
+            await userManager.SendEmailAsync(user.Id,
+                "Veil - Please Confirm Your Account",
                 "<h1>Welcome to Veil!</h1>" +
                 "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
         }

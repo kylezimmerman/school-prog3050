@@ -7,7 +7,7 @@ using Veil.DataAccess.Interfaces;
 namespace Veil.Tests.Controllers
 {
     [TestFixture]
-    public class HomeControllerTest
+    public class HomeControllerTests
     {
         [Test]
         public void Index_WhenCalled_ReturnsViewResult()

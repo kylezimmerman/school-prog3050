@@ -15,16 +15,16 @@ namespace Veil.DataModels
         /// <summary>
         ///     The name for the admin role
         /// </summary>
-        public static string AdminRole => "Administrator";
+        public const string ADMIN_ROLE = "Administrator";
 
         /// <summary>
         ///     The name for the employee role
         /// </summary>
-        public static string EmployeeRole => "Employee";
+        public const string EMPLOYEE_ROLE = "Employee";
 
         /// <summary>
         ///     The name for the member role
         /// </summary>
-        public static string MemberRole => "Member";
+        public const string MEMBER_ROLE = "Member";
     }
 }
