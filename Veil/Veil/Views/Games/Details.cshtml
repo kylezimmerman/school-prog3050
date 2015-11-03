@@ -40,7 +40,7 @@
             @foreach (var tag in Model.Game.Tags)
             {
                 @* TODO: Make this link to something that actually filters by tag *@
-                <li><a href="@Url.Action("Search", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
+                <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
             }
             @if (User.IsInRole(VeilRoles.ADMIN_ROLE) ||
                 User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
