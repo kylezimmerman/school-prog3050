@@ -1,4 +1,5 @@
 ﻿@model Veil.Models.GameDetailViewModels
+@using Veil.DataModels
 
 @{
     ViewBag.Title = Model.Game.Name;
@@ -23,14 +24,25 @@
         }
     </div>
     <div class="small-10 medium-5 columns" data-equalizer-watch>
-        <p class="margin-bottom-0"><strong>Release Date: @Model.EarliestRelease.ToString("MMM dd, yyyy")</strong></p>
-        <p class="margin-bottom-0"><strong>Players: @Model.Game.MinimumPlayerCount - @Model.Game.MaximumPlayerCount</strong></p>
+        <p class="margin-bottom-0"><strong>Release Date: @Model.Game.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
+        <p class="margin-bottom-0">
+            <strong>Players: @Model.Game.MinimumPlayerCount</strong>
+            @if (Model.Game.MaximumPlayerCount > Model.Game.MinimumPlayerCount)
+            {
+                <strong> - @Model.Game.MaximumPlayerCount</strong>
+            }
+        </p>
         <h4>Tags</h4>
         <ul class="inline-list">
             @foreach (var tag in Model.Game.Tags)
             {
                 @* TODO: Make this link to something that actually filters by tag *@
-                <li><a href="@Url.Action("Index")">@tag.Name</a></li>
+                <li><a href="@Url.Action("Index")" class="button tiny secondary">@tag.Name</a></li>
+            }
+            @if (User.IsInRole(VeilRoles.ADMIN_ROLE) ||
+                User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            {
+
             }
         </ul>
     </div>
@@ -44,41 +56,44 @@
     </div>
 </div>
 
-@* TODO: Only show this if the user is an employee *@
-<div class="row">
-    <div class="small-2 medium-2 columns">
-        @Html.ActionLink("Delete Game", "Delete", new { id = Model.Game.Id }, new { @class = "button expand small alert" })
-    </div>
+@if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) ||
+    User.IsInRole(VeilRoles.ADMIN_ROLE))
+{
+    <div class="row">
+        <div class="small-4 medium-2 columns">
+            @Html.ActionLink("Delete Game", "Delete", new { id = Model.Game.Id }, new { @class = "button expand small alert" })
+        </div>
 
-    <div class="small-2 medium-2 medium-offset-2 columns">
-        @Html.ActionLink("Edit Game", "Edit", new { id = Model.Game.Id }, new { @class = "button expand small" })
-    </div>
+        <div class="small-4 medium-2 medium-offset-2 columns">
+            @Html.ActionLink("Edit Game", "Edit", new { id = Model.Game.Id }, new { @class = "button expand small" })
+        </div>
 
-    <div class="small-4 medium-3 columns">
-        @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
-    </div>
+        <div class="small-6 medium-3 columns">
+            @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
+        </div>
 
-    <div class="small-4 medium-3 columns">
-        @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
+        <div class="small-6 medium-3 columns">
+            @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
+        </div>
     </div>
-</div>
+}
 
 @foreach (var gameProduct in Model.Game.GameSKUs)
 {
-    <div class="row panel">
-        <div class="small-1 columns">
-            <h4 style="transform:rotate(-90deg) translateX(-150%)">@gameProduct.PlatformCode</h4>
+    <div class="row panel" data-equalizer>
+        <div class="small-1 columns" data-equalizer-watch>
+            <h4 class="platform-transform">@gameProduct.Platform.PlatformName</h4>
         </div>
-        <div class="small-2 columns">
+        <div class="small-2 columns" data-equalizer-watch>
             <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art" />
         </div>
-        <div class="small-5 columns">
+        <div class="small-6 columns" data-equalizer-watch>
             <h5>@gameProduct.Name</h5>
             <p class="margin-bottom-0 padding-bottom-half-em">@gameProduct.SKUDescription</p>
             <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@gameProduct.Developer.Name</p>
             <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@gameProduct.Publisher.Name</p>
         </div>
-        <div class="small-3 columns">
+        <div class="small-3 columns" data-equalizer-watch>
             @{ var rating = gameProduct.AverageRating; }
             @if (rating.HasValue)
             {
@@ -88,22 +103,25 @@
                 </div>
             }
 
-            @*TODO: Only for Employees*@
-            @Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
-            @Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
-
-            @*TODO: Only for members*@
-            @*TODO: Change ActionLink to distinguish New/Used*@
-            @if (gameProduct.UsedWebPrice.HasValue)
+            @if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) ||
+                User.IsInRole(VeilRoles.ADMIN_ROLE))
             {
-                @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success margin-bottom-0" })
-                @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small" });
+                @Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
+                @Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
             }
-            else
+            else if (User.IsInRole(VeilRoles.MEMBER_ROLE))
             {
-                @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success" })
+                if (gameProduct.UsedWebPrice.HasValue)
+                {
+                    @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = "button expand small success margin-bottom-0" })
+                    @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = false }, new { @class = "button expand small" });
+                }
+                else
+                {
+                    @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success" })
+                }
+                @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = gameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
             }
-            @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = gameProduct.Id }, new { @class = "button expand small margin-bottom-0" })
         </div>
     </div>
 }
@@ -138,16 +156,35 @@
     </div>
 </div>
 
-<div class="row panel">
-    <div class="small-3 columns">
-        <h5>xXxSepirothxXx</h5>
-        <p>Played it on: PS4</p>
-        <p>Rating: 3.0</p>
+@foreach (var review in Model.Game.AllReviews)
+{
+    <div class="row panel">
+        <div class="small-3 columns">
+            <h5>@review.Member.UserAccount.UserName</h5>
+            <p>Format: @review.ProductReviewed.Name</p>
+            <div class="rating panel">
+                <strong>Average Rating:</strong><br />
+                @Html.Partial("_RatingStarsPartial", review.Rating)
+            </div>
+        </div>
+        <div class="small-9 columns">
+            @{
+                if (review.ReviewStatus == Veil.DataModels.Models.ReviewStatus.Approved)
+                {
+                    <p>@review.ReviewText</p>
+                }
+                else if (review.ReviewStatus == Veil.DataModels.Models.ReviewStatus.Denied)
+                {
+                    <p><em>This review has been flagged as inappropriate.</em></p>
+                }
+                else if (review.ReviewStatus == Veil.DataModels.Models.ReviewStatus.Denied)
+                {
+                    <p><em>This review is pending approval.</em></p>
+                }
+            }
+        </div>
     </div>
-    <div class="small-9 columns">
-        <p><em>This review has been flagged as inappropriate.</em></p>
-    </div>
-</div>
+}
 
 <div class="row">
     <div class="small 1 column">
