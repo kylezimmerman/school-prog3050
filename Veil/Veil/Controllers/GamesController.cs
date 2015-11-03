@@ -43,22 +43,12 @@ namespace Veil.Controllers
 
             if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
             {
-                gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+                gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
             ViewBag.SearchTerm = keyword;
 
             return View("Index", await gamesFiltered.ToListAsync());
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> AdvancedSearch()
-        {
-            SearchViewModel searchViewModel = new SearchViewModel();
-            searchViewModel.Platforms = await db.Platforms.ToListAsync();
-            searchViewModel.Tags = await db.Tags.ToListAsync();
-
-            return View(searchViewModel);
         }
 
         // POST: Games/Search?{query-string}
@@ -70,6 +60,15 @@ namespace Veil.Controllers
             tags = tags ?? new List<string>();
             tags.ForEach(t => t.Trim());
 
+            if (tags.Count == 0 && title == "" && platform == "")
+            {
+                SearchViewModel searchViewModel = new SearchViewModel();
+                searchViewModel.Platforms = await db.Platforms.ToListAsync();
+                searchViewModel.Tags = await db.Tags.ToListAsync();
+
+                return View(searchViewModel);
+            }
+
             IQueryable<Game> gamesFiltered = db.Games
                 .Where(g =>
                         (title != "" && g.Name.Contains(title)) ||
@@ -78,7 +77,8 @@ namespace Veil.Controllers
 
             if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
             {
-                gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+                await gamesFiltered.LoadAsync();
+                gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
             var searchQuery = ((title != "") ? title : "");
