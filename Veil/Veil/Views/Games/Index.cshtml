@@ -13,63 +13,86 @@
         <h2>@ViewBag.Title</h2>
         @if (ViewBag.SearchTerm != null && ViewBag.SearchTerm != "")
         {
-            <p><em>Results matching search criteria "@ViewBag.SearchTerm"</em></p>
+            <p><em>Results matching search criteria "@ViewBag.SearchTerm"</em>
+            </p>
         }
     </div>
 </div>
 
-@foreach (var game in Model)
+@if (Model.Any())
 {
-    <div class="row panel">
-        <div class="medium-3 columns">
-            <a href="@Url.Action("Details", new {id = game.Id})" class="th width-100 small-centered">
-                <img src="@game.PrimaryImageURL" alt="Box Art" class="width-100" />
-            </a>
-        </div>
-        <div class="medium-6 columns">
-            <h4>@Html.ActionLink(game.Name, "Details", new { id = game.Id })</h4>
-            <p>@game.ShortDescription</p>
-        </div>
-        <div class="medium-3 columns">
-            <div class="row">
-                <div class="column">
-                    @{ double? rating = game.AverageRating; }
-
-                    @if (rating.HasValue)
-                    {
-                        <div class="row">
-                            <strong class="label info column bordered">Average Rating</strong>
-                        </div>
-                        <div class="row">
-                            <div class="column text-center margin-bottom-1 bordered rating">
-                                @Html.Partial("_RatingStarsPartial", rating)
-                            </div>
-                        </div>
-                    }
-                </div>
+    foreach (var game in Model)
+    {
+        <div class="row panel">
+            <div class="medium-3 columns">
+                <a href="@Url.Action("Details", new {id = game.Id})" class="th width-100 small-centered">
+                    <img src="@game.PrimaryImageURL" alt="Box Art" class="width-100"/>
+                </a>
             </div>
+            <div class="medium-6 columns">
+                <h4>@Html.ActionLink(game.Name, "Details", new {id = game.Id})</h4>
+                <p>@game.ShortDescription</p>
+            </div>
+            <div class="medium-3 columns">
+                <div class="row">
+                    <div class="column">
+                        @{ double? rating = game.AverageRating; }
 
-            @if (game.GameSKUs.Any())
-            {
-                <div class="row">
-                    <strong class="label success column">New</strong>
-                </div>
-                <div class="row">
-                    <div class="column text-center margin-bottom-1 bordered">
-                        <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
+                        @if (rating.HasValue)
+                        {
+                            <div class="row">
+                                <strong class="label info column bordered">Average Rating</strong>
+                            </div>
+                            <div class="row">
+                                <div class="column text-center margin-bottom-1 bordered rating">
+                                    @Html.Partial("_RatingStarsPartial", rating)
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
-            }
-            @if (game.GameSKUs.Any(sku => sku.UsedWebPrice.HasValue))
-            {
-                <div class="row">
-                    <strong class="label column">Used</strong>
-                    <div class="column text-center bordered">
-                        <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")</strong>
+
+                @if (game.GameSKUs.Any())
+                {
+                    <div class="row">
+                        <strong class="label success column">New</strong>
                     </div>
-                </div>
-            }
+                    <div class="row">
+                        <div class="column text-center margin-bottom-1 bordered">
+                            <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
+                        </div>
+                    </div>
+                }
+                @if (game.GameSKUs.Any(sku => sku.UsedWebPrice.HasValue))
+                {
+                    <div class="row">
+                        <strong class="label column">Used</strong>
+                        <div class="column text-center bordered">
+                            <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.UsedWebPrice):C}")</strong>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    <div class="pagination-centered">
+        <ul class="pagination small-center">
+            <li class="arrow unavailable"><a href="">&laquo; Previous</a></li>
+            <li class="current"><a href="?page=1">1</a></li>
+            <li><a href="?page=2">2</a></li>
+            <li><a href="">3</a></li>
+            <li class="unavailable"><a href="">&hellip;</a></li>
+            <li><a href="">9</a></li>
+            <li><a href="">10</a></li>
+            <li class="arrow"><a href=""> Next &raquo;</a></li>
+        </ul>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div column="row">
+            <em>No Games found</em>
         </div>
     </div>
-
 }

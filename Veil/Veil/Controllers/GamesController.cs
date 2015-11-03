@@ -10,12 +10,15 @@ using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
+using Veil.DataModels;
 using Veil.Models;
 
 namespace Veil.Controllers
 {
     public class GamesController : Controller
     {
+        private const int GAMES_PER_PAGE = 50;
+
         protected readonly IVeilDataAccess db;
 
         public GamesController(IVeilDataAccess veilDataAccess)
@@ -26,8 +29,23 @@ namespace Veil.Controllers
         // GET: Games
         public async Task<ActionResult> Index()
         {
-            var games = db.Games.Include(g => g.Rating);
-            return View(await games.ToListAsync());
+            var games = await db.Games.Include(g => g.Rating).ToListAsync();
+
+            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            {
+                games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale).ToList();
+            }
+
+            int page;
+
+            if (!int.TryParse(Request.QueryString?["page"], out page))
+            {
+                page = 1;
+            }
+
+            games = games.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToList();
+
+            return View(games);
         }
 
         [HttpGet]
