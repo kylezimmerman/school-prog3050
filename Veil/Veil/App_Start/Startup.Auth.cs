@@ -8,7 +8,6 @@ using Microsoft.Practices.Unity;
 using Owin;
 using Veil.DataModels.Models.Identity;
 using Veil.Extensions;
-using Veil.Helpers;
 using Veil.Services;
 
 namespace Veil
@@ -20,11 +19,6 @@ namespace Veil
         {
             // Setup Unity to Configure IDataProtectionProvider for the VeilUserManager constructor
             UnityConfig.GetConfiguredContainer().RegisterInstance(app.GetDataProtectionProvider());
-
-            // Configure the user manager to use a single instance per request
-            // TODO: Remove this if we make it all the way through the project without issues.
-            //       The guide I used for Identity+Unity setup had this in it, but I can't see why it would be needed.
-            //app.CreatePerOwinContext(() => DependencyResolver.Current.GetService<VeilUserManager>());
 
             // Enable the application to use a cookie to store information for the signed in user
             // and to use a cookie to temporarily store information about a user logging in with a third party login provider

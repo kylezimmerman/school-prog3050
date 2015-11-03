@@ -7,7 +7,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Veil.DataAccess.Interfaces;
 using Veil.Extensions;
-using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
 
@@ -62,17 +61,32 @@ namespace Veil.Controllers
                     break;
             }
 
-            var userId = IIdentityExtensions.GetUserId(User.Identity);
+            var userId = GetUserId();
 
+            string phoneNumber;
+
+            try
+            {
+                phoneNumber = await userManager.GetPhoneNumberAsync(userId);
+            }
+            catch (InvalidOperationException)
+            {
+                // If this happens, the user has been deleted in the database but still has a valid login cookie
+                signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+
+                return RedirectToAction("Index", "Home");
+            }
+            
             var model = new IndexViewModel
             {
                 HasPassword = HasPassword(),
-                PhoneNumber = await userManager.GetPhoneNumberAsync(userId),
+                PhoneNumber = phoneNumber,
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
                 BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
                 StatusMessage = statusMessage
             };
+
             return View(model);
         }
 

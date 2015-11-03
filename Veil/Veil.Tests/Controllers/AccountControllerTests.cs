@@ -150,7 +150,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void Register_WithValidModelAndNoErrors_AddsUserToMemberRole()
         {
-            string memberRole = VeilRoles.MemberRole;
+            string memberRole = VeilRoles.MEMBER_ROLE;
 
             Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerMock.

@@ -32,7 +32,7 @@
                 </div>
             </li>
 
-            @if (User.IsInRole(VeilRoles.MemberRole) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+            @if (User.IsInRole(VeilRoles.MEMBER_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
             {
                 <li class="active">
                     @Html.ActionLink("Cart (1)", "Index", new { Controller = "Cart" })
