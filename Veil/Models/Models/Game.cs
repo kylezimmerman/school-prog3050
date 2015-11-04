@@ -54,6 +54,17 @@ namespace Veil.DataModels.Models
         }
 
         /// <summary>
+        ///     All ratings for the game
+        /// </summary>
+        public IEnumerable<GameReview> AllReviews
+        {
+            get
+            {
+                return GameSKUs.SelectMany(g => g.Reviews);
+            }
+        }
+
+        /// <summary>
         /// The Id for the Game's ESRB rating
         /// </summary>
         [Required]

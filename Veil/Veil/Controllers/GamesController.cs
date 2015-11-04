@@ -10,12 +10,17 @@ using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
+using Microsoft.Practices.ObjectBuilder2;
+using Veil.DataModels;
+using Veil.DataModels;
 using Veil.Models;
 
 namespace Veil.Controllers
 {
     public class GamesController : Controller
     {
+        private const int GAMES_PER_PAGE = 50;
+
         protected readonly IVeilDataAccess db;
 
         public GamesController(IVeilDataAccess veilDataAccess)
@@ -26,50 +31,83 @@ namespace Veil.Controllers
         // GET: Games
         public async Task<ActionResult> Index()
         {
-            var games = db.Games.Include(g => g.Rating);
-            return View(await games.ToListAsync());
-        }
+            var games = await db.Games.Include(g => g.Rating).ToListAsync();
 
-        [HttpGet]
-        public async Task<ActionResult> Search()
-        {
-            SearchViewModel searchViewModel = new SearchViewModel();
-            searchViewModel.Platforms = await db.Platforms.ToListAsync();
-            searchViewModel.Tags = await db.Tags.ToListAsync();
+            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            {
+                games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale).ToList();
+            }
 
-            return View(searchViewModel);
+            int page;
+
+            if (!int.TryParse(Request.QueryString?["page"], out page))
+            {
+                page = 1;
+            }
+
+            games = games.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToList();
+
+            return View(games);
         }
 
         // POST: Games/Search?{query-string}
         [HttpPost]
-        public async Task<ActionResult> Search(List<string> tags, string keyword = "", string title = "", string platform = "")
+        public async Task<ActionResult> Search(string keyword = "")
         {
-            //TODO: finish implementing Advanced Search
-            //TODO: filter 'Not For Sale' depending on user status
-
-            IQueryable<Game> gamesFiltered;
-
             keyword = keyword.Trim();
+
+            IQueryable<Game>  gamesFiltered = db.Games
+                .Where(g => g.Name.Contains(keyword));
+
+            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+        {
+                gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+            }
+
+            ViewBag.SearchTerm = keyword;
+
+            return View("Index", await gamesFiltered.ToListAsync());
+        }
+
+        // POST: Games/Search?{query-string}
+        [HttpGet, HttpPost]
+        public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "")
+        {
             title = title.Trim();
             platform = platform.Trim();
             tags = tags ?? new List<string>();
             tags.ForEach(t => t.Trim());
 
-            if (keyword == "")
+            if (tags.Count == 0 && title == "" && platform == "")
             {
-                gamesFiltered = db.Games
-                .Where(g => g.Name.Contains(title)
-                    );
+                SearchViewModel searchViewModel = new SearchViewModel();
+                searchViewModel.Platforms = await db.Platforms.ToListAsync();
+                searchViewModel.Tags = await db.Tags.ToListAsync();
 
-                ViewBag.SearchTerm = title;
+                return View(searchViewModel);
             }
-            else
+
+            IQueryable<Game> gamesFiltered = db.Games
+                .Where(g =>
+                        (title != "" && g.Name.Contains(title)) ||
+                        g.Tags.Any(t => tags.Contains(t.Name)) ||
+                        g.GameSKUs.Any(gs => gs.Platform.PlatformCode == platform));
+
+            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
             {
-                gamesFiltered = db.Games
-                .Where(g => g.Name.Contains(keyword));
-                
-                ViewBag.SearchTerm = keyword;
+                await gamesFiltered.LoadAsync();
+                gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
+
+            var searchQuery = ((title != "") ? title : "");
+
+            searchQuery += ((platform != "") ? (", " + db.Platforms.First(p => p.PlatformCode == platform).PlatformName) : "");
+
+            searchQuery = tags.Aggregate(searchQuery, (current, t) => current + (", " + t));
+
+            searchQuery = searchQuery.Trim(',', ' ');
+                
+            ViewBag.SearchTerm = searchQuery;
 
             return View("Index", await gamesFiltered.ToListAsync());
         }

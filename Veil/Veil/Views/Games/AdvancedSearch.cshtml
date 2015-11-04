@@ -10,7 +10,7 @@
     </div>
 </div>
 
-@using (Html.BeginForm("Search", "Games", FormMethod.Post))
+@using (Html.BeginForm("AdvancedSearch", "Games", FormMethod.Get))
 {
     <div class="row">
         <div class="medium-2 columns">
@@ -24,6 +24,7 @@
         </div>
         <div class="medium-4 columns">
             <select id="game-platform" name="platform">
+                <option value="">-- Any Platform --</option>
                 @foreach (var platform in Model.Platforms)
                 {
                     <option value="@platform.PlatformCode">@platform.PlatformName</option>
@@ -39,7 +40,7 @@
             @foreach (var tag in Model.Tags)
             {
                 <div style="display: inline-block">
-                    <input type="checkbox" id="tag-@tag.Name" name="tags" value="@tag.Name" /><label for="tag-@tag.Name">@tag.Name</label>
+                    <label><input type="checkbox" name="tags" value="@tag.Name" />@tag.Name</label>
                 </div>
             }
         </div>
