@@ -31,6 +31,8 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
         {
+            // TODO: Redirect to login if not logged in (put this on class level?)
+
             // TODO: Actually implement this
             return RedirectToAction("Index");
         }

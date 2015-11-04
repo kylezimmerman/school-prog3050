@@ -1,5 +1,6 @@
 ﻿@model Veil.DataModels.Models.Game
 @using Veil.DataModels
+@using Veil.DataModels.Models
 
 @{
     ViewBag.Title = Model.Name;
@@ -39,7 +40,6 @@
         <ul class="inline-list">
             @foreach (var tag in Model.Tags)
             {
-                @* TODO: Make this link to something that actually filters by tag *@
                 <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
             }
             @if (User.IsInRole(VeilRoles.ADMIN_ROLE) ||
@@ -109,30 +109,63 @@
                     </div>
                 </div>
             }
-
+            @*
+                If the user is an employee - show buttons to Edit or Delete the GameProduct
+                If member or anonymous and:
+                    The format is PhysicalGameProduct - show Buy New/Used and Add to Wishlist buttons
+                        Disable Buy New if out of stock and we can't get more
+                        Disable Buy Used if out of stock
+                        Do not show buy used if there is no used price
+                    The format is DownloadGameProduct - show a button to download the product
+            *@
             @if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) ||
                 User.IsInRole(VeilRoles.ADMIN_ROLE))
             {
-                @Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
-                @Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
+                @Html.ActionLink("Edit", "EditGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
+                @Html.ActionLink("Delete", "DeleteGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
             }
-            else if (User.IsInRole(VeilRoles.MEMBER_ROLE))
+            else
             {
-                if (gameProduct.UsedWebPrice.HasValue)
+                if (gameProduct is PhysicalGameProduct)
                 {
-                    @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = "button expand small success margin-bottom-0" })
-                    @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = false }, new { @class = "button expand small margin-bottom-0" });
+                    String buyNewClasses = "button expand small success margin-bottom-0";
+                    if (gameProduct.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
+                        (gameProduct as PhysicalGameProduct).NewInventory < 1)
+                    {
+                        <a class="@buyNewClasses disabled">Buy New @gameProduct.NewWebPrice.ToString("C")</a>
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = buyNewClasses })
+                    }
+
+                    if (gameProduct.UsedWebPrice.HasValue)
+                    {
+                        String buyUsedClasses = "button expand small margin-bottom-0";
+
+                        if ((gameProduct as PhysicalGameProduct).UsedInventory < 1)
+                        {
+                            <a class="@buyUsedClasses disabled">Buy Used @gameProduct.UsedWebPrice.Value.ToString("C")</a>
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = false }, new { @class = buyUsedClasses });
+                        }
+                    }
+
+                    @Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
+                             new { itemId = gameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
                 }
-                else
+                else if (gameProduct is DownloadGameProduct)
                 {
-                    @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = "button expand small success margin-bottom-0" })
+                    <a href="@(gameProduct as DownloadGameProduct).DownloadLink" class="button expand success">Free Download</a>
                 }
-                @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = gameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
             }
         </div>
     </div>
 }
 
+@* TODO: #53 Member Creates or Edits Rating, optionally including a Review *@
 <div class="row">
     <div class="small-12 columns">
         <h3>Ratings and Reviews</h3>
@@ -151,6 +184,7 @@
     </div>
 </div>
 
+@* TODO: Implement or remove extra feature of filtering reviews based on available time *@
 <div class="row">
     <div class="columns">
         <span>Filter Reviews by Format</span>
@@ -192,13 +226,3 @@
         </div>
     </div>
 }
-
-<div class="row">
-    <div class="small 1 column">
-        <p>
-            @Html.ActionLink("Back to Game List", "Index")
-        </p>
-    </div>
-</div>
-
-
