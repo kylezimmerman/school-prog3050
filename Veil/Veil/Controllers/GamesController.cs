@@ -11,6 +11,7 @@ using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
 using Microsoft.Practices.ObjectBuilder2;
+using Veil.DataAccess;
 using Veil.DataModels;
 using Veil.DataModels;
 using Veil.Models;
@@ -60,7 +61,7 @@ namespace Veil.Controllers
                 .Where(g => g.Name.Contains(keyword));
 
             if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
-        {
+            {
                 gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
@@ -182,7 +183,9 @@ namespace Veil.Controllers
                 return RedirectToAction("Index");
             }
 
+
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
+
             return View(game);
         }
 
@@ -191,15 +194,39 @@ namespace Veil.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,GameAvailabilityStatus,ESRBRatingId,MinimumPlayerCount,MaximumPlayerCount,TrailerURL,ShortDescription,LongDescription,PrimaryImageURL")] Game game)
+        public async Task<ActionResult> Edit([Bind(Exclude = "Tags")] Game game, List<string> tags)
         {
             if (ModelState.IsValid)
             {
+                //Can't do 'Tag Logic' here because game.Tags is null.
+                //Can't set game.Tags = new List<Tag>() as that won't get saved to DB.
+
+                //Save the game as binded (without changing tags)
                 db.MarkAsModified(game);
                 await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+
+                //'Tag logic'
+                //Get the game we just saved, including the tags this time
+                game = await db.Games.Include(g => g.Tags).FirstAsync(g => g.Id == game.Id);
+
+                //Remove all existing tags
+                game.Tags.Clear();
+
+                //Add tags
+                foreach (var tag in tags)
+                {
+                    game.Tags.Add(db.Tags.First(t => t.Name == tag));
+                }
+
+                //Save the game again now with the tag info included
+                await db.SaveChangesAsync();
+
+                this.AddAlert(AlertType.Success, $"Your changes to '{game.Name}' were saved.");
+                return RedirectToAction("Details", new {id = game.Id});
             }
+
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
+
             return View(game);
         }
 
@@ -327,6 +354,8 @@ namespace Veil.Controllers
             db.GameProducts.Add(gameProduct);
 
             await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Successfully added a new SKU.");
 
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
