@@ -126,6 +126,10 @@
     <Compile Include="Migrations\201511032118388_AddEnumToLookupMigration.Designer.cs">
       <DependentUpon>201511032118388_AddEnumToLookupMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511042101448_Add_Friendship_InsertTrigger.cs" />
+    <Compile Include="Migrations\201511042101448_Add_Friendship_InsertTrigger.Designer.cs">
+      <DependentUpon>201511042101448_Add_Friendship_InsertTrigger.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -152,6 +156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511032118388_AddEnumToLookupMigration.resx">
       <DependentUpon>201511032118388_AddEnumToLookupMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511042101448_Add_Friendship_InsertTrigger.resx">
+      <DependentUpon>201511042101448_Add_Friendship_InsertTrigger.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
