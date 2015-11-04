@@ -206,6 +206,6 @@ namespace Veil.DataAccess.Interfaces
         /// <returns>
         ///     The next SKU number
         /// </returns>
-        long GetNextPhysicalGameProductSku();
+        string GetNextPhysicalGameProductSku();
     }
 }
