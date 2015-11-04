@@ -1,0 +1,15 @@
+﻿@model Veil.Models.TagViewModel
+
+<ul class="small-block-grid-1 medium-block-grid-2 large-block-grid-4" style="padding: 1em;">
+    @foreach (var tag in Model.AllTags)
+    {
+        var isChecked = Model.Selected?.Contains(tag) ?? false ? "checked" : "";
+
+        <li>
+            <label>
+                <input type="checkbox" name="Tags" value="@tag.Name" @isChecked>
+                @tag.Name
+            </label>
+        </li>
+    }
+</ul>

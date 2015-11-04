@@ -1,5 +1,7 @@
-﻿using System.Web.Mvc;
+﻿using System.Linq;
+using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
+using Veil.Models;
 
 namespace Veil.Controllers
 {
@@ -14,7 +16,17 @@ namespace Veil.Controllers
 
         public ActionResult Index()
         {
-            return View();
+            var games = db.Games.ToList();
+
+            var model = new HomePageViewModel()
+            {
+                ComingSoon = games.Where(g => g.GameSKUs.Min(gp => gp.ReleaseDate) > System.DateTime.Now)
+                    .OrderBy(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).Take(2),
+                NewReleases = games.Where(g => g.GameSKUs.Max(gp => gp.ReleaseDate) <= System.DateTime.Now)
+                    .OrderByDescending(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).Take(6)
+            };
+
+            return View(model);
         }
 
         public ActionResult About()
