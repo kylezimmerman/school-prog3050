@@ -1,8 +1,8 @@
-﻿@model Veil.Models.GameDetailViewModels
+﻿@model Veil.DataModels.Models.Game
 @using Veil.DataModels
 
 @{
-    ViewBag.Title = Model.Game.Name;
+    ViewBag.Title = Model.Name;
 }
 
 <div class="row">
@@ -13,31 +13,31 @@
 <div class="row padding-bottom-1" data-equalizer>
     <div class="small-12 medium-6 columns" data-equalizer-watch>
         @{
-            if (!string.IsNullOrWhiteSpace(Model.Game.TrailerURL))
+            if (!string.IsNullOrWhiteSpace(Model.TrailerURL))
             {
-                <embed class="width-100 height-100 min-height-14" src="@Model.Game.TrailerURL" />
+                <embed class="width-100 height-100 min-height-14" src="@Model.TrailerURL" />
             }
             else
             {
-                <img class="width-100" src="@Model.Game.PrimaryImageURL" alt="Game Image" />
+                <img class="width-100" src="@Model.PrimaryImageURL" alt="Game Image" />
             }
         }
     </div>
     <div class="small-10 medium-5 columns" data-equalizer-watch>
-        @if (Model.Game.GameSKUs.Any())
+        @if (Model.GameSKUs.Any())
         {
-            <p class="margin-bottom-0"><strong>Release Date: @Model.Game.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
+            <p class="margin-bottom-0"><strong>Release Date: @Model.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
         }
         <p class="margin-bottom-0">
-            <strong>Players: @Model.Game.MinimumPlayerCount</strong>
-            @if (Model.Game.MaximumPlayerCount > Model.Game.MinimumPlayerCount)
+            <strong>Players: @Model.MinimumPlayerCount</strong>
+            @if (Model.MaximumPlayerCount > Model.MinimumPlayerCount)
             {
-                <strong> - @Model.Game.MaximumPlayerCount</strong>
+                <strong> - @Model.MaximumPlayerCount</strong>
             }
         </p>
         <h4>Tags</h4>
         <ul class="inline-list">
-            @foreach (var tag in Model.Game.Tags)
+            @foreach (var tag in Model.Tags)
             {
                 @* TODO: Make this link to something that actually filters by tag *@
                 <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
@@ -45,17 +45,17 @@
             @if (User.IsInRole(VeilRoles.ADMIN_ROLE) ||
                 User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
             {
-
+                // TODO: Dropdown and + button to add a tag
             }
         </ul>
     </div>
     <div class="small-2 medium-1 columns" data-equalizer-watch>
-        <img class="right width-100" src="@Model.Game.Rating.ImageURL" alt="@Model.Game.Rating.Description" />
+        <img class="right width-100" src="@Model.Rating.ImageURL" alt="@Model.Rating.Description" />
     </div>
 </div>
 <div class="row">
     <div class="column">
-        <p class="indent">@Model.Game.LongDescription</p>
+        <p class="indent">@Model.LongDescription</p>
     </div>
 </div>
 
@@ -64,24 +64,24 @@
 {
     <div class="row">
         <div class="small-4 medium-2 columns">
-            @Html.ActionLink("Delete Game", "Delete", new { id = Model.Game.Id }, new { @class = "button expand small alert" })
+            @Html.ActionLink("Delete Game", "Delete", new { id = Model.Id }, new { @class = "button expand small alert" })
         </div>
 
         <div class="small-4 medium-2 medium-offset-2 columns">
-            @Html.ActionLink("Edit Game", "Edit", new { id = Model.Game.Id }, new { @class = "button expand small" })
+            @Html.ActionLink("Edit Game", "Edit", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
 
         <div class="small-6 medium-3 columns">
-            @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
+            @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
 
         <div class="small-6 medium-3 columns">
-            @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
+            @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
     </div>
 }
 
-@foreach (var gameProduct in Model.Game.GameSKUs)
+@foreach (var gameProduct in Model.GameSKUs)
 {
     <div class="row panel" data-equalizer>
         <div class="small-1 columns" data-equalizer-watch>
@@ -163,7 +163,7 @@
     </div>
 </div>
 
-@foreach (var review in Model.Game.AllReviews)
+@foreach (var review in Model.AllReviews)
 {
     <div class="row panel">
         <div class="small-3 columns">

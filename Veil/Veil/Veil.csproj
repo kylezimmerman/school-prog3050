@@ -213,7 +213,7 @@
     <Compile Include="Extensions\CountryExtensions.cs" />
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
-    <Compile Include="Models\GameDetailViewModels.cs" />
+    <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
     <Compile Include="Models\SearchViewModel.cs" />

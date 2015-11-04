@@ -70,7 +70,6 @@ namespace Veil.Controllers
         }
 
         // POST: Games/Search?{query-string}
-        [HttpGet, HttpPost]
         public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "")
         {
             title = title.Trim();
@@ -121,21 +120,21 @@ namespace Veil.Controllers
             }
 
             // TODO: Remove the null coalesce and handle if id doesn't match. This supports both our test and real data.
-            GameDetailViewModels models = new GameDetailViewModels()
-            {
-                Game = await db.Games.FindAsync(id) ?? new Game(),
-                // TODO: Make this not static
-                EarliestRelease = new DateTime(2016, 12, 31)
-            };
+            Game game = await db.Games.FindAsync(id) ?? new Game();
 
             // TODO: Check is game is "Not For Sale"
-
-            if (models.Game == null)
+            if (game == null)
             {
                 return HttpNotFound();
             }
+            else if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale &&
+                !User.IsInRole(VeilRoles.EMPLOYEE_ROLE) &&
+                !User.IsInRole(VeilRoles.ADMIN_ROLE))
+            {
+                return View("Index");
+            }
 
-            return View(models);
+            return View(game);
         }
 
         // TODO: Every action after this should be employee only
