@@ -23,7 +23,6 @@ namespace Veil.DataAccess.Tests
         public void FixtureSetup()
         {
             // Migrate the database to the most current migration
-            // NOTE: This still unfortunately still leaves the EnumToLookup tables in the DB
             var configuration = new Veil.DataAccess.Migrations.Configuration();
             var migrator = new DbMigrator(configuration);
 

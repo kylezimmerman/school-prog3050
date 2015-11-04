@@ -33,36 +33,14 @@ namespace Veil.DataModels.Models
         public string Name { get; set; }
 
         /// <summary>
-        /// The Game's availability status
+        ///     The Game's availability status
         /// </summary>
+        /// <remarks>
+        ///     If you modify <see cref="GameSKUs"/> in a way that would cause this value to change,
+        ///     <b>it must be explicitly reloaded</b> from the database for that change to occur.
+        /// </remarks>
         [DisplayName("Game Availability")]
-        public AvailabilityStatus GameAvailabilityStatus
-        {
-            get
-            {
-                if (GameSKUs == null || GameSKUs.Count == 0)
-                {
-                    return AvailabilityStatus.NotForSale;
-                }
-
-                if (GameSKUs.Any(gp => gp.ProductAvailabilityStatus == AvailabilityStatus.PreOrder)) {
-                    return AvailabilityStatus.PreOrder;
-                }
-
-                if (GameSKUs.Any(gp => gp.ProductAvailabilityStatus == AvailabilityStatus.Available))
-                {
-                    return AvailabilityStatus.Available;
-                }
-
-                if (GameSKUs.Any(
-                        gp => gp.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer))
-                {
-                    return AvailabilityStatus.DiscontinuedByManufacturer;
-                }
-
-                return AvailabilityStatus.NotForSale;
-            }
-        }
+        public AvailabilityStatus GameAvailabilityStatus { get; private set; }
 
         /// <summary>
         ///     The Game's SKU's average rating

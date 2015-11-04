@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using EfEnumToLookup.LookupGenerator;
 using Veil.DataModels;
@@ -255,7 +258,7 @@ namespace Veil.DataAccess.Migrations
                 new Platform
                 {
                     PlatformCode = "PC",
-                    PlatformName = "Personal Computer"
+                    PlatformName = "PC"
                 }, 
                 new Platform
                 {
@@ -302,12 +305,15 @@ namespace Veil.DataAccess.Migrations
                 new Company { Name = "Treyarch" }
             );
 
+            Tag simulationTag = new Tag { Name = "Simulation" };
+            Tag shooterTag = new Tag { Name = "Shooter" };
+
             context.Tags.AddOrUpdate(
                 t => t.Name,
                 new Tag { Name = "First Person" },
                 new Tag { Name = "Third Person" },
-                new Tag { Name = "Shooter" },
-                new Tag { Name = "Simulation" },
+                shooterTag,
+                simulationTag,
                 new Tag { Name = "RTS" },
                 new Tag { Name = "Racing" },
                 new Tag { Name = "RPG" },
@@ -360,33 +366,65 @@ namespace Veil.DataAccess.Migrations
                     Name = VeilRoles.MEMBER_ROLE
                 });
 
+#region Debug Only Seed Values
+            /* TODO: Remove this when we are done testing */
+            Game testGame = new Game
+            {
+                Name = "Test Game",
+                ESRBRatingId = "E",
+                ShortDescription = "This is the short description",
+                LongDescription = "This is the long description",
+                MinimumPlayerCount = 1,
+                MaximumPlayerCount = 2,
+                PrimaryImageURL = "http://baconmockup.com/200/140/",
+                TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
+            };
+
+            Game yetAnotherTestGame = new Game
+            {
+                Name = "Yet Another Game",
+                ESRBRatingId = "E",
+                LongDescription = "This is the long description",
+                ShortDescription = "This is the short description",
+                MinimumPlayerCount = 1,
+                MaximumPlayerCount = 4,
+                PrimaryImageURL = "http://placebacon.net/200/150",
+                TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
+            };
+
+            Game anotherGameYet = new Game
+            {
+                Name = "Another Game Yet",
+                ESRBRatingId = "T",
+                LongDescription = "This is the long description",
+                ShortDescription = "This is the short description",
+                MinimumPlayerCount = 1,
+                MaximumPlayerCount = 4,
+                PrimaryImageURL = "http://placebacon.net/200/150",
+                TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
+            };
+
             context.Games.AddOrUpdate(
                 g => g.Name,
-                new Game
-                {
-                    Name = "Test Game",
-                    ESRBRatingId = "E",
-                    ShortDescription = "This is the short description",
-                    LongDescription = "This is the long description",
-                    MinimumPlayerCount = 1,
-                    MaximumPlayerCount = 2,
-                    PrimaryImageURL = "http://baconmockup.com/200/140/",
-                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
-                },
-                new Game
-                {
-                    Name = "Yet Another Game",
-                    ESRBRatingId = "E",
-                    LongDescription = "This is the long description",
-                    ShortDescription = "This is the short description",
-                    MinimumPlayerCount = 1,
-                    MaximumPlayerCount = 4,
-                    PrimaryImageURL = "http://placebacon.net/200/150",
-                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
-                });
+                testGame,
+                yetAnotherTestGame,
+                anotherGameYet
+            );
 
-            /* Enum to Lookup Tables Setup */
-            EnumToLookup enumToLookup = new EnumToLookup
+            testGame.Tags = testGame.Tags ?? new List<Tag>();
+            yetAnotherTestGame.Tags = yetAnotherTestGame.Tags ?? new List<Tag>();
+            anotherGameYet.Tags = anotherGameYet.Tags ?? new List<Tag>();
+
+            testGame.Tags.Add(simulationTag);
+            yetAnotherTestGame.Tags.Add(simulationTag);
+            yetAnotherTestGame.Tags.Add(shooterTag);
+            anotherGameYet.Tags.Add(shooterTag);
+#endregion Debug Only Seed Values
+
+            /* Note: Uncomment this to regenerate the EnumToLookup script used in AddEnumToLookupMigration
+                     After running Update-Database, copy the SQL Script from the exception message
+            */
+            /*EnumToLookup enumToLookup = new EnumToLookup
             {
                 TableNamePrefix = "",
                 TableNameSuffix = "_Lookup",
@@ -394,7 +432,9 @@ namespace Veil.DataAccess.Migrations
                 UseTransaction = true
             };
 
-            enumToLookup.Apply(context);
+            var migrationSQL = enumToLookup.GenerateMigrationSql(context);
+            
+            throw new Exception(migrationSQL);*/
         }
     }
 }

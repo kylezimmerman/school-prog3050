@@ -100,6 +100,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetGameAvailabilityStatusTests.cs" />
     <Compile Include="Helpers\RollbackAttribute.cs" />
     <Compile Include="MigrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

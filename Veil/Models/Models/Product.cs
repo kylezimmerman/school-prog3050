@@ -21,24 +21,24 @@ namespace Veil.DataModels.Models
         /// The product is available for pre-order
         /// </summary>
         [Display(Name = "Pre-Order")]
-        PreOrder,
+        PreOrder = 0,
 
         /// <summary>
         /// The product is available for purchase
         /// </summary>
-        Available,
+        Available = 1,
 
         /// <summary>
         /// The product has been discontinued by the manufacturer
         /// </summary>
         [Display(Name = "Discontinued By Manufacturer")]
-        DiscontinuedByManufacturer,
+        DiscontinuedByManufacturer = 2,
 
         /// <summary>
         /// We are no longer selling the product
         /// </summary>
         [Display(Name = "Not For Sale")]
-        NotForSale
+        NotForSale = 3
     }
 
     /// <summary>

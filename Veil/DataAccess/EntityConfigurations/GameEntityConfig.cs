@@ -44,6 +44,13 @@ namespace Veil.DataAccess.EntityConfigurations
             HasMany(p => p.Tags).
                 WithMany(t => t.TaggedGames).
                 Map(manyToManyConfig => manyToManyConfig.ToTable("GameCategory"));
+
+            /* Computed Columns:
+             *
+             * Game.AvailabilityStatus
+             */
+            Property(g => g.GameAvailabilityStatus).
+                HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
         }
     }
 }

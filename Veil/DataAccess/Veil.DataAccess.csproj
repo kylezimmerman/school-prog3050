@@ -118,6 +118,14 @@
     <Compile Include="Migrations\201511012345026_AddPhysicalGameProductSkuSequence.Designer.cs">
       <DependentUpon>201511012345026_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511032030127_AddGetGameAvailabilityStatusFunction.cs" />
+    <Compile Include="Migrations\201511032030127_AddGetGameAvailabilityStatusFunction.Designer.cs">
+      <DependentUpon>201511032030127_AddGetGameAvailabilityStatusFunction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511032118388_AddEnumToLookupMigration.cs" />
+    <Compile Include="Migrations\201511032118388_AddEnumToLookupMigration.Designer.cs">
+      <DependentUpon>201511032118388_AddEnumToLookupMigration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -138,6 +146,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511012345026_AddPhysicalGameProductSkuSequence.resx">
       <DependentUpon>201511012345026_AddPhysicalGameProductSkuSequence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511032030127_AddGetGameAvailabilityStatusFunction.resx">
+      <DependentUpon>201511032030127_AddGetGameAvailabilityStatusFunction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511032118388_AddEnumToLookupMigration.resx">
+      <DependentUpon>201511032118388_AddEnumToLookupMigration.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
