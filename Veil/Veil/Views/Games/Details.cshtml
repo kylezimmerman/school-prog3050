@@ -91,53 +91,19 @@
     </div>
 }
 
-@foreach (var gameProduct in Model.GameSKUs)
+@foreach (var physicalGameProduct in Model.GameSKUs.OfType<PhysicalGameProduct>())
 {
     <div class="row panel" data-equalizer>
-        <div class="small-1 columns" data-equalizer-watch>
-            <h4 class="platform-transform">@gameProduct.Platform.PlatformName</h4>
-        </div>
-        <div class="small-2 columns" data-equalizer-watch>
-            <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art" />
-        </div>
-        <div class="small-6 columns" data-equalizer-watch>
-            <h5>@gameProduct.Name</h5>
-            <p class="margin-bottom-0 padding-bottom-half-em">@gameProduct.SKUDescription</p>
-            <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@gameProduct.Developer.Name</p>
-            <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@gameProduct.Publisher.Name</p>
-        </div>
-        <div class="small-3 columns" data-equalizer-watch>
-            @{ var rating = gameProduct.AverageRating; }
-            @if (rating.HasValue)
-            {
-                <div class="row">
-                    <strong class="label info column bordered">Average Rating</strong>
-                </div>
-                <div class="row">
-                    <div class="column text-center margin-bottom-1 bordered rating">
-                        @Html.Partial("_RatingStarsPartial", rating)
-                    </div>
-                </div>
-            }
-            @*
-                If the user is an employee - show buttons to Edit or Delete the GameProduct
-                If member or anonymous and:
-                    The format is PhysicalGameProduct - show Buy New/Used and Add to Wishlist buttons
-                        Disable Buy New if out of stock and we can't get more
-                        Disable Buy Used if out of stock
-                        Do not show buy used if there is no used price
-                    The format is DownloadGameProduct - show a button to download the product
-            *@
-            @if (User.IsEmployeeOrAdmin())
-            {
-                @Html.ActionLink("Edit", "EditGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
-                @Html.ActionLink("Delete", "DeleteGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
-            }
-            else
-            {
-                Html.RenderAction("RenderGameSKU", gameProduct);
-            }
-        </div>
+        @{ Html.RenderPartial("_GameProductPartial", physicalGameProduct); }
+        @{ Html.RenderPartial("_PhysicalGameProductPartial", physicalGameProduct); }
+    </div>
+}
+
+@foreach (var downloadGameProduct in Model.GameSKUs.OfType<DownloadGameProduct>())
+{
+    <div class="row panel" data-equalizer>
+        @{ Html.RenderPartial("_GameProductPartial", downloadGameProduct); }
+        @{ Html.RenderPartial("_DownloadGameProduct", downloadGameProduct); }
     </div>
 }
 

@@ -9,7 +9,7 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
-using Veil.DataModels;
+using LinqKit;
 using Veil.Extensions;
 
 namespace Veil.Controllers
@@ -65,7 +65,13 @@ namespace Veil.Controllers
             title = title.Trim();
             platform = platform.Trim();
             tags = tags ?? new List<string>();
-            tags.ForEach(t => t.Trim());
+
+            for (int i = 0; i < tags.Count; i++)
+            {
+                string t = tags[i];
+                t = t.Trim();
+                tags[i] = t;
+            }
 
             if (tags.Count == 0 && title == "" && platform == "")
             {
@@ -76,24 +82,53 @@ namespace Veil.Controllers
                 return View(searchViewModel);
             }
 
-            IQueryable<Game> gamesFiltered = db.Games
-                .Where(g =>
-                        (title != "" && g.Name.Contains(title)) ||
-                        g.Tags.Any(t => tags.Contains(t.Name)) ||
-                        g.GameSKUs.Any(gs => gs.Platform.PlatformCode == platform));
+            // We are doing Or, so we need the first to be false
+            var searchPredicate = PredicateBuilder.False<Game>();
+
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                // Filter by title
+                searchPredicate = searchPredicate.Or(g => g.Name.Contains(title));
+            }
+
+            if (tags.Count > 0)
+            {
+                // Filter by tags
+                searchPredicate = searchPredicate.Or(g => g.Tags.Any(t => tags.Contains(t.Name)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(platform))
+            {
+                // Filter by platform
+                searchPredicate = searchPredicate.Or(g => g.GameSKUs.Any(gs => gs.PlatformCode == platform));
+            }
 
             if (!User.IsEmployeeOrAdmin())
             {
-                gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+                // Filter out any not for sale games
+                // We are doing And, so we need the first to be true
+                var roleFilterPredicate = PredicateBuilder.True<Game>().And(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+
+                // Equivalent to (conditionAbove && (searchPredicateConditions))
+                searchPredicate = roleFilterPredicate.And(searchPredicate);
             }
 
-            var searchQuery = ((title != "") ? title : "");
+            IQueryable<Game> gamesFiltered = db.Games.AsExpandable().Where(searchPredicate);
 
-            searchQuery += ((platform != "") ? (", " + db.Platforms.First(p => p.PlatformCode == platform).PlatformName) : "");
+            string platformName =
+                await db.Platforms.
+                    Where(p => p.PlatformCode == platform).
+                    Select(p => p.PlatformName).
+                    FirstOrDefaultAsync();
 
-            searchQuery = tags.Aggregate(searchQuery, (current, t) => current + (", " + t));
+            string searchQuery = $"{title}, ";
 
-            searchQuery = searchQuery.Trim(',', ' ');
+            if (platformName != null)
+            {
+                searchQuery += $"{platformName}, ";
+            }
+
+            searchQuery += string.Join(", ", tags);
                 
             ViewBag.SearchTerm = searchQuery;
 
@@ -127,24 +162,12 @@ namespace Veil.Controllers
                     return View("Index");
                 }
 
-                // Remove formats that are not for sale unless the user is an employee
+            // Remove formats that are not for sale unless the user is an employee
             game.GameSKUs = game.GameSKUs.
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
 
             return View(game);
-        }
-
-        [ChildActionOnly]
-        public ActionResult RenderGameSku(PhysicalGameProduct gameProduct)
-        {
-            return View("_PhysicalGameProductPartial", gameProduct);
-        }
-
-        [ChildActionOnly]
-        public ActionResult RenderGameSku(DownloadGameProduct gameProduct)
-        {
-            return View("_DownloadGameProduct", gameProduct);
         }
 
         // TODO: Every action after this should be employee only
@@ -314,6 +337,38 @@ namespace Veil.Controllers
             return View(gameProduct);
         }
 
+        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new PhysicalGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id, PhysicalGameProduct gameProduct)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> DeletePhysicalGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new PhysicalGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ConfirmDeletePhysicalGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
+        }
+
         public async Task<ActionResult> CreateDownloadGameProduct(Guid? id)
         {
             if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
@@ -352,6 +407,38 @@ namespace Veil.Controllers
             ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
 
             return View(gameProduct);
+        }
+
+        public async Task<ActionResult> EditDownloadGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new DownloadGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditDownloadGameProduct(Guid? id, DownloadGameProduct gameProduct)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> DeleteDownloadGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new DownloadGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ConfirmDeleteDownloadGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
         }
 
 

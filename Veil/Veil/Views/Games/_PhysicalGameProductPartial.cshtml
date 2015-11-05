@@ -1,38 +1,60 @@
 ﻿@using Veil.DataModels.Models
+@using Veil.Extensions
 @model PhysicalGameProduct
 
-@{
-    string buyNewClasses = "button expand small success margin-bottom-0";
-}
-
-@if (Model.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
-    Model.NewInventory < 1)
-{
-    <a class="@buyNewClasses disabled">Buy New @($"{Model.NewWebPrice:C}")</a>
-}
-else
-{
-    @Html.ActionLink($"Buy New {Model.NewWebPrice:C}", "AddItem", "Cart", 
-        new { productId = Model.Id, isNew = true }, 
-        new { @class = buyNewClasses })
-}
-
-@if (Model.UsedWebPrice.HasValue)
-{
-    string buyUsedClasses = "button expand small margin-bottom-0";
-
-    if (Model.UsedInventory < 1)
+<div class="small-3 columns" data-equalizer-watch>
+    @{ var rating = Model.AverageRating; }
+    @if (rating.HasValue)
     {
-        <a class="@buyUsedClasses disabled">Buy Used @($"{Model.UsedWebPrice.Value:C}")</a>
-    }
-    else
-    {
-        @Html.ActionLink($"Buy Used {Model.UsedWebPrice.Value:C}", "AddItem", "Cart",
-            new { productId = Model.Id, isNew = false },
-            new { @class = buyUsedClasses })
-    }
-}
+        <div class="row">
+            <strong class="label info column bordered">Average Rating</strong>
+        </div>
 
-@Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
-    new { itemId = Model.Id },
-    new { @class = "button expand small info margin-bottom-0" })
+        <div class="row">
+            <div class="column text-center margin-bottom-1 bordered rating">
+                @Html.Partial("_RatingStarsPartial", rating)
+            </div>
+        </div>
+    }
+
+    @if (User.IsEmployeeOrAdmin())
+    {
+        Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" });
+        Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small alert" });
+    }
+    else {
+        string buyNewClasses = "button expand small success margin-bottom-0";
+
+        if (Model.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
+            Model.NewInventory < 1)
+        {
+            <a class="@buyNewClasses disabled">Buy New @($"{Model.NewWebPrice:C}")</a>
+        }
+        else
+        {
+            @Html.ActionLink($"Buy New {Model.NewWebPrice:C}", "AddItem", "Cart", 
+                new { productId = Model.Id, isNew = true }, 
+                new { @class = buyNewClasses })
+        }
+
+        if (Model.UsedWebPrice.HasValue)
+        {
+            string buyUsedClasses = "button expand small margin-bottom-0";
+
+            if (Model.UsedInventory < 1)
+            {
+                <a class="@buyUsedClasses disabled">Buy Used @($"{Model.UsedWebPrice.Value:C}")</a>
+            }
+            else
+            {
+                @Html.ActionLink($"Buy Used {Model.UsedWebPrice.Value:C}", "AddItem", "Cart",
+                    new { productId = Model.Id, isNew = false },
+                    new { @class = buyUsedClasses })
+            }
+        }
+
+        @Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
+            new { itemId = Model.Id },
+            new { @class = "button expand small info margin-bottom-0" })
+    }
+</div>
