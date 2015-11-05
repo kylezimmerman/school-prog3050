@@ -6,15 +6,11 @@ using System.Net;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
-using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
-using Microsoft.Practices.ObjectBuilder2;
-using Veil.DataAccess;
 using Veil.DataModels;
-using Veil.DataModels;
-using Veil.Models;
+using Veil.Extensions;
 
 namespace Veil.Controllers
 {
@@ -30,26 +26,19 @@ namespace Veil.Controllers
         }
 
         // GET: Games
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(int page = 1)
         {
-            var games = await db.Games.Include(g => g.Rating).ToListAsync();
+            IQueryable<Game> games = db.Games.Include(g => g.Rating);
 
-            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            if (!User.IsEmployeeOrAdmin())
             {
-                games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale).ToList();
+                games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
-            int page;
+            games = games.OrderBy(g => g.Name).Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE);
 
-            if (!int.TryParse(Request.QueryString?["page"], out page))
-            {
-                page = 1;
+            return View(await games.ToListAsync());
             }
-
-            games = games.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToList();
-
-            return View(games);
-        }
 
         // POST: Games/Search?{query-string}
         [HttpPost]
@@ -57,10 +46,10 @@ namespace Veil.Controllers
         {
             keyword = keyword.Trim();
 
-            IQueryable<Game>  gamesFiltered = db.Games
+            IQueryable<Game> gamesFiltered = db.Games
                 .Where(g => g.Name.Contains(keyword));
 
-            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            if (!User.IsEmployeeOrAdmin())
             {
                 gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
@@ -93,9 +82,8 @@ namespace Veil.Controllers
                         g.Tags.Any(t => tags.Contains(t.Name)) ||
                         g.GameSKUs.Any(gs => gs.Platform.PlatformCode == platform));
 
-            if (!User.IsInRole(VeilRoles.ADMIN_ROLE) && !User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            if (!User.IsEmployeeOrAdmin())
             {
-                await gamesFiltered.LoadAsync();
                 gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
@@ -120,26 +108,29 @@ namespace Veil.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Game game = await db.Games.FindAsync(id);
+            // TODO: Remove the null coalesce and handle if id doesn't match. This supports both our test and real data.
+            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id) ?? new Game();
 
             if (game == null)
             {
                 this.AddAlert(AlertType.Error, "The selected game could not be displayed.");
                 return RedirectToAction("Index");
             }
-            else if (!User.IsInRole(VeilRoles.EMPLOYEE_ROLE) &&
-                !User.IsInRole(VeilRoles.ADMIN_ROLE))
+
+            if (User.IsEmployeeOrAdmin())
             {
+                return View(game);
+            }
+
                 if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
                 {
                     return View("Index");
                 }
+
                 // Remove formats that are not for sale unless the user is an employee
-                if (game.GameSKUs.Any())
-                {
-                    game.GameSKUs = game.GameSKUs.Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).ToList();
-                }
-            }
+            game.GameSKUs = game.GameSKUs.
+                Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
+                ToList();
 
             return View(game);
         }
