@@ -1,4 +1,29 @@
 ﻿@using Veil.DataModels.Models
+@using Veil.Extensions
 @model DownloadGameProduct
 
-<a href="@Model.DownloadLink" class="button expand success">Free Download</a>
+<div class="small-3 columns" data-equalizer-watch>
+    @{ var rating = Model.AverageRating; }
+    @if (rating.HasValue)
+    {
+        <div class="row">
+            <strong class="label info column bordered">Average Rating</strong>
+        </div>
+
+        <div class="row">
+            <div class="column text-center margin-bottom-1 bordered rating">
+                @Html.Partial("_RatingStarsPartial", rating)
+            </div>
+        </div>
+    }
+
+    @if (User.IsEmployeeOrAdmin())
+    {
+        @Html.ActionLink("Edit", "EditGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
+        @Html.ActionLink("Delete", "DeleteGameProduct", new { id = Model.Id }, new { @class = "button expand small alert" })
+    }
+    else
+    {
+        <a href="@Model.DownloadLink" class="button expand success">Free Download</a>
+    }
+</div>
