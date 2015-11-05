@@ -10,7 +10,7 @@
         <img src="@Model.Product.BoxArtImageURL" alt="@Model.Product.PlatformCode Box Art" />
     </div>
     <div class="small-6 columns" data-equalizer-watch>
-        <h5>@Model.Product.Name</h5>
+        <h5>@Html.ActionLink(Model.Product.Name, "Details", "Games", new { id = Model.Product.GameId }, null)  </h5>
         <p class="margin-bottom-0 padding-bottom-half-em">@Model.Product.SKUDescription</p>
         <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@Model.Product.Developer.Name</p>
         <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@Model.Product.Publisher.Name</p>

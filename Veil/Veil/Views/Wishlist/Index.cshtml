@@ -25,11 +25,11 @@
 else
 {
     bool memberIsCurrentUser = Model.UserId.ToString() == User.Identity.GetUserId();
-    foreach (Product product in Model.Wishlist.OfType<PhysicalGameProduct>())
+    foreach (var product in Model.Wishlist.OfType<PhysicalGameProduct>())
     {
         var model = new WishlistPhysicalGameProductViewModel()
         {
-            Product = product as PhysicalGameProduct,
+            Product = product,
             MemberIsCurrentUser = memberIsCurrentUser
         };
         Html.RenderPartial("_PhysicalGameProductPartial", model);

@@ -123,7 +123,7 @@ nav .title-area img {
 .platform-transform {
     text-align: center;
     vertical-align: central;
-    transform:rotate(-90deg)translateX(-125%);
+    transform:rotate(-90deg)translateX(-50%)translateX(-3.25rem);
     transform-origin: left top 0;
     float: left;
 }
