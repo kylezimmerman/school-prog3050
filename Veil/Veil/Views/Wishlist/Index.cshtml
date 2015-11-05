@@ -1,9 +1,10 @@
 ﻿@model Member
-@using Microsoft.AspNet.Identity;
+@using Microsoft.AspNet.Identity
 @using Veil.DataModels.Models
+@using Veil.Models
 
 @{
-    ViewBag.Title = Model.UserAccount.UserName + "'s Wishlist";
+    ViewBag.Title = $"{Model.UserAccount.UserName}'s Wishlist";
 }
 
 <div class="row">
@@ -24,75 +25,13 @@
 else
 {
     bool memberIsCurrentUser = Model.UserId.ToString() == User.Identity.GetUserId();
-    foreach (Product product in Model.Wishlist)
+    foreach (Product product in Model.Wishlist.OfType<PhysicalGameProduct>())
     {
-        // This is currently unnecessary, but allows for other Product types in the future
-        if (product is PhysicalGameProduct)
+        var model = new WishlistPhysicalGameProductViewModel()
         {
-            var physicalGameProduct = product as PhysicalGameProduct;
-
-            <div class="row panel" data-equalizer>
-                <div class="small-1 columns" data-equalizer-watch>
-                    <h4 class="platform-transform">@physicalGameProduct.Platform.PlatformName</h4>
-                </div>
-                <div class="small-2 columns" data-equalizer-watch>
-                    <img src="@physicalGameProduct.BoxArtImageURL" alt="@physicalGameProduct.PlatformCode Box Art" />
-                </div>
-                <div class="small-6 columns" data-equalizer-watch>
-                    <h5>@physicalGameProduct.Name</h5>
-                    <p class="margin-bottom-0 padding-bottom-half-em">@physicalGameProduct.SKUDescription</p>
-                    <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@physicalGameProduct.Developer.Name</p>
-                    <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@physicalGameProduct.Publisher.Name</p>
-                </div>
-                <div class="small-3 columns" data-equalizer-watch>
-                    @{
-                        var rating = physicalGameProduct.AverageRating;
-                        if (rating.HasValue)
-                        {
-                            <div class="row">
-                                <strong class="label info column bordered">Average Rating</strong>
-                            </div>
-                            <div class="row">
-                                <div class="column text-center margin-bottom-1 bordered rating">
-                                    @Html.Partial("_RatingStarsPartial", rating)
-                                </div>
-                            </div>
-                        }
-                        String buyNewClasses = "button expand small success margin-bottom-0";
-                        if (physicalGameProduct.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
-                            physicalGameProduct.NewInventory < 1)
-                        {
-                            <a class="@buyNewClasses disabled">Buy New @physicalGameProduct.NewWebPrice.ToString("C")</a>
-                        }
-                        else
-                        {
-                            @Html.ActionLink("Buy New " + physicalGameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = physicalGameProduct.Id, isNew = true }, new { @class = buyNewClasses });
-                        }
-
-                        if (physicalGameProduct.UsedWebPrice.HasValue)
-                        {
-                            String buyUsedClasses = "button expand small margin-bottom-0";
-
-                            if (physicalGameProduct.UsedInventory < 1)
-                            {
-                                <a class="@buyUsedClasses disabled">Buy Used @physicalGameProduct.UsedWebPrice.Value.ToString("C")</a>
-                            }
-                            else
-                            {
-                                Html.ActionLink("Buy Used " + physicalGameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = physicalGameProduct.Id, isNew = false }, new { @class = buyUsedClasses });
-                            }
-                        }
-                        if (memberIsCurrentUser)
-                        {
-                            @Html.ActionLink("Remove from Wishlist", "Remove", "Wishlist", new { itemId = physicalGameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
-                        }
-                        else
-                        {
-                            @Html.ActionLink("Add to Your Wishlist", "Add", "Wishlist", new { itemId = physicalGameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
-                        }
-                    }
-                </div>
-            </div>
-        }
+            Product = product as PhysicalGameProduct,
+            MemberIsCurrentUser = memberIsCurrentUser
+        };
+        Html.RenderPartial("_PhysicalGameProductPartial", model);
     }
 }

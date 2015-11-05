@@ -1,0 +1,66 @@
+﻿@using Veil.Models
+@using Veil.DataModels.Models
+@model WishlistPhysicalGameProductViewModel
+
+<div class="row panel" data-equalizer>
+    <div class="small-1 columns" data-equalizer-watch>
+        <h4 class="platform-transform">@Model.Product.Platform.PlatformName</h4>
+    </div>
+    <div class="small-2 columns" data-equalizer-watch>
+        <img src="@Model.Product.BoxArtImageURL" alt="@Model.Product.PlatformCode Box Art" />
+    </div>
+    <div class="small-6 columns" data-equalizer-watch>
+        <h5>@Model.Product.Name</h5>
+        <p class="margin-bottom-0 padding-bottom-half-em">@Model.Product.SKUDescription</p>
+        <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@Model.Product.Developer.Name</p>
+        <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@Model.Product.Publisher.Name</p>
+    </div>
+    <div class="small-3 columns" data-equalizer-watch>
+        @{
+            var rating = Model.Product.AverageRating;
+            if (rating.HasValue)
+            {
+                <div class="row">
+                    <strong class="label info column bordered">Average Rating</strong>
+                </div>
+                <div class="row">
+                    <div class="column text-center margin-bottom-1 bordered rating">
+                        @Html.Partial("_RatingStarsPartial", rating)
+                    </div>
+                </div>
+            }
+            String buyNewClasses = "button expand small success margin-bottom-0";
+            if (Model.Product.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
+                Model.Product.NewInventory < 1)
+            {
+                <a class="@buyNewClasses disabled">Buy New @Model.Product.NewWebPrice.ToString("C")</a>
+            }
+            else
+            {
+                @Html.ActionLink($"Buy New {Model.Product.NewWebPrice:C}", "AddItem", "Cart", new { productId = Model.Product.Id, isNew = true }, new { @class = buyNewClasses });
+            }
+
+            if (Model.Product.UsedWebPrice.HasValue)
+            {
+                String buyUsedClasses = "button expand small margin-bottom-0";
+
+                if (Model.Product.UsedInventory < 1)
+                {
+                    <a class="@buyUsedClasses disabled">Buy Used @Model.Product.UsedWebPrice.Value.ToString("C")</a>
+                }
+                else
+                {
+                    Html.ActionLink($"Buy Used {Model.Product.UsedWebPrice.Value:C}", "AddItem", "Cart", new { productId = Model.Product.Id, isNew = false }, new { @class = buyUsedClasses });
+                }
+            }
+            if (Model.MemberIsCurrentUser)
+            {
+                @Html.ActionLink("Remove from Wishlist", "Remove", "Wishlist", new { itemId = Model.Product.Id }, new { @class = "button expand small info margin-bottom-0" })
+            }
+            else
+            {
+                @Html.ActionLink("Add to Your Wishlist", "Add", "Wishlist", new { itemId = Model.Product.Id }, new { @class = "button expand small info margin-bottom-0" })
+            }
+        }
+    </div>
+</div>

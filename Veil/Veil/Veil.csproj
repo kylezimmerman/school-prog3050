@@ -219,6 +219,7 @@
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
     <Compile Include="Models\SearchViewModel.cs" />
+    <Compile Include="Models\WishlistProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
     <Compile Include="Services\StripeService.cs" />
@@ -476,6 +477,7 @@
     <Content Include="Views\Tags\Index.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
+    <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
