@@ -38,7 +38,7 @@ namespace Veil.Controllers
             games = games.OrderBy(g => g.Name).Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE);
 
             return View(await games.ToListAsync());
-        }
+            }
 
         // POST: Games/Search?{query-string}
         [HttpPost]
@@ -113,7 +113,8 @@ namespace Veil.Controllers
 
             if (game == null)
             {
-                return HttpNotFound();
+                this.AddAlert(AlertType.Error, "The selected game could not be displayed.");
+                return RedirectToAction("Index");
             }
 
             if (User.IsEmployeeOrAdmin())
@@ -121,12 +122,12 @@ namespace Veil.Controllers
                 return View(game);
             }
 
-            if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
-            {
-                return View("Index");
-            }
+                if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
+                {
+                    return View("Index");
+                }
 
-            // Remove formats that are not for sale unless the user is an employee
+                // Remove formats that are not for sale unless the user is an employee
             game.GameSKUs = game.GameSKUs.
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
