@@ -27,6 +27,18 @@
     <div class="small-10 medium-5 columns" data-equalizer-watch>
         @if (Model.GameSKUs.Any())
         {
+            var gameRating = Model.AverageRating;
+            if (gameRating.HasValue)
+            {
+                <div class="row">
+                    <strong class="label info column bordered">Average Rating</strong>
+                </div>
+                <div class="row">
+                    <div class="column text-center margin-bottom-1 bordered rating">
+                        @Html.Partial("_RatingStarsPartial", gameRating)
+                    </div>
+                </div>
+            }
             <p class="margin-bottom-0"><strong>Release Date: @Model.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
         }
         <p class="margin-bottom-0">
