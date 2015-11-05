@@ -134,6 +134,18 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        [ChildActionOnly]
+        public ActionResult RenderGameSku(PhysicalGameProduct gameProduct)
+        {
+            return View("_PhysicalGameProductPartial", gameProduct);
+        }
+
+        [ChildActionOnly]
+        public ActionResult RenderGameSku(DownloadGameProduct gameProduct)
+        {
+            return View("_DownloadGameProduct", gameProduct);
+        }
+
         // TODO: Every action after this should be employee only
 
         // GET: Games/Create

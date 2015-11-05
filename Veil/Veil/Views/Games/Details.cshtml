@@ -1,6 +1,6 @@
-﻿@model Veil.DataModels.Models.Game
-@using Veil.DataModels
+﻿@using Veil.Extensions
 @using Veil.DataModels.Models
+@model Game
 
 @{
     ViewBag.Title = Model.Name;
@@ -42,8 +42,7 @@
             {
                 <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
             }
-            @if (User.IsInRole(VeilRoles.ADMIN_ROLE) ||
-                User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
+            @if (User.IsEmployeeOrAdmin())
             {
                 // TODO: Dropdown and + button to add a tag
             }
@@ -59,8 +58,7 @@
     </div>
 </div>
 
-@if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) ||
-    User.IsInRole(VeilRoles.ADMIN_ROLE))
+@if (User.IsEmployeeOrAdmin())
 {
     <div class="row">
         <div class="small-4 medium-2 columns">
@@ -118,48 +116,14 @@
                         Do not show buy used if there is no used price
                     The format is DownloadGameProduct - show a button to download the product
             *@
-            @if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) ||
-                User.IsInRole(VeilRoles.ADMIN_ROLE))
+            @if (User.IsEmployeeOrAdmin())
             {
                 @Html.ActionLink("Edit", "EditGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
                 @Html.ActionLink("Delete", "DeleteGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
             }
             else
             {
-                if (gameProduct is PhysicalGameProduct)
-                {
-                    String buyNewClasses = "button expand small success margin-bottom-0";
-                    if (gameProduct.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
-                        (gameProduct as PhysicalGameProduct).NewInventory < 1)
-                    {
-                        <a class="@buyNewClasses disabled">Buy New @gameProduct.NewWebPrice.ToString("C")</a>
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = true }, new { @class = buyNewClasses })
-                    }
-
-                    if (gameProduct.UsedWebPrice.HasValue)
-                    {
-                        String buyUsedClasses = "button expand small margin-bottom-0";
-
-                        if ((gameProduct as PhysicalGameProduct).UsedInventory < 1)
-                        {
-                            <a class="@buyUsedClasses disabled">Buy Used @gameProduct.UsedWebPrice.Value.ToString("C")</a>
-                        }
-                        else
-                        {
-                            @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id, isNew = false }, new { @class = buyUsedClasses });
-                        }
-                    }
-
-                    @Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
-                             new { itemId = gameProduct.Id }, new { @class = "button expand small info margin-bottom-0" })
-                }
-                else if (gameProduct is DownloadGameProduct)
-                {
-                    <a href="@(gameProduct as DownloadGameProduct).DownloadLink" class="button expand success">Free Download</a>
-                }
+                Html.RenderAction("RenderGameSKU", gameProduct);
             }
         </div>
     </div>
@@ -210,15 +174,15 @@
         </div>
         <div class="small-9 columns">
             @{
-                if (review.ReviewStatus == Veil.DataModels.Models.ReviewStatus.Approved)
+                if (review.ReviewStatus == ReviewStatus.Approved)
                 {
                     <p>@review.ReviewText</p>
                 }
-                else if (review.ReviewStatus == Veil.DataModels.Models.ReviewStatus.Denied)
+                else if (review.ReviewStatus == ReviewStatus.Denied)
                 {
                     <p><em>This review has been flagged as inappropriate.</em></p>
                 }
-                else if (review.ReviewStatus == Veil.DataModels.Models.ReviewStatus.Denied)
+                else if (review.ReviewStatus == ReviewStatus.Denied)
                 {
                     <p><em>This review is pending approval.</em></p>
                 }
