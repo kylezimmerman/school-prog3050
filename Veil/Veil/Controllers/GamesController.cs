@@ -337,6 +337,38 @@ namespace Veil.Controllers
             return View(gameProduct);
         }
 
+        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new PhysicalGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id, PhysicalGameProduct gameProduct)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> DeletePhysicalGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new PhysicalGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ConfirmDeletePhysicalGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
+        }
+
         public async Task<ActionResult> CreateDownloadGameProduct(Guid? id)
         {
             if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
@@ -375,6 +407,38 @@ namespace Veil.Controllers
             ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
 
             return View(gameProduct);
+        }
+
+        public async Task<ActionResult> EditDownloadGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new DownloadGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditDownloadGameProduct(Guid? id, DownloadGameProduct gameProduct)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> DeleteDownloadGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return View(new DownloadGameProduct());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ConfirmDeleteDownloadGameProduct(Guid? id)
+        {
+            // TODO: Actually implement this
+
+            return RedirectToAction("Index");
         }
 
 
