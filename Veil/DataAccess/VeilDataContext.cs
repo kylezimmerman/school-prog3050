@@ -27,9 +27,6 @@ namespace Veil.DataAccess
         // migration will not remove the old-named sequence
         internal const string PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME = "PhysicalGameProductSkuSequence";
 
-        internal const string GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME =
-            "GetGameAvailabilityStatus";
-
         // NOTE: If you change this value, no existing DB objects will be removed in migrations' Down()'s
         internal const string SCHEMA_NAME = "dbo";
 

@@ -111,6 +111,7 @@
     <Compile Include="Models\Tag.cs" />
     <Compile Include="Validation\CompareValuesAttribute.cs" />
     <Compile Include="Models\WebOrder.cs" />
+    <Compile Include="Validation\ValidationRegex.cs" />
     <Compile Include="VeilRoles.cs" />
   </ItemGroup>
   <ItemGroup>

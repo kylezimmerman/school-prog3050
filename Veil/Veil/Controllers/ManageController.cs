@@ -90,6 +90,15 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> UpdateProfile(IndexViewModel viewModel)
+        {
+            ManageMessageId? message = null;
+
+            return RedirectToAction("Index", new { Message = message });
+        }
+
         //
         // POST: /Manage/RemoveLogin
         [HttpPost]

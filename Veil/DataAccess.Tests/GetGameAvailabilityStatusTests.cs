@@ -22,10 +22,12 @@ namespace Veil.DataAccess.Tests
 
         private DateTime releaseDate = new DateTime(635821676576588170L, DateTimeKind.Local);
         private decimal newWebPrice = 1.99m;
-        private int internalSkuNumber = 0;
+        private int internalSkuNumber = 1;
 
         private PhysicalGameProduct CreateValidPhysicalGameProduct(AvailabilityStatus status)
         {
+            string skuNumber = internalSkuNumber++.ToString().PadLeft(12, '0');
+
             return new PhysicalGameProduct
             {
                 ProductAvailabilityStatus = status,
@@ -34,8 +36,8 @@ namespace Veil.DataAccess.Tests
                 Publisher = company,
                 ReleaseDate = releaseDate,
                 NewWebPrice = newWebPrice,
-                InternalNewSKU = $"0-{internalSkuNumber++}",
-                InteralUsedSKU = $"1-{internalSkuNumber++}"
+                InternalNewSKU = $"0{skuNumber}",
+                InteralUsedSKU = $"1{skuNumber}"
             };
         }
 

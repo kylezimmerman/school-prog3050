@@ -1,8 +1,12 @@
-﻿using System.Web.Mvc;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels.Models;
 
 namespace Veil.Tests.Controllers
 {
@@ -10,12 +14,15 @@ namespace Veil.Tests.Controllers
     public class HomeControllerTests
     {
         [Test]
-        public void Index_WhenCalled_ReturnsViewResult()
+        public async void Index_WhenCalled_ReturnsViewResult()
         {
-            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
-            HomeController controller = new HomeController(dbMock.Object);
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game>().AsQueryable());
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
 
-            ViewResult result = controller.Index() as ViewResult;
+            HomeController controller = new HomeController(dbStub.Object);
+
+            ViewResult result = await controller.Index() as ViewResult;
 
             Assert.That(result != null);
         }

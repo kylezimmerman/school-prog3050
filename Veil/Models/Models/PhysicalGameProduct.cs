@@ -7,6 +7,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -38,7 +39,7 @@ namespace Veil.DataModels.Models
         ///     </example>
         /// </remarks>
         [MaxLength(128)]
-        [RegularExpression(@"^0\d{12}$")]
+        [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU)]
         [DisplayName("Internal New SKU")]
         public string InternalNewSKU { get; set; }
 
@@ -53,7 +54,7 @@ namespace Veil.DataModels.Models
         ///     </example>
         /// </remarks>
         [MaxLength(128)]
-        [RegularExpression(@"^1\d{12}$")]
+        [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU)]
         [DisplayName("Internal Used SKU")]
         public string InteralUsedSKU { get; set; }
 

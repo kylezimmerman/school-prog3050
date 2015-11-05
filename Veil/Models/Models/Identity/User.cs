@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models.Identity
 {
@@ -56,6 +57,13 @@ namespace Veil.DataModels.Models.Identity
         [Required]
         [MaxLength(256)]
         public override string UserName { get; set; }
+
+        /// <summary>
+        ///     The User's Phone Number
+        /// </summary>
+        [RegularExpression(ValidationRegex.STORED_PHONE)]
+        [MaxLength(32)]
+        public override string PhoneNumber { get; set; }
 
         /// <summary>
         ///     The User's first name

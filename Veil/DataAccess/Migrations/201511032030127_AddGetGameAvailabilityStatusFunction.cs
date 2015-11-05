@@ -9,9 +9,12 @@ namespace Veil.DataAccess.Migrations
     /// </summary>
     public partial class Add_GetGameAvailabilityStatus_Function : DbMigration
     {
+        private const string GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME =
+            "GetGameAvailabilityStatus";
+
         public override void Up()
         {
-            Sql($@"CREATE FUNCTION [{VeilDataContext.SCHEMA_NAME}].[{VeilDataContext.GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME}] 
+            Sql($@"CREATE FUNCTION [{VeilDataContext.SCHEMA_NAME}].[{GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME}] 
                 ( 
                     @GameId_IN uniqueidentifier
                 )
@@ -64,13 +67,13 @@ namespace Veil.DataAccess.Migrations
 
             Sql($@"ALTER TABLE [{VeilDataContext.SCHEMA_NAME}].[{nameof(Game)}] 
                     ADD [{nameof(Game.GameAvailabilityStatus)}]
-                        AS ([{VeilDataContext.SCHEMA_NAME}].[{VeilDataContext.GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME}]([{nameof(Game.Id)}]))");
+                        AS ([{VeilDataContext.SCHEMA_NAME}].[{GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME}]([{nameof(Game.Id)}]))");
         }
         
         public override void Down()
         {
             DropColumn("dbo.Game", "GameAvailabilityStatus");
-            Sql("DROP FUNCTION [" + VeilDataContext.SCHEMA_NAME + "].[" + VeilDataContext.GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME + "]");
+            Sql($@"DROP FUNCTION [{VeilDataContext.SCHEMA_NAME}].[{GET_GAME_AVAILABILITY_STATUS_FUNCTION_NAME}]");
         }
     }
 }

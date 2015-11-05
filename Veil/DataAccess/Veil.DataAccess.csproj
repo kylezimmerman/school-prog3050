@@ -130,6 +130,10 @@
     <Compile Include="Migrations\201511042101448_Add_Friendship_InsertTrigger.Designer.cs">
       <DependentUpon>201511042101448_Add_Friendship_InsertTrigger.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511050128405_Reduced_User_PhoneNumber_Size.cs" />
+    <Compile Include="Migrations\201511050128405_Reduced_User_PhoneNumber_Size.Designer.cs">
+      <DependentUpon>201511050128405_Reduced_User_PhoneNumber_Size.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -159,6 +163,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511042101448_Add_Friendship_InsertTrigger.resx">
       <DependentUpon>201511042101448_Add_Friendship_InsertTrigger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511050128405_Reduced_User_PhoneNumber_Size.resx">
+      <DependentUpon>201511050128405_Reduced_User_PhoneNumber_Size.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

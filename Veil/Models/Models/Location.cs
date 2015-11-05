@@ -7,6 +7,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -42,6 +43,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Required]
         [DataType(DataType.PhoneNumber)]
+        [RegularExpression(ValidationRegex.INPUT_PHONE)]
         [MaxLength(32)]
         public string PhoneNumber { get; set; }
 
@@ -49,6 +51,7 @@ namespace Veil.DataModels.Models
         /// The Location's fax number
         /// </summary>
         [DataType(DataType.PhoneNumber)]
+        [RegularExpression(ValidationRegex.INPUT_PHONE)]
         [MaxLength(32)]
         public string FaxNumber { get; set; }
 
@@ -57,6 +60,7 @@ namespace Veil.DataModels.Models
         /// This will be null if the location doesn't have a toll free number
         /// </summary>
         [DataType(DataType.PhoneNumber)]
+        [RegularExpression(ValidationRegex.INPUT_PHONE, ErrorMessage = "Must be in the format (800)555-0199 or 800-555-0199. Extensions must come after the phone number in the format \", ext. 5555\" with at least one digit.")]
         [MaxLength(32)]
         public string TollFreeNumber { get; set; }
 
