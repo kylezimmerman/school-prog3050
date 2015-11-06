@@ -41,6 +41,11 @@ namespace Veil.Controllers
             }
 
         // POST: Games/Search?{query-string}
+        /// <summary>
+        /// Processes simple search lcoated in nav bar.
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <returns>IQueryable of type 'Game' to Index view of Games controller.</returns>
         [HttpPost]
         public async Task<ActionResult> Search(string keyword = "")
         {
@@ -60,6 +65,13 @@ namespace Veil.Controllers
         }
 
         // POST: Games/Search?{query-string}
+        /// <summary>
+        /// Processes advanced search from /Games/AdvancedSearch page.
+        /// </summary>
+        /// <param name="tags">List of type 'string' to search game tags.</param>
+        /// <param name="title">String to search game titles.</param>
+        /// <param name="platform">String to search game platforms.</param>
+        /// <returns></returns>
         public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "")
         {
             title = title.Trim();
@@ -130,7 +142,7 @@ namespace Veil.Controllers
 
             searchQuery += string.Join(", ", tags);
                 
-            ViewBag.SearchTerm = searchQuery;
+            ViewBag.SearchTerm = searchQuery.Trim(',', ' ');
 
             return View("Index", await gamesFiltered.ToListAsync());
         }
