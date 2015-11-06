@@ -5,6 +5,7 @@ using System.Net;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Models;
 
 namespace Veil.Controllers
 {
@@ -100,17 +101,24 @@ namespace Veil.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "Id,Name,Description,Date,Duration")] Event @event)
+        public async Task<ActionResult> Create(EventViewModel eventViewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                @event.Id = Guid.NewGuid();
-                db.Events.Add(@event);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return View(eventViewModel);
             }
 
-            return View(@event);
+            Event @event = new Event
+            {
+                Date = eventViewModel.DateTime,
+                Description = eventViewModel.Description,
+                Duration = eventViewModel.Duration,
+                Name = eventViewModel.Name
+            };
+
+            db.Events.Add(@event);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Index");
         }
 
         // GET: Events/Edit/5

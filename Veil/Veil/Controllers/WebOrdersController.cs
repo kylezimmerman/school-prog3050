@@ -11,7 +11,7 @@ namespace Veil.Controllers
 {
     public class WebOrdersController : BaseController
     {
-        private IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
 
         public WebOrdersController(IVeilDataAccess veilDataAccess)
         {

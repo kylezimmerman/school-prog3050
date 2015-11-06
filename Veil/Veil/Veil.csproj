@@ -222,6 +222,7 @@
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\CommonErrorResults.cs" />
     <Compile Include="Models\ErrorViewModel.cs" />
+    <Compile Include="Models\EventViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
@@ -474,6 +475,8 @@
     <Content Include="Views\Account\ConfirmResendConfirmationEmail.cshtml" />
     <Content Include="Views\Games\CreateDownloadGameProduct.cshtml" />
     <Content Include="Views\Games\CreatePhysicalGameProduct.cshtml" />
+    <Content Include="Views\Games\Search.cshtml" />
+    <Content Include="Views\Games\DeleteGameProduct.cshtml" />
     <Content Include="Views\Games\AdvancedSearch.cshtml" />
     <Content Include="Views\Games\_PhysicalGameProductPartial.cshtml" />
     <Content Include="Views\Games\_DownloadGameProduct.cshtml" />

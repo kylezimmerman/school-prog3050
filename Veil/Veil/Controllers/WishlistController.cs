@@ -13,7 +13,7 @@ namespace Veil.Controllers
 {
     public class WishlistController : BaseController
     {
-        private IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
 
         private readonly VeilUserManager userManager;
 
