@@ -11,6 +11,7 @@ using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
 using Veil.Models;
+using System.Transactions;
 
 namespace Veil.Controllers
 {
@@ -165,6 +166,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        //For deleting Games
         // GET: Games/Delete/5
         public async Task<ActionResult> Delete(Guid? id)
         {
@@ -175,21 +177,130 @@ namespace Veil.Controllers
             }
 
             Game game = await db.Games.FindAsync(id);
+
             if (game == null)
             {
                 return HttpNotFound();
             }
+
+
             return View(game);
         }
 
         // POST: Games/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(Guid id)
+        public async Task<ActionResult> DeleteGameConfirmed(Guid id)
         {
-            Game game = await db.Games.FindAsync(id);
-            db.Games.Remove(game);
-            await db.SaveChangesAsync();
+            Game game = null;
+
+            if (id != null)
+            {
+                game = await db.Games.FindAsync(id);
+            }
+            else
+            {
+                this.AddAlert(AlertType.Error, "No game selected");
+            }
+
+            if (game != null)
+            {
+                using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        foreach (var item in game.GameSKUs)
+                        {
+                            db.GameProducts.Remove(item);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //display an error code about not being able to remove game products
+                        //return back to delete confiramtion page
+                        this.AddAlert(AlertType.Error, "Error");
+                        return View();
+                    }
+
+                    try
+                    {
+                        db.Games.Remove(game);
+                        await db.SaveChangesAsync();
+                        deleteScope.Complete();
+                    }
+                    catch (Exception)
+                    {
+                        //display an error about not being able to remove game
+                        //return back to delete confiramtion page
+                        this.AddAlert(AlertType.Error, "");
+                        return View();
+                    }
+                }
+                  
+            }
+            else
+            {
+                //httpnotfound
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        //for deleting game products
+        // GET: Games/Delete/5
+        public async Task<ActionResult> DeleteGameProduct(Guid? id)
+        {
+            if (id == null)
+            {
+                this.AddAlert(AlertType.Error, "Please select a game product to delete.");
+                return RedirectToAction("Index");
+            }
+
+            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
+            if (gameProduct == null)
+            {
+                return HttpNotFound();
+            }
+            return View(gameProduct);
+        }
+
+        // POST: Games/Delete/5
+        [HttpPost, ActionName("DeleteGameProduct")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteGameProductConfirmed(Guid id)
+        {
+            GameProduct gameProduct = null;
+
+            if (id != null)
+            {
+                gameProduct = await db.GameProducts.FindAsync(id);
+            }
+            else
+            {
+                this.AddAlert(AlertType.Error, "No game selected");
+            }
+
+            if (gameProduct != null)
+            {
+                using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        db.GameProducts.Remove(gameProduct);
+                        await db.SaveChangesAsync();
+                        deleteScope.Complete();
+
+                    }
+                    catch (Exception)
+                    {
+                        //displays error message that product cant be deleted
+                        //return back to delete confiramtion page
+                        this.AddAlert(AlertType.Error, "Error happened");
+                        return View();
+                    }
+                }
+            }
+
             return RedirectToAction("Index");
         }
 

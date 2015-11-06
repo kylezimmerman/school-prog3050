@@ -464,6 +464,7 @@
     <Content Include="Views\Games\CreateDownloadGameProduct.cshtml" />
     <Content Include="Views\Games\CreatePhysicalGameProduct.cshtml" />
     <Content Include="Views\Games\Search.cshtml" />
+    <Content Include="Views\Games\DeleteGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
     <Content Include="Views\Shared\_AlertPartial.cshtml" />
