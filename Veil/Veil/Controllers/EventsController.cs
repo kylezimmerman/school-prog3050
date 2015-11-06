@@ -8,7 +8,7 @@ using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
-    public class EventsController : Controller
+    public class EventsController : BaseController
     {
         protected readonly IVeilDataAccess db;
 

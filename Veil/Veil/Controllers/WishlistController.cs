@@ -11,7 +11,7 @@ using Veil.Helpers;
 
 namespace Veil.Controllers
 {
-    public class WishlistController : Controller
+    public class WishlistController : BaseController
     {
         private IVeilDataAccess db;
 

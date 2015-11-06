@@ -214,11 +214,14 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
+    <Compile Include="Helpers\CommonErrorResults.cs" />
+    <Compile Include="Models\ErrorViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
@@ -475,6 +478,7 @@
     <Content Include="Views\Games\_PhysicalGameProductPartial.cshtml" />
     <Content Include="Views\Games\_DownloadGameProduct.cshtml" />
     <Content Include="Views\Games\_GameProductPartial.cshtml" />
+    <Content Include="Views\Shared\NotFound.cshtml" />
     <None Include="Views\Games\DeleteDownloadGameProduct.cshtml" />
     <None Include="Views\Games\DeletePhysicalGameProduct.cshtml" />
     <None Include="Views\Games\EditDownloadGameProduct.cshtml" />
@@ -491,6 +495,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Content\" />
+    <Folder Include="Views\Base\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">

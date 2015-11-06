@@ -9,7 +9,7 @@ using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
-    public class WebOrdersController : Controller
+    public class WebOrdersController : BaseController
     {
         private IVeilDataAccess db;
 

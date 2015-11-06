@@ -1,0 +1,20 @@
+﻿@using Veil.Models
+@model ErrorViewModel
+
+@{
+    ViewBag.Title = "Not Found";
+}
+
+<div class="row">
+    <div class="column">
+        <h1 class="text-danger">@Model.Title</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column large-centered">
+        <h2 class="text-danger">@Model.Message</h2>
+    </div>
+</div>
+
+@Html.ValidationSummary(true)

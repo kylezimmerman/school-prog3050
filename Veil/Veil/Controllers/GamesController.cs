@@ -2,19 +2,20 @@
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Net;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
+using System.Net;
+using System.Web;
 using LinqKit;
 using Veil.Extensions;
 
 namespace Veil.Controllers
 {
-    public class GamesController : Controller
+    public class GamesController : BaseController
     {
         private const int GAMES_PER_PAGE = 50;
 
@@ -135,21 +136,19 @@ namespace Veil.Controllers
             return View("Index", await gamesFiltered.ToListAsync());
         }
 
-        // GET: Games/Details/5
+        // GET: Games/Details/{Guid}
         public async Task<ActionResult> Details(Guid? id)
         {
             if (id == null)
             {
-                this.AddAlert(AlertType.Error, "No game was specified.");
-                return View("Error");
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
             if (game == null)
             {
-                this.AddAlert(AlertType.Error, "The selected game could not be found.");
-                return View("Error");
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             if (User.IsEmployeeOrAdmin())
@@ -160,8 +159,7 @@ namespace Veil.Controllers
             // User is anonymous or member, don't show not for sale games
             if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
             {
-                this.AddAlert(AlertType.Error, "The selected game could not be found.");
-                return View("Error");
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             // Remove formats that are not for sale unless the user is an employee
@@ -172,7 +170,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // TODO: Every action after this should be employee only
+        /* TODO: Every action after this should be employee only */
 
         // GET: Games/Create
         public ActionResult Create()
