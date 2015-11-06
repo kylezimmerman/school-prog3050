@@ -1,5 +1,4 @@
 ﻿using System.Security.Principal;
-using System.Web;
 using Veil.DataModels;
 
 namespace Veil.Extensions

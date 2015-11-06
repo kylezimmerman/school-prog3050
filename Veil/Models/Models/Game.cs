@@ -40,7 +40,7 @@ namespace Veil.DataModels.Models
         ///     <b>it must be explicitly reloaded</b> from the database for that change to occur.
         /// </remarks>
         [DisplayName("Game Availability")]
-        public AvailabilityStatus GameAvailabilityStatus { get; private set; }
+        public AvailabilityStatus GameAvailabilityStatus { get; internal set; }
 
         /// <summary>
         ///     The Game's SKU's average rating

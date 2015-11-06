@@ -140,16 +140,16 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                this.AddAlert(AlertType.Error, "No game was specified.");
+                return View("Error");
             }
 
-            // TODO: Remove the null coalesce and handle if id doesn't match. This supports both our test and real data.
-            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id) ?? new Game();
+            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
             if (game == null)
             {
-                this.AddAlert(AlertType.Error, "The selected game could not be displayed.");
-                return RedirectToAction("Index");
+                this.AddAlert(AlertType.Error, "The selected game could not be found.");
+                return View("Error");
             }
 
             if (User.IsEmployeeOrAdmin())
@@ -157,10 +157,12 @@ namespace Veil.Controllers
                 return View(game);
             }
 
-                if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
-                {
-                    return View("Index");
-                }
+            // User is anonymous or member, don't show not for sale games
+            if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
+            {
+                this.AddAlert(AlertType.Error, "The selected game could not be found.");
+                return View("Error");
+            }
 
             // Remove formats that are not for sale unless the user is an employee
             game.GameSKUs = game.GameSKUs.

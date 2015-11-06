@@ -12,8 +12,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 using Moq;
+using Moq.Language.Flow;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 
 namespace Veil.Tests
 {
@@ -78,6 +81,190 @@ namespace Veil.Tests
             return mockDbSet;
         }
 
+        /// <summary>
+        ///     Sets up the <see cref="Mock"/> of <see cref="DbSet{Tentity}"/> of type <see cref="T"/> to support calls to Include
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The type for the DbSet
+        /// </typeparam>
+        /// <param name="dbSetFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="DbSet{TEntity}"/> of <see cref="T"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnsResult allowing further setup
+        /// </returns>
+        /// <remarks>
+        ///     This must be called after all setup as it calls .Object on the Mock which prevents further setup
+        /// </remarks>
+        public static IReturnsResult<DbSet<T>> SetupForInclude<T>(this Mock<DbSet<T>> dbSetFake) where T: class
+        {
+            return dbSetFake.Setup(dbs => dbs.Include(It.IsAny<string>())).Returns(dbSetFake.Object);
+        }
+
+        /// <summary>
+        ///     Fluent method to make setting up User settings more readable
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     The same mock this was called with
+        /// </returns>
+        public static Mock<ControllerContext> SetupUser(this Mock<ControllerContext> contextFake)
+        {
+            return contextFake;
+        }
+
+        /// <summary>
+        ///     Sets up the user as in any role
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> InAllRoles(this Mock<ControllerContext> contextFake)
+        {
+            return contextFake.Setup(cm => cm.HttpContext.User.IsInRole(It.IsAny<string>())).Returns(true);
+        }
+
+        /// <summary>
+        ///     Sets up the user as not being in any roles
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> InNoRoles(this Mock<ControllerContext> contextFake)
+        {
+            return contextFake.Setup(cm => cm.HttpContext.User.IsInRole(It.IsAny<string>())).Returns(false);
+        }
+
+        /// <summary>
+        ///     Sets up the user as in the passed role
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <param name="role">
+        ///     The role to set the user as in
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> IsInRole(this Mock<ControllerContext> contextFake, string role)
+        {
+            return contextFake.Setup(cm => cm.HttpContext.User.IsInRole(role)).Returns(true);
+        }
+
+        /// <summary>
+        ///     Sets up the user as not in the passed role
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <param name="role">
+        ///     The role to set the user as not in
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> IsNotInRole(this Mock<ControllerContext> contextFake, string role)
+        {
+            return contextFake.Setup(cm => cm.HttpContext.User.IsInRole(role)).Returns(false);
+        }
+
+        /// <summary>
+        ///     Sets up the user as in the Employee role
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> InEmployeeRole(this Mock<ControllerContext> contextFake)
+        {
+            return IsInRole(contextFake, VeilRoles.EMPLOYEE_ROLE);
+        }
+
+        /// <summary>
+        ///     Sets up the user as in the Member role
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> InMemberRole(this Mock<ControllerContext> contextFake)
+        {
+            return IsInRole(contextFake, VeilRoles.MEMBER_ROLE);
+        }
+
+        /// <summary>
+        ///     Sets up the user as in the Admin role
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> InAdminRole(this Mock<ControllerContext> contextFake)
+        {
+            return IsInRole(contextFake, VeilRoles.ADMIN_ROLE);
+        }
+
+        /// <summary>
+        ///     Sets up the user's authenticated status equal to the passed isAuthenticated
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <param name="isAuthenticated">
+        ///     bool indicating the authentication status
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        private static IReturnsResult<ControllerContext> AuthenticatedStatus(this Mock<ControllerContext> contextFake, bool isAuthenticated)
+        {
+            return contextFake.Setup(cm => cm.HttpContext.User.Identity.IsAuthenticated).Returns(isAuthenticated);
+        }
+
+        /// <summary>
+        ///     Sets up the user as not authenticated
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> IsNotAuthenticated(this Mock<ControllerContext> contextFake)
+        {
+            return AuthenticatedStatus(contextFake, false);
+        }
+
+        /// <summary>
+        ///     Sets up the user as authenticated
+        /// </summary>
+        /// <param name="contextFake">
+        ///     The <see cref="Mock{T}"/> of <see cref="ControllerContext"/> to setup
+        /// </param>
+        /// <returns>
+        ///     IReturnResults allowing further setup
+        /// </returns>
+        public static IReturnsResult<ControllerContext> IsAuthenticated(this Mock<ControllerContext> contextFake)
+        {
+            return AuthenticatedStatus(contextFake, true);
+        }
+
+        #region Async Infrastructure Classes
         /* Code from: https://msdn.microsoft.com/en-us/data/dn314429#async */
         private class TestDbAsyncQueryProvider<TEntity> : IDbAsyncQueryProvider
         {
@@ -185,5 +372,6 @@ namespace Veil.Tests
                 }
             }
         }
+    #endregion Async Infrastructure Classes
     }
 }

@@ -15,7 +15,7 @@
     </div>
 </div>
 
-@if (Model.Any())
+@if (Model != null && Model.Any())
 {
     foreach (var game in Model)
     {
