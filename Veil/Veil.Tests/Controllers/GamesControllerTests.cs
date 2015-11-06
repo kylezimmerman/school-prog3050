@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -64,10 +65,7 @@ namespace Veil.Tests.Controllers
         {
             GamesController controller = new GamesController(null);
 
-            var result = await controller.Details(null) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [Test]
@@ -81,10 +79,7 @@ namespace Veil.Tests.Controllers
 
             GamesController controller = new GamesController(dbStub.Object);
 
-            var result = await controller.Details(Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [Test]
@@ -207,10 +202,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.Details(matchingGame.Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [Test]
@@ -237,10 +229,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.Details(matchingGame.Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
