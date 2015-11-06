@@ -219,6 +219,8 @@
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
+    <Compile Include="Helpers\UriExtensions.cs" />
+    <Compile Include="Models\GameListViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
