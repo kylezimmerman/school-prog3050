@@ -19,7 +19,7 @@ namespace Veil.Controllers
 {
     public class GamesController : BaseController
     {
-        private const int GAMES_PER_PAGE = 50;
+        private const int GAMES_PER_PAGE = 10;
 
         protected readonly IVeilDataAccess db;
 
@@ -38,9 +38,16 @@ namespace Veil.Controllers
                 games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
-            games = games.OrderBy(g => g.Name).Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE);
+            games = games.OrderBy(g => g.Name);
 
-            return View(await games.ToListAsync());
+            var gamesListViewModel = new GameListViewModel()
+            { 
+                Games = await games.Skip((page - 1)*GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
+                CurrentPage = page,
+                TotalPages = (int) Math.Ceiling(await games.CountAsync()/(float) GAMES_PER_PAGE)
+            };
+
+            return View(gamesListViewModel);
             }
 
         // POST: Games/Search?{query-string}
@@ -75,7 +82,7 @@ namespace Veil.Controllers
         /// <param name="title">String to search game titles.</param>
         /// <param name="platform">String to search game platforms.</param>
         /// <returns></returns>
-        public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "")
+        public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "", int page = 1)
         {
             title = title.Trim();
             platform = platform.Trim();
@@ -92,7 +99,7 @@ namespace Veil.Controllers
             {
                 SearchViewModel searchViewModel = new SearchViewModel();
                 searchViewModel.Platforms = await db.Platforms.ToListAsync();
-                searchViewModel.Tags = await db.Tags.ToListAsync();
+                searchViewModel.Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync();
 
                 return View(searchViewModel);
             }
@@ -128,7 +135,7 @@ namespace Veil.Controllers
                 searchPredicate = roleFilterPredicate.And(searchPredicate);
             }
 
-            IQueryable<Game> gamesFiltered = db.Games.AsExpandable().Where(searchPredicate);
+            IQueryable<Game> gamesFiltered = db.Games.AsExpandable().Where(searchPredicate).OrderBy(g => g.Name);
 
             string platformName =
                 await db.Platforms.
@@ -147,7 +154,14 @@ namespace Veil.Controllers
                 
             ViewBag.SearchTerm = searchQuery.Trim(',', ' ');
 
-            return View("Index", await gamesFiltered.ToListAsync());
+            var gamesListViewModel = new GameListViewModel()
+            {
+                Games = await gamesFiltered.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(await gamesFiltered.CountAsync() / (float)GAMES_PER_PAGE)
+            };
+
+            return View("Index", gamesListViewModel);
         }
 
         // GET: Games/Details/{Guid}
