@@ -20,7 +20,7 @@
     @if (User.IsEmployeeOrAdmin())
     {
         Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" });
-        Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small alert" });
+        Html.ActionLink("Delete", "DeleteGameProduct", new { id = Model.Id }, new { @class = "button expand small alert" });
     }
     else {
         string buyNewClasses = "button expand small success margin-bottom-0";

@@ -381,23 +381,20 @@ namespace Veil.Controllers
 
             if (gameProduct != null)
             {
-                using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                
+                try
                 {
-                    try
-                    {
-                        db.GameProducts.Remove(gameProduct);
-                        await db.SaveChangesAsync();
-                        deleteScope.Complete();
-
-                    }
-                    catch (Exception)
-                    {
-                        //displays error message that product cant be deleted
-                        //return back to delete confiramtion page
-                        this.AddAlert(AlertType.Error, "Error happened");
-                        return View();
-                    }
+                    db.GameProducts.Remove(gameProduct);
+                    await db.SaveChangesAsync();
                 }
+                catch (Exception)
+                {
+                    //displays error message that product cant be deleted
+                    //return back to delete confiramtion page
+                    this.AddAlert(AlertType.Error, "Error happened");
+                    return View();
+                }
+                
             }
 
             return RedirectToAction("Index");
