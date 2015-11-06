@@ -4,7 +4,7 @@ using Veil.DataAccess.Interfaces;
 
 namespace Veil.Controllers
 {
-    public class ReportsController : Controller
+    public class ReportsController : BaseController
     {
         protected readonly IVeilDataAccess db;
 

@@ -7,7 +7,7 @@ using Veil.DataModels.Models;
 
 namespace Veil.Controllers
 {
-    public class CheckoutController : Controller
+    public class CheckoutController : BaseController
     {
         protected readonly IVeilDataAccess db;
 

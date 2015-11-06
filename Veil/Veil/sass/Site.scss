@@ -5,6 +5,10 @@
 @import "foundation";
 @import "foundation.mvc";
 
+.padding-top-1_5 {
+    padding-top: 1.5rem;
+}
+
 .padding-top-1 {
     padding-top: 1rem;
 }
@@ -143,4 +147,8 @@ strong.label {
 
 .bordered {
     border: 1px solid #aaa;
+}
+
+.clear-both {
+    clear: both;
 }

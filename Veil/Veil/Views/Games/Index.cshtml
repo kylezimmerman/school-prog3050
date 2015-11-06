@@ -7,10 +7,11 @@
 
 <div class="row">
     <div class="column">
-        <h2>@ViewBag.Title</h2>
+        <h2 class="left">@ViewBag.Title</h2>
+        @Html.ActionLink("Advanced Search", "AdvancedSearch", "Games", null, new { @class = "right padding-top-1_5" })
         @if (ViewBag.SearchTerm != null && ViewBag.SearchTerm != "")
         {
-            <p><em>Results matching search criteria "@ViewBag.SearchTerm"</em>
+            <p class="clear-both"><em>Results matching search criteria "@ViewBag.SearchTerm"</em>
             </p>
         }
     </div>

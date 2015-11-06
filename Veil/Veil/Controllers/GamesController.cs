@@ -2,19 +2,22 @@
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Net;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
+using Veil.Models;
+using System.Transactions;
+using System.Net;
+using System.Web;
 using LinqKit;
 using Veil.Extensions;
 
 namespace Veil.Controllers
 {
-    public class GamesController : Controller
+    public class GamesController : BaseController
     {
         private const int GAMES_PER_PAGE = 10;
 
@@ -45,9 +48,14 @@ namespace Veil.Controllers
             };
 
             return View(gamesListViewModel);
-        }
+            }
 
         // POST: Games/Search?{query-string}
+        /// <summary>
+        /// Processes simple search lcoated in nav bar.
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <returns>IQueryable of type 'Game' to Index view of Games controller.</returns>
         [HttpPost]
         public async Task<ActionResult> Search(string keyword = "")
         {
@@ -67,6 +75,13 @@ namespace Veil.Controllers
         }
 
         // POST: Games/Search?{query-string}
+        /// <summary>
+        /// Processes advanced search from /Games/AdvancedSearch page.
+        /// </summary>
+        /// <param name="tags">List of type 'string' to search game tags.</param>
+        /// <param name="title">String to search game titles.</param>
+        /// <param name="platform">String to search game platforms.</param>
+        /// <returns></returns>
         public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "", int page = 1)
         {
             title = title.Trim();
@@ -137,7 +152,7 @@ namespace Veil.Controllers
 
             searchQuery += string.Join(", ", tags);
                 
-            ViewBag.SearchTerm = searchQuery;
+            ViewBag.SearchTerm = searchQuery.Trim(',', ' ');
 
             var gamesListViewModel = new GameListViewModel()
             {
@@ -149,21 +164,19 @@ namespace Veil.Controllers
             return View("Index", gamesListViewModel);
         }
 
-        // GET: Games/Details/5
+        // GET: Games/Details/{Guid}
         public async Task<ActionResult> Details(Guid? id)
         {
             if (id == null)
             {
-                this.AddAlert(AlertType.Error, "No game was specified.");
-                return View("Error");
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
             if (game == null)
             {
-                this.AddAlert(AlertType.Error, "The selected game could not be found.");
-                return View("Error");
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             if (User.IsEmployeeOrAdmin())
@@ -174,8 +187,7 @@ namespace Veil.Controllers
             // User is anonymous or member, don't show not for sale games
             if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
             {
-                this.AddAlert(AlertType.Error, "The selected game could not be found.");
-                return View("Error");
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             // Remove formats that are not for sale unless the user is an employee
@@ -186,7 +198,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // TODO: Every action after this should be employee only
+        /* TODO: Every action after this should be employee only */
 
         // GET: Games/Create
         public ActionResult Create()
@@ -277,6 +289,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        //For deleting Games
         // GET: Games/Delete/5
         public async Task<ActionResult> Delete(Guid? id)
         {
@@ -287,21 +300,127 @@ namespace Veil.Controllers
             }
 
             Game game = await db.Games.FindAsync(id);
+
             if (game == null)
             {
                 return HttpNotFound();
             }
+
+
             return View(game);
         }
 
         // POST: Games/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(Guid id)
+        public async Task<ActionResult> DeleteGameConfirmed(Guid id)
         {
-            Game game = await db.Games.FindAsync(id);
+            Game game = null;
+
+            if (id != null)
+            {
+                game = await db.Games.FindAsync(id);
+            }
+            else
+            {
+                this.AddAlert(AlertType.Error, "No game selected");
+            }
+
+            if (game != null)
+            {
+                using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        foreach (var item in game.GameSKUs)
+                        {
+                            db.GameProducts.Remove(item);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //display an error code about not being able to remove game products
+                        //return back to delete confiramtion page
+                        this.AddAlert(AlertType.Error, "Error");
+                        return View();
+                    }
+
+                    try
+        {
             db.Games.Remove(game);
             await db.SaveChangesAsync();
+                        deleteScope.Complete();
+                    }
+                    catch (Exception)
+                    {
+                        //display an error about not being able to remove game
+                        //return back to delete confiramtion page
+                        this.AddAlert(AlertType.Error, "");
+                        return View();
+                    }
+                }
+                  
+            }
+            else
+            {
+                //httpnotfound
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        //for deleting game products
+        // GET: Games/Delete/5
+        public async Task<ActionResult> DeleteGameProduct(Guid? id)
+        {
+            if (id == null)
+            {
+                this.AddAlert(AlertType.Error, "Please select a game product to delete.");
+                return RedirectToAction("Index");
+            }
+
+            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
+            if (gameProduct == null)
+            {
+                return HttpNotFound();
+            }
+            return View(gameProduct);
+        }
+
+        // POST: Games/Delete/5
+        [HttpPost, ActionName("DeleteGameProduct")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteGameProductConfirmed(Guid id)
+        {
+            GameProduct gameProduct = null;
+
+            if (id != null)
+            {
+                gameProduct = await db.GameProducts.FindAsync(id);
+            }
+            else
+            {
+                this.AddAlert(AlertType.Error, "No game selected");
+            }
+
+            if (gameProduct != null)
+            {
+                
+                try
+                {
+                    db.GameProducts.Remove(gameProduct);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception)
+                {
+                    //displays error message that product cant be deleted
+                    //return back to delete confiramtion page
+                    this.AddAlert(AlertType.Error, "Error happened");
+                    return View();
+                }
+                
+            }
+
             return RedirectToAction("Index");
         }
 
