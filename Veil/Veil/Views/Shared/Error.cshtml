@@ -4,7 +4,16 @@
     ViewBag.Title = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="row">
+    <div class="column">
+        <h1 class="text-danger">Error.</h1>
+    </div>
+</div>
 
-@Html.ValidationSummary(true);
+<div class="row">
+    <div class="column large-centered">
+        <h2 class="text-danger">An error occurred while processing your request.</h2>
+    </div>
+</div>
+
+@Html.ValidationSummary(true)

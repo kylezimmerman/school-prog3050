@@ -6,9 +6,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.Models
 {
-    public class GameDetailViewModels
+    public class HomePageViewModel
     {
-        public Game Game { get; set; }
-        public DateTime EarliestRelease { get; set; }
+        public IEnumerable<Game> ComingSoon { get; set; }
+        public IEnumerable<Game> NewReleases { get; set; }
     }
 }

@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using EfEnumToLookup.LookupGenerator;
 using Veil.DataModels;
@@ -255,7 +258,7 @@ namespace Veil.DataAccess.Migrations
                 new Platform
                 {
                     PlatformCode = "PC",
-                    PlatformName = "Personal Computer"
+                    PlatformName = "PC"
                 }, 
                 new Platform
                 {
@@ -302,12 +305,15 @@ namespace Veil.DataAccess.Migrations
                 new Company { Name = "Treyarch" }
             );
 
+            Tag simulationTag = new Tag { Name = "Simulation" };
+            Tag shooterTag = new Tag { Name = "Shooter" };
+
             context.Tags.AddOrUpdate(
                 t => t.Name,
                 new Tag { Name = "First Person" },
                 new Tag { Name = "Third Person" },
-                new Tag { Name = "Shooter" },
-                new Tag { Name = "Simulation" },
+                shooterTag,
+                simulationTag,
                 new Tag { Name = "RTS" },
                 new Tag { Name = "Racing" },
                 new Tag { Name = "RPG" },
@@ -360,33 +366,64 @@ namespace Veil.DataAccess.Migrations
                     Name = VeilRoles.MEMBER_ROLE
                 });
 
+#region Debug Only Seed Values
+            /* TODO: Remove this when we are done testing */
+            Game halo5 = new Game
+            {
+                Name = "Halo 5: Guardians",
+                ESRBRatingId = "T",
+                ShortDescription = "An unstoppable force threatens the galaxy, and the Master Chief is missing.",
+                LongDescription = "A mysterious and unstoppable force threatens the galaxy, the Master Chief is missing and his loyalty questioned. Experience the most dramatic Halo story to date in a 4-player cooperative epic that spans three worlds. Challenge friends and rivals in new multiplayer modes: Warzone, massive 24-player battles, and Arena, pure 4-vs-4 competitive combat.",
+                MinimumPlayerCount = 1,
+                MaximumPlayerCount = 24,
+                PrimaryImageURL = "http://edge.alluremedia.com.au/m/k/2015/10/halo-1980x1080.jpg"
+            };
+
+            Game vermintide = new Game
+            {
+                Name = "Warhammer: End Times - Vermintide",
+                ESRBRatingId = "M",
+                LongDescription = "Vermintide takes place in and around Ubersreik, a city overrun by Skaven. You will assume the role of one of five heroes, each featuring different play-styles, abilities, gear and personality. Working cooperatively, you must use their individual attributes to survive an apocalyptic invasion from the hordes of relentless rat-men, known as the Skaven. Battles will take place across a range of environments stretching from the top of the Magnus Tower to the bowels of the Under Empire.",
+                ShortDescription = "Vermintide is an epic co-operative action combat adventure set in the End Times of the iconic Warhammer Fantasy world.",
+                MinimumPlayerCount = 1,
+                MaximumPlayerCount = 4,
+                PrimaryImageURL = "http://cdn.akamai.steamstatic.com/steam/apps/235540/header.jpg?t=1446475925",
+                TrailerURL = "https://www.youtube.com/embed/KxTaQmhztVQ"
+            };
+
+            Game fallout4 = new Game
+            {
+                Name = "Fallout 4",
+                ESRBRatingId = "M",
+                LongDescription = "Bethesda Game Studios, the award-winning creators of Fallout 3 and The Elder Scrolls V: Skyrim, welcome you to the world of Fallout 4 – their most ambitious game ever, and the next generation of open-world gaming. As the sole survivor of Vault 111, you enter a world destroyed by nuclear war.Every second is a fight for survival, and every choice is yours.Only you can rebuild and determine the fate of the Wasteland.Welcome home.",
+                ShortDescription = "Bethesda Game Studios welcome you to the world of Fallout 4 – their most ambitious game ever, and the next generation of open-world gaming.",
+                MinimumPlayerCount = 1,
+                MaximumPlayerCount = 1,
+                PrimaryImageURL = "http://cdn.akamai.steamstatic.com/steam/apps/377160/header.jpg?t=1446248342",
+                TrailerURL = "http://cdn.akamai.steamstatic.com/steam/apps/256657338/movie480.webm?t=1444922899"
+            };
+
             context.Games.AddOrUpdate(
                 g => g.Name,
-                new Game
-                {
-                    Name = "Test Game",
-                    ESRBRatingId = "E",
-                    ShortDescription = "This is the short description",
-                    LongDescription = "This is the long description",
-                    MinimumPlayerCount = 1,
-                    MaximumPlayerCount = 2,
-                    PrimaryImageURL = "http://baconmockup.com/200/140/",
-                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
-                },
-                new Game
-                {
-                    Name = "Yet Another Game",
-                    ESRBRatingId = "E",
-                    LongDescription = "This is the long description",
-                    ShortDescription = "This is the short description",
-                    MinimumPlayerCount = 1,
-                    MaximumPlayerCount = 4,
-                    PrimaryImageURL = "http://placebacon.net/200/150",
-                    TrailerURL = "https://www.youtube.com/watch?v=GLWYXCOf4Ac"
-                });
+                halo5,
+                vermintide,
+                fallout4
+            );
 
-            /* Enum to Lookup Tables Setup */
-            EnumToLookup enumToLookup = new EnumToLookup
+            halo5.Tags = halo5.Tags ?? new List<Tag>();
+            vermintide.Tags = vermintide.Tags ?? new List<Tag>();
+            fallout4.Tags = fallout4.Tags ?? new List<Tag>();
+
+            halo5.Tags.Add(simulationTag);
+            vermintide.Tags.Add(simulationTag);
+            vermintide.Tags.Add(shooterTag);
+            fallout4.Tags.Add(shooterTag);
+#endregion Debug Only Seed Values
+
+            /* Note: Uncomment this to regenerate the EnumToLookup script used in AddEnumToLookupMigration
+                     After running Update-Database, copy the SQL Script from the exception message
+            */
+            /*EnumToLookup enumToLookup = new EnumToLookup
             {
                 TableNamePrefix = "",
                 TableNameSuffix = "_Lookup",
@@ -394,7 +431,9 @@ namespace Veil.DataAccess.Migrations
                 UseTransaction = true
             };
 
-            enumToLookup.Apply(context);
+            var migrationSQL = enumToLookup.GenerateMigrationSql(context);
+            
+            throw new Exception(migrationSQL);*/
         }
     }
 }

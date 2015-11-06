@@ -1,0 +1,22 @@
+﻿@using Veil.DataModels.Models
+@model GameProduct
+
+
+<div class="small-1 columns" data-equalizer-watch>
+    <h4 class="platform-transform">@Model.Platform.PlatformName</h4>
+</div>
+
+<div class="small-2 columns" data-equalizer-watch>
+    <img src="@Model.BoxArtImageURL" alt="@Model.PlatformCode Box Art"/>
+</div>
+
+<div class="small-6 columns" data-equalizer-watch>
+    <h5>@Model.Name</h5>
+    <p class="margin-bottom-0 padding-bottom-half-em">@Model.SKUDescription</p>
+    <p class="margin-bottom-0">
+        <strong>Developer:</strong>&nbsp;@Model.Developer.Name
+    </p>
+    <p class="margin-bottom-0">
+        <strong>Publisher:</strong>&nbsp;@Model.Publisher.Name
+    </p>
+</div>

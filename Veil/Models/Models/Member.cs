@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Veil.DataModels.Models.Identity;
+using System.Linq;
 
 namespace Veil.DataModels.Models
 {
@@ -117,5 +118,22 @@ namespace Veil.DataModels.Models
         /// Collection navigation property for Friendship's where the Member was the receiver
         /// </summary>
         public virtual ICollection<Friendship> ReceivedFriendships { get; set; }
+
+        /// <summary>
+        /// Collection of Members the Member is confirmed friends with
+        /// </summary>
+        public IEnumerable<Member> ConfirmedFriends
+        {
+            get
+            {
+                return RequestedFriendships
+                        .Where(r => r.RequestStatus == FriendshipRequestStatus.Accepted)
+                        .Select<Friendship, Member>(f => f.Receiver)
+                    .Union(ReceivedFriendships
+                        .Where(r => r.RequestStatus == FriendshipRequestStatus.Accepted)
+                        .Select<Friendship, Member>(f => f.Requester)
+                    );
+            }
+        }
     }
 }

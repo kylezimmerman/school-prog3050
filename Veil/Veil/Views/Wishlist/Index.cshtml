@@ -1,52 +1,37 @@
-﻿@model IEnumerable<Veil.DataModels.Models.Product>
+﻿@model Member
+@using Microsoft.AspNet.Identity
+@using Veil.DataModels.Models
+@using Veil.Models
 
 @{
-    ViewBag.Title = "Your Wishlist";
+    ViewBag.Title = $"{Model.UserAccount.UserName}'s Wishlist";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
+        <p>Wishlist Visibility: @Model.WishListVisibility</p>
     </div>
 </div>
 
-<div class="row">
-    <a href="#" class="button secondary text-left">
-        <div class="small-3 columns">
-            <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
+@if (!Model.Wishlist.Any())
+{
+    <div class="row">
+        <div class="column">
+            <p>The wishlist is empty.</p>
         </div>
-        <div class="small-6 columns">
-            <h4>Game Name 1</h4>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-        </div>
-        <div class="small-3 columns">
-            <p>Average Rating: 5.0</p>
-            <p><strong>New: </strong>Starting at $50</p>
-            <p><strong>Used: </strong>Starting at $30</p>
-        </div>
-    </a>
-</div>
-
-<!--
-<table class="table">
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.BoxArtImageURL)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.NewWebPrice)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UsedWebPrice)
-        </td>
-        <td>
-            @Html.ActionLink("Remove", "Remove", new { id=item.Id })
-        </td>
-    </tr>
+    </div>
 }
-</table>
--->
+else
+{
+    bool memberIsCurrentUser = Model.UserId.ToString() == User.Identity.GetUserId();
+    foreach (var product in Model.Wishlist.OfType<PhysicalGameProduct>())
+    {
+        var model = new WishlistPhysicalGameProductViewModel()
+        {
+            Product = product,
+            MemberIsCurrentUser = memberIsCurrentUser
+        };
+        Html.RenderPartial("_PhysicalGameProductPartial", model);
+    }
+}

@@ -1,7 +1,9 @@
-﻿@model Veil.Models.GameDetailViewModels
+﻿@using Veil.Extensions
+@using Veil.DataModels.Models
+@model Game
 
 @{
-    ViewBag.Title = Model.Game.Name;
+    ViewBag.Title = Model.Name;
 }
 
 <div class="row">
@@ -12,102 +14,100 @@
 <div class="row padding-bottom-1" data-equalizer>
     <div class="small-12 medium-6 columns" data-equalizer-watch>
         @{
-            if (!string.IsNullOrWhiteSpace(Model.Game.TrailerURL))
+            if (!string.IsNullOrWhiteSpace(Model.TrailerURL))
             {
-                <embed class="width-100 height-100 min-height-14" src="@Model.Game.TrailerURL" />
+                <embed class="width-100 height-100 min-height-14" src="@Model.TrailerURL" />
             }
             else
             {
-                <img class="width-100" src="@Model.Game.PrimaryImageURL" alt="Game Image" />
+                <img class="width-100" src="@Model.PrimaryImageURL" alt="Game Image" />
             }
         }
     </div>
     <div class="small-10 medium-5 columns" data-equalizer-watch>
-        <p class="margin-bottom-0"><strong>Release Date: @Model.EarliestRelease.ToString("MMM dd, yyyy")</strong></p>
-        <p class="margin-bottom-0"><strong>Players: @Model.Game.MinimumPlayerCount - @Model.Game.MaximumPlayerCount</strong></p>
+        @if (Model.GameSKUs.Any())
+        {
+            var gameRating = Model.AverageRating;
+            if (gameRating.HasValue)
+            {
+                <div class="row">
+                    <strong class="label info column bordered">Average Rating</strong>
+                </div>
+                <div class="row">
+                    <div class="column text-center margin-bottom-1 bordered rating">
+                        @Html.Partial("_RatingStarsPartial", gameRating)
+                    </div>
+                </div>
+            }
+            <p class="margin-bottom-0"><strong>Release Date: @Model.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
+        }
+        <p class="margin-bottom-0">
+            <strong>Players: @Model.MinimumPlayerCount</strong>
+            @if (Model.MaximumPlayerCount > Model.MinimumPlayerCount)
+            {
+                <strong> - @Model.MaximumPlayerCount</strong>
+            }
+        </p>
         <h4>Tags</h4>
         <ul class="inline-list">
-            @foreach (var tag in Model.Game.Tags)
+            @foreach (var tag in Model.Tags)
             {
-                @* TODO: Make this link to something that actually filters by tag *@
-                <li><a href="@Url.Action("Index")">@tag.Name</a></li>
+                <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
+            }
+            @if (User.IsEmployeeOrAdmin())
+            {
+                // TODO: Dropdown and + button to add a tag
             }
         </ul>
     </div>
     <div class="small-2 medium-1 columns" data-equalizer-watch>
-        <img class="right width-100" src="@Model.Game.Rating.ImageURL" alt="@Model.Game.Rating.Description" />
+        <img class="right width-100" src="@Model.Rating.ImageURL" alt="@Model.Rating.Description" />
     </div>
 </div>
 <div class="row">
     <div class="column">
-        <p class="indent">@Model.Game.LongDescription</p>
+        <p class="indent">@Model.LongDescription</p>
     </div>
 </div>
 
-@* TODO: Only show this if the user is an employee *@
-<div class="row">
-    <div class="small-2 medium-2 columns">
-        @Html.ActionLink("Delete Game", "Delete", new { id = Model.Game.Id }, new { @class = "button expand small alert" })
-    </div>
-
-    <div class="small-2 medium-2 medium-offset-2 columns">
-        @Html.ActionLink("Edit Game", "Edit", new { id = Model.Game.Id }, new { @class = "button expand small" })
-    </div>
-
-    <div class="small-4 medium-3 columns">
-        @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
-    </div>
-
-    <div class="small-4 medium-3 columns">
-        @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Game.Id }, new { @class = "button expand small" })
-    </div>
-</div>
-
-@foreach (var gameProduct in Model.Game.GameSKUs)
+@if (User.IsEmployeeOrAdmin())
 {
-    <div class="row panel">
-        <div class="small-1 columns">
-            <h4 style="transform:rotate(-90deg) translateX(-150%)">@gameProduct.PlatformCode</h4>
-        </div>
-        <div class="small-2 columns">
-            <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art" />
-        </div>
-        <div class="small-5 columns">
-            <h5>@gameProduct.Name</h5>
-            <p class="margin-bottom-0 padding-bottom-half-em">@gameProduct.SKUDescription</p>
-            <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@gameProduct.Developer.Name</p>
-            <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@gameProduct.Publisher.Name</p>
-        </div>
-        <div class="small-3 columns">
-            @{ var rating = gameProduct.AverageRating; }
-            @if (rating.HasValue)
-            {
-                <div class="rating panel">
-                    <strong>Average Rating:</strong><br />
-                    @Html.Partial("_RatingStarsPartial", rating)
+<div class="row">
+        <div class="small-4 medium-2 columns">
+            @Html.ActionLink("Delete Game", "Delete", new { id = Model.Id }, new { @class = "button expand small alert" })
+    </div>
+
+        <div class="small-4 medium-2 medium-offset-2 columns">
+            @Html.ActionLink("Edit Game", "Edit", new { id = Model.Id }, new { @class = "button expand small" })
+    </div>
+
+        <div class="small-6 medium-3 columns">
+            @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
+    </div>
+
+        <div class="small-6 medium-3 columns">
+            @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
+    </div>
+</div>
+}
+
+@foreach (var physicalGameProduct in Model.GameSKUs.OfType<PhysicalGameProduct>())
+{
+    <div class="row panel" data-equalizer>
+        @{ Html.RenderPartial("_GameProductPartial", physicalGameProduct); }
+        @{ Html.RenderPartial("_PhysicalGameProductPartial", physicalGameProduct); }
                 </div>
             }
 
-            @*TODO: Only for Employees*@
-            @Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small" })
-            @Html.ActionLink("Delete", "DeleteGameProduct", new { id = gameProduct.Id }, new { @class = "button expand small alert" })
-
-            @*TODO: Only for members*@
-            @*TODO: Change ActionLink to distinguish New/Used*@
-            @if (gameProduct.UsedWebPrice.HasValue)
+@foreach (var downloadGameProduct in Model.GameSKUs.OfType<DownloadGameProduct>())
             {
-                @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success margin-bottom-0" })
-                @Html.ActionLink("Buy Used " + gameProduct.UsedWebPrice.Value.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small" });
-            }
-            else
-            {
-                @Html.ActionLink("Buy New " + gameProduct.NewWebPrice.ToString("C"), "AddItem", "Cart", new { productId = gameProduct.Id }, new { @class = "button expand small success" })
-            }
-            @Html.ActionLink("Add to Wishlist", "Add", "Wishlist", new { itemId = gameProduct.Id }, new { @class = "button expand small margin-bottom-0" })
-        </div>
+    <div class="row panel" data-equalizer>
+        @{ Html.RenderPartial("_GameProductPartial", downloadGameProduct); }
+        @{ Html.RenderPartial("_DownloadGameProduct", downloadGameProduct); }
     </div>
 }
 
+@* TODO: #53 Member Creates or Edits Rating, optionally including a Review *@
 <div class="row">
     <div class="small-12 columns">
         <h3>Ratings and Reviews</h3>
@@ -126,6 +126,7 @@
     </div>
 </div>
 
+@* TODO: Implement or remove extra feature of filtering reviews based on available time *@
 <div class="row">
     <div class="columns">
         <span>Filter Reviews by Format</span>
@@ -138,23 +139,32 @@
     </div>
 </div>
 
+@foreach (var review in Model.AllReviews)
+{
 <div class="row panel">
     <div class="small-3 columns">
-        <h5>xXxSepirothxXx</h5>
-        <p>Played it on: PS4</p>
-        <p>Rating: 3.0</p>
+            <h5>@review.Member.UserAccount.UserName</h5>
+            <p>Format: @review.ProductReviewed.Name</p>
+            <div class="rating panel">
+                <strong>Average Rating:</strong><br />
+                @Html.Partial("_RatingStarsPartial", review.Rating)
+            </div>
     </div>
     <div class="small-9 columns">
+            @{
+                if (review.ReviewStatus == ReviewStatus.Approved)
+                {
+                    <p>@review.ReviewText</p>
+                }
+                else if (review.ReviewStatus == ReviewStatus.Denied)
+                {
         <p><em>This review has been flagged as inappropriate.</em></p>
+                }
+                else if (review.ReviewStatus == ReviewStatus.Denied)
+                {
+                    <p><em>This review is pending approval.</em></p>
+                }
+            }
     </div>
 </div>
-
-<div class="row">
-    <div class="small 1 column">
-        <p>
-            @Html.ActionLink("Back to Game List", "Index")
-        </p>
-    </div>
-</div>
-
-
+}

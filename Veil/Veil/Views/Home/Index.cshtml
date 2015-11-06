@@ -1,76 +1,49 @@
-﻿<div class="row">
-    <div class="column">
-        <h2>Coming Soon</h2>
-    </div>
-</div>
-<div class="row">
-    <div class="medium-6 columns">
-        <div class="panel">
-            <img src="http://placekitten.com/g/400/200">
-            <h4><a href="#">Game Name 1</a></h4>
-            <p><strong>Coming November 14</strong></p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
+﻿@model Veil.Models.HomePageViewModel
+
+@{ 
+    ViewBag.Title = "Home";
+}
+
+@if (Model.ComingSoon.Count() > 0)
+{
+    <div class="row">
+        <div class="column">
+            <h2>Coming Soon</h2>
         </div>
     </div>
-    <div class="medium-6 columns">
-        <div class="panel">
-            <img src="http://placekitten.com/g/400/200">
-            <h4><a href="#">Game Name 2</a></h4>
-            <p><strong>Coming November 28</strong></p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-        </div>
+    <div class="row" data-equalizer>
+        @foreach (var item in Model.ComingSoon)
+        {
+            <div class="medium-6 columns">
+                <div class="panel" data-equalizer-watch>
+                    <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image">
+                    <h4><a href="@Url.Action("Details", "Games", new { id = item.Id })">@item.Name</a></h4>
+                    <p class="margin-bottom-0"><strong>@item.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong>
+                    </p>
+                    <p>@item.ShortDescription</p>
+                </div>
+            </div>
+        }
     </div>
-</div>
+}
 <div class="row">
     <div class="column">
         <h2>Hot New Releases</h2>
     </div>
 </div>
-<div class="row">
+<div class="row" data-equalizer>
     <div class="column">
         <ul class="medium-block-grid-3 small-block-grid-2">
-            <li>
-                <div class="panel">
-                    <img src="http://placekitten.com/g/400/200">
-                    <h4><a href="#">Game Name 1</a></h4>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-                </div>
-            </li>
-            <li>
-                <div class="panel">
-                    <img src="http://placekitten.com/g/400/200">
-                    <h4><a href="#">Game Name 2</a></h4>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-                </div>
-            </li>
-            <li>
-                <div class="panel">
-                    <img src="http://placekitten.com/g/400/200">
-                    <h4><a href="#">Game Name 3</a></h4>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-                </div>
-            </li>
-            <li>
-                <div class="panel">
-                    <img src="http://placekitten.com/g/400/200">
-                    <h4><a href="#">Game Name 4</a></h4>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-                </div>
-            </li>
-            <li>
-                <div class="panel">
-                    <img src="http://placekitten.com/g/400/200">
-                    <h4><a href="#">Game Name 5</a></h4>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-                </div>
-            </li>
-            <li>
-                <div class="panel">
-                    <img src="http://placekitten.com/g/400/200">
-                    <h4><a href="#">Game Name 6</a></h4>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-                </div>
-            </li>
+            @foreach (var item in Model.NewReleases)
+            {
+                <li>
+                    <div class="panel" data-equalizer-watch>
+                        <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image">
+                        <h4><a href="@Url.Action("Details", "Games", new { id = item.Id })">@item.Name</a></h4>
+                        <p>@item.ShortDescription</p>
+                    </div>
+                </li>
+            }
         </ul>
     </div>
 </div>

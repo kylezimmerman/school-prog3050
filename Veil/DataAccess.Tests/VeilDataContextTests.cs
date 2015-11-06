@@ -23,7 +23,6 @@ namespace Veil.DataAccess.Tests
         public void FixtureSetup()
         {
             // Migrate the database to the most current migration
-            // NOTE: This still unfortunately still leaves the EnumToLookup tables in the DB
             var configuration = new Veil.DataAccess.Migrations.Configuration();
             var migrator = new DbMigrator(configuration);
 
@@ -53,11 +52,21 @@ namespace Veil.DataAccess.Tests
         }
 
         [Test]
-        public void GetNextPhysicalGameProductSku_WhenCalled_ReturnsValueGreaterThanZero()
+        public void GetNextPhysicalGameProductSku_WhenCalled_Returns12DigitString()
         {
-            long nextSku = db.GetNextPhysicalGameProductSku();
+            string nextSku = db.GetNextPhysicalGameProductSku();
 
-            Assert.That(nextSku, Is.GreaterThan(0));
+            Assert.That(nextSku, Is.StringMatching(@"^\d{12}$"));
+        }
+
+        [Test]
+        public void GetNextPhysicalGameProductSku_WhenCalled_ReturnsGreaterThanZeroValue()
+        {
+            string nextSku = db.GetNextPhysicalGameProductSku();
+
+            long value = long.Parse(nextSku);
+
+            Assert.That(value, Is.GreaterThan(0));
         }
 
         [Test]

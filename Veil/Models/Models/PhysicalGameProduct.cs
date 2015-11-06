@@ -7,6 +7,8 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
+using System.Linq;
 
 namespace Veil.DataModels.Models
 {
@@ -28,18 +30,50 @@ namespace Veil.DataModels.Models
         public string SKUNameSuffix { get; set; }
 
         /// <summary>
-        /// The internal SKU number for a new version of this product
+        ///     The internal SKU number for a new version of this product
         /// </summary>
+        /// <remarks>
+        ///     This is a 13 digit string with the first digit being a 0
+        ///     <example>
+        ///         0000000000123
+        ///         0200300400500
+        ///     </example>
+        /// </remarks>
         [MaxLength(128)]
+        [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU)]
         [DisplayName("Internal New SKU")]
         public string InternalNewSKU { get; set; }
 
         /// <summary>
-        /// The internal SKU number for a used version of this product
+        ///     The internal SKU number for a used version of this product
         /// </summary>
+        /// <remarks>
+        ///     This is a 13 digit string with the first digit being a 1
+        ///     <example>
+        ///         1000000000123
+        ///         1200300400500
+        ///     </example>
+        /// </remarks>
         [MaxLength(128)]
+        [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU)]
         [DisplayName("Internal Used SKU")]
         public string InteralUsedSKU { get; set; }
+
+        public int NewInventory
+        {
+            get
+            {
+                return LocationInventories.Sum(i => i.NewOnHand);
+            }
+        }
+
+        public int UsedInventory
+        {
+            get
+            {
+                return LocationInventories.Sum(i => i.UsedOnHand);
+            }
+        }
 
         /// <summary>
         /// Flag which indicates if we will buy pre-used copies from customers

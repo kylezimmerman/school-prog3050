@@ -71,14 +71,16 @@ namespace Veil.DataAccess
             Entry(entity).State = EntityState.Modified;
         }
 
-        public long GetNextPhysicalGameProductSku()
+        public string GetNextPhysicalGameProductSku()
         {
             // TODO: Add actual checking logic into this
             DbRawSqlQuery<long> result = Database.SqlQuery<long>($"SELECT NEXT VALUE FOR {PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME};");
 
             long value = result.FirstOrDefault();
 
-            return value;
+            string stringValue = value.ToString();
+
+            return stringValue.PadLeft(12, '0');
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
