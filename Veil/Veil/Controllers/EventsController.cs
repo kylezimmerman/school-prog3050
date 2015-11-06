@@ -110,7 +110,6 @@ namespace Veil.Controllers
 
             Event @event = new Event
             {
-                Id = Guid.NewGuid(),
                 Date = eventViewModel.DateTime,
                 Description = eventViewModel.Description,
                 Duration = eventViewModel.Duration,
