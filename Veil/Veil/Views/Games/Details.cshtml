@@ -72,23 +72,23 @@
 
 @if (User.IsEmployeeOrAdmin())
 {
-    <div class="row">
+<div class="row">
         <div class="small-4 medium-2 columns">
             @Html.ActionLink("Delete Game", "Delete", new { id = Model.Id }, new { @class = "button expand small alert" })
-        </div>
+    </div>
 
         <div class="small-4 medium-2 medium-offset-2 columns">
             @Html.ActionLink("Edit Game", "Edit", new { id = Model.Id }, new { @class = "button expand small" })
-        </div>
+    </div>
 
         <div class="small-6 medium-3 columns">
             @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
-        </div>
+    </div>
 
         <div class="small-6 medium-3 columns">
             @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
-        </div>
     </div>
+</div>
 }
 
 @foreach (var physicalGameProduct in Model.GameSKUs.OfType<PhysicalGameProduct>())
@@ -96,11 +96,11 @@
     <div class="row panel" data-equalizer>
         @{ Html.RenderPartial("_GameProductPartial", physicalGameProduct); }
         @{ Html.RenderPartial("_PhysicalGameProductPartial", physicalGameProduct); }
-    </div>
-}
+                </div>
+            }
 
 @foreach (var downloadGameProduct in Model.GameSKUs.OfType<DownloadGameProduct>())
-{
+            {
     <div class="row panel" data-equalizer>
         @{ Html.RenderPartial("_GameProductPartial", downloadGameProduct); }
         @{ Html.RenderPartial("_DownloadGameProduct", downloadGameProduct); }
@@ -141,16 +141,16 @@
 
 @foreach (var review in Model.AllReviews)
 {
-    <div class="row panel">
-        <div class="small-3 columns">
+<div class="row panel">
+    <div class="small-3 columns">
             <h5>@review.Member.UserAccount.UserName</h5>
             <p>Format: @review.ProductReviewed.Name</p>
             <div class="rating panel">
                 <strong>Average Rating:</strong><br />
                 @Html.Partial("_RatingStarsPartial", review.Rating)
             </div>
-        </div>
-        <div class="small-9 columns">
+    </div>
+    <div class="small-9 columns">
             @{
                 if (review.ReviewStatus == ReviewStatus.Approved)
                 {
@@ -158,13 +158,13 @@
                 }
                 else if (review.ReviewStatus == ReviewStatus.Denied)
                 {
-                    <p><em>This review has been flagged as inappropriate.</em></p>
+        <p><em>This review has been flagged as inappropriate.</em></p>
                 }
                 else if (review.ReviewStatus == ReviewStatus.Denied)
                 {
                     <p><em>This review is pending approval.</em></p>
                 }
             }
-        </div>
     </div>
+</div>
 }
