@@ -1,20 +1,19 @@
-﻿@model Member
-@using Microsoft.AspNet.Identity
+﻿@model WishlistViewModel
 @using Veil.DataModels.Models
 @using Veil.Models
 
 @{
-    ViewBag.Title = $"{Model.UserAccount.UserName}'s Wishlist";
+    ViewBag.Title = $"Wishlist for {Model.WishlistOwner.UserAccount.UserName}";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p>Wishlist Visibility: @Model.WishListVisibility</p>
+        <p>Wishlist Visibility: @Model.WishlistOwner.WishListVisibility</p>
     </div>
 </div>
 
-@if (!Model.Wishlist.Any())
+@if (!Model.WishlistOwner.Wishlist.Any())
 {
     <div class="row">
         <div class="column">
@@ -24,14 +23,11 @@
 }
 else
 {
-    bool memberIsCurrentUser = Model.UserId.ToString() == User.Identity.GetUserId();
-    foreach (var product in Model.Wishlist.OfType<PhysicalGameProduct>())
+    bool memberIsWishlistOwner = Model.CurrentMember.UserId == Model.WishlistOwner.UserId;
+    foreach (var gameProduct in Model.WishlistOwner.Wishlist.OfType<PhysicalGameProduct>())
     {
-        var model = new WishlistPhysicalGameProductViewModel()
-        {
-            Product = product,
-            MemberIsCurrentUser = memberIsCurrentUser
-        };
-        Html.RenderPartial("_PhysicalGameProductPartial", model);
+        Html.RenderAction("RenderPhysicalGameProduct", new { gameProduct = gameProduct,
+                currentMember = Model.CurrentMember,
+                currentMemberIsWishlistOwner = memberIsWishlistOwner });
     }
 }

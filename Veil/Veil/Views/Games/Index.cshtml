@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Veil.DataModels.Models.Game>
+﻿@using Veil.Helpers
+@model Veil.Models.GameListViewModel
 
 @{
     ViewBag.Title = "Games";
@@ -6,18 +7,19 @@
 
 <div class="row">
     <div class="column">
-        <h2>@ViewBag.Title</h2>
+        <h2 class="left">@ViewBag.Title</h2>
+        @Html.ActionLink("Advanced Search", "AdvancedSearch", "Games", null, new { @class = "right padding-top-1_5" })
         @if (ViewBag.SearchTerm != null && ViewBag.SearchTerm != "")
         {
-            <p><em>Results matching search criteria "@ViewBag.SearchTerm"</em>
+            <p class="clear-both"><em>Results matching search criteria "@ViewBag.SearchTerm"</em>
             </p>
         }
     </div>
 </div>
 
-@if (Model != null && Model.Any())
+@if (Model?.Games?.Any() ?? false)
 {
-    foreach (var game in Model)
+    foreach (var game in Model.Games)
     {
         <div class="row panel">
             <div class="medium-3 columns">
@@ -73,14 +75,16 @@
     }
     <div class="pagination-centered">
         <ul class="pagination small-center">
-            <li class="arrow unavailable"><a href="">&laquo; Previous</a></li>
-            <li class="current"><a href="?page=1">1</a></li>
-            <li><a href="?page=2">2</a></li>
-            <li><a href="">3</a></li>
-            <li class="unavailable"><a href="">&hellip;</a></li>
-            <li><a href="">9</a></li>
-            <li><a href="">10</a></li>
-            <li class="arrow"><a href=""> Next &raquo;</a></li>
+
+            <li class="arrow"><a href="@( Request.Url.AddParameter("page", "1").ToString())">&laquo; First</a></li>
+
+            @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+            {
+                string @currentClass = Model.CurrentPage == i ? "current" : "";
+                <li class="@currentClass"><a href="@( Request.Url.AddParameter("page", i.ToString()).ToString())">@i</a></li>
+            }
+
+            <li class="arrow"> <a href="@( Request.Url.AddParameter("page", Model.TotalPages.ToString()).ToString())">Last &raquo;</a></li>
         </ul>
     </div>
 }

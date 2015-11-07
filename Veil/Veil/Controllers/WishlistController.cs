@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNet.Identity;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -8,12 +7,15 @@ using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 using Veil.Services;
 using Veil.Helpers;
+using Veil.Extensions;
+using Veil.Models;
+using System.Data.Entity;
 
 namespace Veil.Controllers
 {
-    public class WishlistController : Controller
+    public class WishlistController : BaseController
     {
-        private IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
 
         private readonly VeilUserManager userManager;
 
@@ -24,21 +26,29 @@ namespace Veil.Controllers
         }
 
         // GET: Wishlist
+        /// <summary>
+        /// Displays the wishlist of the user indicated
+        /// If no ID is given the current user's wishlist is shown
+        /// </summary>
+        /// <param name="wishlistOwnerId">The ID of the owner of the wishlist to be displayed. Set to current user if null.</param>
+        /// <returns></returns>
         public async Task<ActionResult> Index(Guid? wishlistOwnerId)
         {
-            Member wishListMember;
+            Member wishlistMember;
 
             if (!User.Identity.IsAuthenticated)
             {
                 if (wishlistOwnerId != null)
                 {
-                    wishListMember = await db.Members.FindAsync(wishlistOwnerId);
-                    if (wishListMember != null &&
-                        wishListMember.WishListVisibility == WishListVisibility.Public)
+                    // Even anonymous users can see public wishlists
+                    wishlistMember = await db.Members.FindAsync(wishlistOwnerId);
+                    if (wishlistMember != null &&
+                        wishlistMember.WishListVisibility == WishListVisibility.Public)
                     {
-                        return View(wishListMember);
+                        return View(wishlistMember);
                     }
                 }
+                // TODO: Use the new error handling
                 this.AddAlert(AlertType.Error, "Wishlist not found.");
                 if (Request.UrlReferrer != null)
                 {
@@ -47,55 +57,89 @@ namespace Veil.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            User user = await userManager.FindByIdAsync(Guid.Parse(User.Identity.GetUserId()));
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            WishlistViewModel model = new WishlistViewModel
+            {
+                CurrentMember = await db.Members.FirstOrDefaultAsync(m => m.UserId == currentUserId)
+            };
+            
 
             if (wishlistOwnerId == null)
             {
                 // If a wishlistOwnerId was not given, the user is viewing their own wishlist
-                wishListMember = user.Member;
+                model.WishlistOwner = model.CurrentMember;
             }
             else
             {
-                wishListMember = await db.Members.FindAsync(wishlistOwnerId);
+                model.WishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
             }
             
-            if (wishListMember == null)
+            if (model.WishlistOwner == null)
             {
+                // TODO: Use the new error handling
                 this.AddAlert(AlertType.Error, "Wishlist not found.");
                 return RedirectToAction("Index", "FriendList");
             }
 
-            if (wishListMember.WishListVisibility == WishListVisibility.Private &&
-                wishListMember.UserId != user.Id)
+            if (model.WishlistOwner.WishListVisibility == WishListVisibility.Private &&
+                model.WishlistOwner.UserId != model.CurrentMember.UserId)
             {
-                this.AddAlert(AlertType.Error, wishListMember.UserAccount.UserName + "'s wishlist is private.");
+                this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is private.");
                 if (Request.UrlReferrer != null)
                 {
                     return Redirect(Request.UrlReferrer.ToString());
                 }
                 return RedirectToAction("Index", "Home");
             }
-            else if (wishListMember.WishListVisibility == WishListVisibility.FriendsOnly &&
-                (wishListMember.UserId != user.Id &&
-                !wishListMember.ConfirmedFriends.Contains(user.Member)))
+            else if (model.WishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
+                (model.WishlistOwner.UserId != model.CurrentMember.UserId &&
+                !model.WishlistOwner.ConfirmedFriends.Contains(model.CurrentMember)))
             {
-                this.AddAlert(AlertType.Error, wishListMember.UserAccount.UserName + "'s wishlist is only available to their friends.");
+                this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
                 return RedirectToAction("Index", "FriendList");
             }
 
-            return View(wishListMember);
+            return View(model);
         }
 
+        [ChildActionOnly]
+        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Member currentMember, bool currentMemberIsWishlistOwner)
+        {
+            var model = new WishlistPhysicalGameProductViewModel
+            {
+                GameProduct = gameProduct
+            };
+
+            if (currentMember != null)
+            {
+                model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
+                model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
+                model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
+                model.MemberIsCurrentUser = currentMemberIsWishlistOwner;
+            }
+
+            return PartialView("_PhysicalGameProductPartial", model);
+        }
+
+        /// <summary>
+        /// Adds an item to the current user's wishlist.
+        /// </summary>
+        /// <param name="itemId">The ID of the product to be added.</param>
+        /// <returns></returns>
         public async Task<ActionResult> Add(Guid? itemId)
         {
             // TODO: Make this work for future Products that are not GameProducts
             Product newItem = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
-            User user = await userManager.FindByIdAsync(new Guid(User.Identity.GetUserId()));
-            
+            User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+
             if (newItem == null)
             {
                 this.AddAlert(AlertType.Error, "Error adding product to wishlist.");
-                return Redirect(Request.UrlReferrer.ToString());
+                if (Request.UrlReferrer != null)
+                {
+                    return Redirect(Request.UrlReferrer.ToString());
+                }
+                return View();
             }
 
             if (user.Member.Wishlist.Contains(newItem))
@@ -111,10 +155,15 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Removes a product from the current user's wishlist.
+        /// </summary>
+        /// <param name="itemId">The ID of the product to be removed.</param>
+        /// <returns></returns>
         public async Task<ActionResult> Remove(Guid? itemId)
         {
             Product toRemove = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
-            User user = await userManager.FindByIdAsync(new Guid(User.Identity.GetUserId()));
+            User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
 
             if (toRemove == null)
             {

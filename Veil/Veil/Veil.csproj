@@ -214,17 +214,26 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
     <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
+    <Compile Include="Helpers\UriExtensions.cs" />
+    <Compile Include="Models\GameListViewModel.cs" />
+    <Compile Include="Helpers\CommonErrorResults.cs" />
+    <Compile Include="Models\ErrorViewModel.cs" />
+    <Compile Include="Models\EventViewModel.cs" />
+    <Compile Include="Models\GameDetailsViewModel.cs" />
+    <Compile Include="Models\PhysicalGameProductViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
     <Compile Include="Models\SearchViewModel.cs" />
-    <Compile Include="Models\WishlistProductViewModel.cs" />
+    <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
+    <Compile Include="Models\WishlistViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
     <Compile Include="Services\StripeService.cs" />
     <Compile Include="Services\VeilSignInManager.cs" />
@@ -477,8 +486,7 @@
     <Content Include="Views\Games\_PhysicalGameProductPartial.cshtml" />
     <Content Include="Views\Games\_DownloadGameProduct.cshtml" />
     <Content Include="Views\Games\_GameProductPartial.cshtml" />
-    <None Include="Views\Games\DeleteDownloadGameProduct.cshtml" />
-    <None Include="Views\Games\DeletePhysicalGameProduct.cshtml" />
+    <Content Include="Views\Shared\NotFound.cshtml" />
     <None Include="Views\Games\EditDownloadGameProduct.cshtml" />
     <None Include="Views\Games\EditPhysicalGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />

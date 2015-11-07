@@ -1,9 +1,10 @@
 ﻿@using Veil.DataModels.Models
+@using Veil.Models
 @using Veil.Extensions
-@model PhysicalGameProduct
+@model PhysicalGameProductViewModel
 
 <div class="small-3 columns" data-equalizer-watch>
-    @{ var rating = Model.AverageRating; }
+    @{ var rating = Model.GameProduct.AverageRating; }
     @if (rating.HasValue)
     {
         <div class="row">
@@ -19,42 +20,59 @@
 
     @if (User.IsEmployeeOrAdmin())
     {
-        Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" });
-        Html.ActionLink("Delete", "DeleteGameProduct", new { id = Model.Id }, new { @class = "button expand small alert" });
+        Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small" });
+        Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small alert" });
     }
-    else {
+    else
+    {
         string buyNewClasses = "button expand small success margin-bottom-0";
 
-        if (Model.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
-            Model.NewInventory < 1)
+        if (Model.NewIsInCart)
         {
-            <a class="@buyNewClasses disabled">Buy New @($"{Model.NewWebPrice:C}")</a>
+            <a class="@buyNewClasses disabled">Buy Used @($"{Model.GameProduct.NewWebPrice:C} (in your cart)")</a>
+        }
+        else if (Model.GameProduct.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
+            Model.GameProduct.NewInventory < 1)
+        {
+            <a class="@buyNewClasses disabled">Buy New @($"{Model.GameProduct.NewWebPrice:C} (unavailable)")</a>
         }
         else
         {
-            @Html.ActionLink($"Buy New {Model.NewWebPrice:C}", "AddItem", "Cart", 
-                new { productId = Model.Id, isNew = true }, 
+            @Html.ActionLink($"Buy New {Model.GameProduct.NewWebPrice:C}", "AddItem", "Cart", 
+                new { productId = Model.GameProduct.Id, isNew = true }, 
                 new { @class = buyNewClasses })
         }
 
-        if (Model.UsedWebPrice.HasValue)
+        if (Model.GameProduct.UsedWebPrice.HasValue)
         {
             string buyUsedClasses = "button expand small margin-bottom-0";
 
-            if (Model.UsedInventory < 1)
+            if (Model.UsedIsInCart)
             {
-                <a class="@buyUsedClasses disabled">Buy Used @($"{Model.UsedWebPrice.Value:C}")</a>
+                <a class="@buyUsedClasses disabled">Buy Used @($"{Model.GameProduct.UsedWebPrice.Value:C} (in your cart)")</a>
+            }
+            else if (Model.GameProduct.UsedInventory < 1)
+            {
+                <a class="@buyUsedClasses disabled">Buy Used @($"{Model.GameProduct.UsedWebPrice.Value:C} (unavailable)")</a>
             }
             else
             {
-                @Html.ActionLink($"Buy Used {Model.UsedWebPrice.Value:C}", "AddItem", "Cart",
-                    new { productId = Model.Id, isNew = false },
+                @Html.ActionLink($"Buy Used {Model.GameProduct.UsedWebPrice.Value:C}", "AddItem", "Cart",
+                    new { productId = Model.GameProduct.Id, isNew = false },
                     new { @class = buyUsedClasses })
             }
         }
 
+        string wishlistClasses = "button expand small info margin-bottom-0";
+        if (Model.ProductIsOnWishlist)
+        {
+            <a class="@wishlistClasses disabled">On Your Wishlist</a>
+        }
+        else
+        {
         @Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
-            new { itemId = Model.Id },
-            new { @class = "button expand small info margin-bottom-0" })
+                new { itemId = Model.GameProduct.Id },
+                new { @class = wishlistClasses })
+        }
     }
 </div>

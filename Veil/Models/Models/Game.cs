@@ -49,7 +49,7 @@ namespace Veil.DataModels.Models
         {
             get
             {
-                return GameSKUs.SelectMany(g => g.Reviews).Average(r => (double?) r.Rating);
+                return AllReviews?.Average(r => (double?) r.Rating);
             }
         }
 
