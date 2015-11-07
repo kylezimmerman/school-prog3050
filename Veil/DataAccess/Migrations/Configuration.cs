@@ -305,15 +305,12 @@ namespace Veil.DataAccess.Migrations
                 new Company { Name = "Treyarch" }
             );
 
-            Tag simulationTag = new Tag { Name = "Simulation" };
-            Tag shooterTag = new Tag { Name = "Shooter" };
-
             context.Tags.AddOrUpdate(
                 t => t.Name,
                 new Tag { Name = "First Person" },
                 new Tag { Name = "Third Person" },
-                shooterTag,
-                simulationTag,
+                new Tag { Name = "Shooter" },
+                new Tag { Name = "Simulation" },
                 new Tag { Name = "RTS" },
                 new Tag { Name = "Racing" },
                 new Tag { Name = "RPG" },
@@ -409,6 +406,9 @@ namespace Veil.DataAccess.Migrations
                 vermintide,
                 fallout4
             );
+
+            Tag shooterTag = context.Tags.Find("Shooter");
+            Tag simulationTag = context.Tags.Find("Simulation");
 
             halo5.Tags = halo5.Tags ?? new List<Tag>();
             vermintide.Tags = vermintide.Tags ?? new List<Tag>();
