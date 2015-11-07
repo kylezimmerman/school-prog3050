@@ -484,8 +484,6 @@
     <Content Include="Views\Games\_DownloadGameProduct.cshtml" />
     <Content Include="Views\Games\_GameProductPartial.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
-    <None Include="Views\Games\DeleteDownloadGameProduct.cshtml" />
-    <None Include="Views\Games\DeletePhysicalGameProduct.cshtml" />
     <None Include="Views\Games\EditDownloadGameProduct.cshtml" />
     <None Include="Views\Games\EditPhysicalGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
@@ -500,7 +498,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Content\" />
-    <Folder Include="Views\Base\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">

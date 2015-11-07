@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* GamesController.cs
+ * Purpose: Controller for the primarily for the Games model
+ *          Also contains actions for GameProduct and derived models
+ * 
+ * Revision History:
+ *      Isaac West, 2015.10.13: Created
+ */ 
+
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,7 +36,15 @@ namespace Veil.Controllers
             db = veilDataAccess;
         }
 
-        // GET: Games
+        /// <summary>
+        ///     Displays a paginated list of games
+        /// </summary>
+        /// <param name="page">
+        ///     The page number being requested
+        /// </param>
+        /// <returns>
+        ///     A paginated list of games
+        /// </returns>
         public async Task<ActionResult> Index(int page = 1)
         {
             IQueryable<Game> games = db.Games.Include(g => g.Rating);
@@ -41,21 +57,24 @@ namespace Veil.Controllers
             games = games.OrderBy(g => g.Name);
 
             var gamesListViewModel = new GameListViewModel()
-            { 
+            {
                 Games = await games.Skip((page - 1)*GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
                 CurrentPage = page,
                 TotalPages = (int) Math.Ceiling(await games.CountAsync()/(float) GAMES_PER_PAGE)
             };
 
             return View(gamesListViewModel);
-            }
+        }
 
-        // POST: Games/Search?{query-string}
         /// <summary>
-        /// Processes simple search lcoated in nav bar.
+        ///     Processes simple search game search. This is used by the navbar search
         /// </summary>
-        /// <param name="keyword"></param>
-        /// <returns>IQueryable of type 'Game' to Index view of Games controller.</returns>
+        /// <param name="keyword">
+        ///     Fragment of a game title to filter by
+        /// </param>
+        /// <returns>
+        ///     IQueryable of type 'Game' to Index view of Games controller.
+        /// </returns>
         [HttpPost]
         public async Task<ActionResult> Search(string keyword = "")
         {
@@ -74,15 +93,23 @@ namespace Veil.Controllers
             return View("Index", await gamesFiltered.ToListAsync());
         }
 
-        // POST: Games/Search?{query-string}
         /// <summary>
-        /// Processes advanced search from /Games/AdvancedSearch page.
+        ///     Processes advanced game searches and displays the results
         /// </summary>
-        /// <param name="tags">List of type 'string' to search game tags.</param>
-        /// <param name="title">String to search game titles.</param>
-        /// <param name="platform">String to search game platforms.</param>
-        /// <returns></returns>
-        public async Task<ActionResult> AdvancedSearch(List<string> tags, string title = "", string platform = "", int page = 1)
+        /// <param name="tags">
+        ///     List of tag names to filter by
+        /// </param>
+        /// <param name="title">
+        ///     Title search string to filter by
+        /// </param>
+        /// <param name="platform">
+        ///     Platform Code for the platform to filter by
+        /// </param>
+        /// <returns>
+        ///     Index view with the filtered results
+        /// </returns>
+        public async Task<ActionResult> AdvancedSearch(
+            List<string> tags, string title = "", string platform = "", int page = 1)
         {
             title = title.Trim();
             platform = platform.Trim();
@@ -151,7 +178,7 @@ namespace Veil.Controllers
             }
 
             searchQuery += string.Join(", ", tags);
-                
+
             ViewBag.SearchTerm = searchQuery.Trim(',', ' ');
 
             var gamesListViewModel = new GameListViewModel()
@@ -164,7 +191,17 @@ namespace Veil.Controllers
             return View("Index", gamesListViewModel);
         }
 
-        // GET: Games/Details/{Guid}
+        /// <summary>
+        ///     Displays the details for the specified game, including its SKUs and reviews
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the Game to show details for
+        /// </param>
+        /// <returns>
+        ///     Details view if the Id is for a game
+        ///     404 Not Found view if the Id couldn't be matched to a game
+        ///     404 Not Found view if the Id is for a game marked as Not For Sale and the user isn't an employee or admin
+        /// </returns>
         public async Task<ActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -172,6 +209,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
+            // TODO: When doing reviews, this will likely need to include all reviews too
             Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
             if (game == null)
@@ -200,23 +238,24 @@ namespace Veil.Controllers
 
         /* TODO: Every action after this should be employee only */
 
-        // GET: Games/Create
+        /// <summary>
+        ///     Displays the Create Game view
+        /// </summary>
+        /// <returns>
+        ///     The create game view
+        /// </returns>
         public ActionResult Create()
         {
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description");
             return View();
         }
 
-        // POST: Games/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind(Include = "Id,Name,GameAvailabilityStatus,ESRBRatingId,MinimumPlayerCount,MaximumPlayerCount,TrailerURL,ShortDescription,LongDescription,PrimaryImageURL")] Game game)
         {
             if (ModelState.IsValid)
             {
-                game.Id = Guid.NewGuid();
                 db.Games.Add(game);
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
@@ -241,7 +280,6 @@ namespace Veil.Controllers
                 this.AddAlert(AlertType.Error, "Please select a game to edit.");
                 return RedirectToAction("Index");
             }
-
 
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
 
@@ -306,7 +344,6 @@ namespace Veil.Controllers
                 return HttpNotFound();
             }
 
-
             return View(game);
         }
 
@@ -346,9 +383,9 @@ namespace Veil.Controllers
                     }
 
                     try
-        {
-            db.Games.Remove(game);
-            await db.SaveChangesAsync();
+                    {
+                        db.Games.Remove(game);
+                        await db.SaveChangesAsync();
                         deleteScope.Complete();
                     }
                     catch (Exception)
@@ -359,7 +396,6 @@ namespace Veil.Controllers
                         return View();
                     }
                 }
-                  
             }
             else
             {
@@ -405,7 +441,6 @@ namespace Veil.Controllers
 
             if (gameProduct != null)
             {
-                
                 try
                 {
                     db.GameProducts.Remove(gameProduct);
@@ -418,15 +453,12 @@ namespace Veil.Controllers
                     this.AddAlert(AlertType.Error, "Error happened");
                     return View();
                 }
-                
             }
 
             return RedirectToAction("Index");
         }
 
-
         #region GameProduct Actions
-
         public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id)
         {
             if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
@@ -482,22 +514,6 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EditPhysicalGameProduct(Guid? id, PhysicalGameProduct gameProduct)
-        {
-            // TODO: Actually implement this
-
-            return RedirectToAction("Index");
-        }
-
-        public async Task<ActionResult> DeletePhysicalGameProduct(Guid? id)
-        {
-            // TODO: Actually implement this
-
-            return View(new PhysicalGameProduct());
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ConfirmDeletePhysicalGameProduct(Guid? id)
         {
             // TODO: Actually implement this
 
@@ -560,23 +576,6 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<ActionResult> DeleteDownloadGameProduct(Guid? id)
-        {
-            // TODO: Actually implement this
-
-            return View(new DownloadGameProduct());
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ConfirmDeleteDownloadGameProduct(Guid? id)
-        {
-            // TODO: Actually implement this
-
-            return RedirectToAction("Index");
-        }
-
-
         private async Task<ActionResult> SaveGameProduct(Guid gameId, GameProduct gameProduct)
         {
             gameProduct.Id = Guid.NewGuid();
@@ -589,7 +588,6 @@ namespace Veil.Controllers
 
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
-
         #endregion
     }
 }
