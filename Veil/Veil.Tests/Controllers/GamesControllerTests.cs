@@ -10,6 +10,7 @@ using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.Models;
 
 namespace Veil.Tests.Controllers
 {
@@ -109,12 +110,12 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>) result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Has.Count.EqualTo(3));
-            Assert.That(model, Has.None.Matches<Game>(g => g.GameAvailabilityStatus == AvailabilityStatus.NotForSale));
+            Assert.That(model.Games, Has.Count.EqualTo(3));
+            Assert.That(model.Games, Has.None.Matches<Game>(g => g.GameAvailabilityStatus == AvailabilityStatus.NotForSale));
         }
 
         [TestCase(VeilRoles.EMPLOYEE_ROLE)]
@@ -139,12 +140,12 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>)result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Has.Count.EqualTo(4));
-            Assert.That(model, Has.Some.Matches<Game>(g => g.GameAvailabilityStatus == AvailabilityStatus.NotForSale));
+            Assert.That(model.Games, Has.Count.EqualTo(4));
+            Assert.That(model.Games, Has.Some.Matches<Game>(g => g.GameAvailabilityStatus == AvailabilityStatus.NotForSale));
         }
 
         [Test]
@@ -168,11 +169,11 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search("not a match for anything") as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>)result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Is.Empty);
+            Assert.That(model.Games, Is.Empty);
         }
 
         [Test]
@@ -196,12 +197,12 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search(games[0].Name) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>)result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Has.Count.EqualTo(1));
-            Assert.That(model, Contains.Item(games[0]));
+            Assert.That(model.Games, Has.Count.EqualTo(1));
+            Assert.That(model.Games, Contains.Item(games[0]));
         }
 
         [Test]
@@ -225,11 +226,11 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search("atch") as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>)result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Has.Count.EqualTo(games.Count));
+            Assert.That(model.Games, Has.Count.EqualTo(games.Count));
         }
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
@@ -254,11 +255,11 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search("NotForSale") as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>)result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Has.Count.EqualTo(0));
+            Assert.That(model.Games, Has.Count.EqualTo(0));
         }
 
         [TestCase(VeilRoles.EMPLOYEE_ROLE)]
@@ -283,11 +284,11 @@ namespace Veil.Tests.Controllers
             var result = await controller.Search("NotForSale") as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<IEnumerable<Game>>());
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
 
-            var model = (IEnumerable<Game>)result.Model;
+            var model = (GameListViewModel)result.Model;
 
-            Assert.That(model, Has.Count.EqualTo(1));
+            Assert.That(model.Games, Has.Count.EqualTo(1));
         }
 
         [Test]

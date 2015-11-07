@@ -16,7 +16,6 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
-using Veil.Models;
 using System.Transactions;
 using System.Net;
 using System.Web;
@@ -29,7 +28,7 @@ namespace Veil.Controllers
     {
         private const int GAMES_PER_PAGE = 10;
 
-        protected readonly IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
 
         public GamesController(IVeilDataAccess veilDataAccess)
         {
@@ -64,19 +63,22 @@ namespace Veil.Controllers
             };
 
             return View(gamesListViewModel);
-            }
+        }
 
         /// <summary>
-        ///     Processes simple search game search. This is used by the navbar search
+        ///     Processes simple search game search. This is used by the nav-bar search
         /// </summary>
         /// <param name="keyword">
         ///     Fragment of a game title to filter by
+        /// </param>
+        /// <param name="page">
+        ///     The page number being requested
         /// </param>
         /// <returns>
         ///     IQueryable of type 'Game' to Index view of Games controller.
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult> Search(string keyword = "")
+        public async Task<ActionResult> Search(string keyword = "", int page = 1)
         {
             keyword = keyword.Trim();
 
@@ -90,7 +92,14 @@ namespace Veil.Controllers
 
             ViewBag.SearchTerm = keyword;
 
-            return View("Index", await gamesFiltered.ToListAsync());
+            var gamesListViewModel = new GameListViewModel()
+            {
+                Games = await gamesFiltered.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(await gamesFiltered.CountAsync() / (float)GAMES_PER_PAGE)
+            };
+
+            return View("Index", gamesListViewModel);
         }
 
         /// <summary>
@@ -104,6 +113,9 @@ namespace Veil.Controllers
         /// </param>
         /// <param name="platform">
         ///     Platform Code for the platform to filter by
+        /// </param>
+        /// <param name="page">
+        ///     The page number being requested
         /// </param>
         /// <returns>
         ///     Index view with the filtered results
@@ -124,9 +136,11 @@ namespace Veil.Controllers
 
             if (tags.Count == 0 && title == "" && platform == "")
             {
-                SearchViewModel searchViewModel = new SearchViewModel();
-                searchViewModel.Platforms = await db.Platforms.ToListAsync();
-                searchViewModel.Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync();
+                SearchViewModel searchViewModel = new SearchViewModel
+                {
+                    Platforms = await db.Platforms.ToListAsync(),
+                    Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync()
+                };
 
                 return View(searchViewModel);
             }
@@ -209,51 +223,59 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
-            GameDetailsViewModel model = new GameDetailsViewModel();
-
             // TODO: When doing reviews, this will likely need to include all reviews too
-            model.Game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
+            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
-            if (model.Game == null)
+            if (game == null)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             if (User.IsEmployeeOrAdmin())
             {
-                return View(model.Game);
+                return View(game);
             }
 
             // User is anonymous or member, don't show not for sale games
-            if (model.Game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
+            if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             // Remove formats that are not for sale unless the user is an employee
-            model.Game.GameSKUs = model.Game.GameSKUs.
+            game.GameSKUs = game.GameSKUs.
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            model.CurrentMember = await db.Members.FirstOrDefaultAsync(m => m.UserId == currentUserId);
-
-            return View(model);
+            return View(game);
         }
 
+        /// <summary>
+        ///     Renders the Game SKU partial for a physical game product
+        /// </summary>
+        /// <param name="gameProduct">
+        ///     The physical game sku to render.
+        /// </param>
+        /// <returns>
+        ///     Partial view containing the information specific to PhysicalGameProducts
+        /// </returns>
         [ChildActionOnly]
-        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Member currentMember)
+        public PartialViewResult RenderPhysicalGameProductPartial(PhysicalGameProduct gameProduct)
         {
             PhysicalGameProductViewModel model = new PhysicalGameProductViewModel
             {
                 GameProduct = gameProduct
             };
+
+            Member currentMember = db.Members.Find(User.Identity.GetUserId());
+
             if (currentMember != null)
             {
                 model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
                 model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
                 model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
             }
+
             return PartialView("_PhysicalGameProductPartial", model);
         }
 
