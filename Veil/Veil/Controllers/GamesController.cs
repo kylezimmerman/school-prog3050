@@ -16,6 +16,7 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Transactions;
 using System.Web;
 using LinqKit;
@@ -423,52 +424,37 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameConfirmed(Guid id)
+        public async Task<ActionResult> DeleteGameConfirmed(Guid? id)
         {
-            Game game = null;
-
-            if (id != null)
-            {
-                game = await db.Games.FindAsync(id);
-            }
-            else
+            if (id == null)
             {
                 this.AddAlert(AlertType.Error, "No game selected");
+
+                return RedirectToAction("Index");
+                
             }
 
-            if (game != null)
+            Game game = await db.Games.FindAsync(id);
+
+            if (game == null)
             {
-                using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                throw new HttpException(NotFound, nameof(Game));
+            }
+
+            using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
                 {
-                    try
-                    {
-                        foreach (var item in game.GameSKUs)
-                        {
-                            db.GameProducts.Remove(item);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name +", one or more of the game sku's could not be removed. No changes were made to the database");
-                        return View();
-                    }
-
-                    try
-        {
-            db.Games.Remove(game);
-            await db.SaveChangesAsync();
-                        deleteScope.Complete();
-                    }
-                    catch (Exception)
-                    {
-                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + " no changes were saved to the database");
-                        return View();
-                    }
+                    db.GameProducts.RemoveRange(game.GameSKUs);
+                    db.Games.Remove(game);
+                    await db.SaveChangesAsync();
+                    deleteScope.Complete();
                 }
-            }
-            else
-            {
-                throw new HttpException(NotFound, "some message");
+                catch (DbUpdateException)
+                {
+                    this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
+                    return View(game);
+                }
             }
 
             return RedirectToAction("Index");
@@ -484,6 +470,7 @@ namespace Veil.Controllers
             }
 
             GameProduct gameProduct = await db.GameProducts.FindAsync(id);
+
             if (gameProduct == null)
             {
                 //replace this when it is finished
@@ -496,7 +483,7 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("DeleteGameProduct")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameProductConfirmed(Guid id)
+        public async Task<ActionResult> DeleteGameProductConfirmed(Guid? id)
         {
             GameProduct gameProduct = null;
 
@@ -516,10 +503,10 @@ namespace Veil.Controllers
                     db.GameProducts.Remove(gameProduct);
                     await db.SaveChangesAsync();
                 }
-                catch (Exception)
+                catch (DbUpdateException)
                 {
                     this.AddAlert(AlertType.Error, "There was an error deleting " + gameProduct.Platform + ": " + gameProduct.Name);
-                    return View();
+                    return View(gameProduct);
                 }
             }
             else
@@ -551,7 +538,8 @@ namespace Veil.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id, [Bind] PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id, 
+            [Bind(Exclude = nameof(PhysicalGameProduct.NewInventory) + "," + nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
         {
             if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
             {
@@ -563,8 +551,8 @@ namespace Veil.Controllers
             {
                 var internalSku = db.GetNextPhysicalGameProductSku();
 
-                gameProduct.InteralUsedSKU = $"0{internalSku}";
-                gameProduct.InternalNewSKU = $"1{internalSku}";
+                gameProduct.InteralUsedSKU = $"1{internalSku}";
+                gameProduct.InternalNewSKU = $"0{internalSku}";
 
                 return await SaveGameProduct(id.Value, gameProduct);
             }

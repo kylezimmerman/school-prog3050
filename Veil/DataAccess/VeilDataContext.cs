@@ -87,7 +87,7 @@ namespace Veil.DataAccess
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>(); // Delete the one, cascade delete the many
-            //modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>(); // Delete on either side cascade deletes the joining table
+            modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>(); // Delete on either side cascade deletes the joining table
             modelBuilder.HasDefaultSchema(SCHEMA_NAME);
 
             // The specific EntityConfig chosen here was random. We just needed something in the namespace

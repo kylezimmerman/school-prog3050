@@ -8,7 +8,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Veil.DataModels.Validation;
-using System.Linq;
 
 namespace Veil.DataModels.Models
 {
@@ -58,22 +57,6 @@ namespace Veil.DataModels.Models
         [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU)]
         [DisplayName("Internal Used SKU")]
         public string InteralUsedSKU { get; set; }
-
-        public int NewInventory
-        {
-            get
-            {
-                return LocationInventories.Sum(i => i.NewOnHand);
-            }
-        }
-
-        public int UsedInventory
-        {
-            get
-            {
-                return LocationInventories.Sum(i => i.UsedOnHand);
-            }
-        }
 
         /// <summary>
         /// Flag which indicates if we will buy pre-used copies from customers
