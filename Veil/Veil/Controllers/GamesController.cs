@@ -209,9 +209,9 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
-            // TODO: When doing reviews, this will likely need to include all reviews too
-            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
+            GameDetailsViewModel model = new GameDetailsViewModel();
 
+            // TODO: When doing reviews, this will likely need to include all reviews too
             model.Game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
             if (model.Game == null)
