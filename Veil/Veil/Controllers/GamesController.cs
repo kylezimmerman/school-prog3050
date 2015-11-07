@@ -17,19 +17,15 @@ using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
 using System.Transactions;
-using System.Net;
 using System.Web;
 using LinqKit;
 using Veil.Extensions;
 using Veil.DataModels;
-using System.Web;
 
 namespace Veil.Controllers
 {
     public class GamesController : BaseController
     {
-
-        private const int HTTP_NOT_FOUND = 404;
         private const int GAMES_PER_PAGE = 10;
 
         private readonly IVeilDataAccess db;
@@ -38,6 +34,8 @@ namespace Veil.Controllers
         {
             db = veilDataAccess;
         }
+
+        public int GamesPerPage { get; set; } = GAMES_PER_PAGE;
 
         /// <summary>
         ///     Displays a paginated list of games
@@ -50,23 +48,24 @@ namespace Veil.Controllers
         /// </returns>
         public async Task<ActionResult> Index(int page = 1)
         {
-            IQueryable<Game> games = db.Games.Include(g => g.Rating);
-
-            if (!User.IsEmployeeOrAdmin())
-        {
-                games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
-            }
-
-            games = games.OrderBy(g => g.Name);
-
-            var gamesListViewModel = new GameListViewModel()
+            var viewModel = new GameListViewModel
             {
-                Games = await games.Skip((page - 1)*GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
-                CurrentPage = page,
-                TotalPages = (int) Math.Ceiling(await games.CountAsync()/(float) GAMES_PER_PAGE)
+                CurrentPage = page
             };
 
-            return View(gamesListViewModel);
+            IQueryable<Game> games = db.Games.Include(g => g.Rating);
+
+            games = FilterOutInternalOnly(games).OrderBy(g => g.Name);
+
+            viewModel.Games = await games.
+                Skip((viewModel.CurrentPage - 1) * GamesPerPage).
+                Take(GamesPerPage).
+                ToListAsync();
+
+            viewModel.TotalPages = 
+                (int) Math.Ceiling(await games.CountAsync() / (float) GamesPerPage);
+
+            return View(viewModel);
         }
 
         /// <summary>
@@ -81,29 +80,40 @@ namespace Veil.Controllers
         /// <returns>
         ///     IQueryable of type 'Game' to Index view of Games controller.
         /// </returns>
-        [HttpPost]
         public async Task<ActionResult> Search(string keyword = "", int page = 1)
         {
+            var viewModel = new GameListViewModel
+            {
+                CurrentPage = page
+            };
+
             keyword = keyword.Trim();
 
-            IQueryable<Game> gamesFiltered = db.Games
-                .Where(g => g.Name.Contains(keyword));
+            IQueryable<Game> gamesFiltered;
 
-            if (!User.IsEmployeeOrAdmin())
+            if (!string.IsNullOrWhiteSpace(keyword))
             {
-                gamesFiltered = gamesFiltered.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+                gamesFiltered = db.Games
+                    .Where(g => g.Name.Contains(keyword));
             }
+            else
+            {
+                gamesFiltered = db.Games;
+            }
+
+            gamesFiltered = FilterOutInternalOnly(gamesFiltered).OrderBy(g => g.Name);
 
             ViewBag.SearchTerm = keyword;
 
-            var gamesListViewModel = new GameListViewModel()
-            {
-                Games = await gamesFiltered.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
-                CurrentPage = page,
-                TotalPages = (int)Math.Ceiling(await gamesFiltered.CountAsync() / (float)GAMES_PER_PAGE)
-            };
+            viewModel.Games = await gamesFiltered.
+                Skip((viewModel.CurrentPage - 1) * GamesPerPage).
+                Take(GamesPerPage).
+                ToListAsync();
 
-            return View("Index", gamesListViewModel);
+            viewModel.TotalPages = 
+                (int) Math.Ceiling(await gamesFiltered.CountAsync() / (float) GamesPerPage);
+
+            return View("Index", viewModel);
         }
 
         /// <summary>
@@ -127,6 +137,8 @@ namespace Veil.Controllers
         public async Task<ActionResult> AdvancedSearch(
             List<string> tags, string title = "", string platform = "", int page = 1)
         {
+            page = page < 1 ? 1 : page;
+
             title = title.Trim();
             platform = platform.Trim();
             tags = tags ?? new List<string>();
@@ -167,20 +179,24 @@ namespace Veil.Controllers
             if (!string.IsNullOrWhiteSpace(platform))
             {
                 // Filter by platform
-                searchPredicate = searchPredicate.Or(g => g.GameSKUs.Any(gs => gs.PlatformCode == platform));
+                searchPredicate = searchPredicate.Or(
+                    g => g.GameSKUs.Any(gs => gs.PlatformCode == platform));
             }
 
             if (!User.IsEmployeeOrAdmin())
             {
                 // Filter out any not for sale games
                 // We are doing And, so we need the first to be true
-                var roleFilterPredicate = PredicateBuilder.True<Game>().And(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+                var roleFilterPredicate = PredicateBuilder.True<Game>().
+                    And(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
 
                 // Equivalent to (conditionAbove && (searchPredicateConditions))
                 searchPredicate = roleFilterPredicate.And(searchPredicate);
             }
 
-            IQueryable<Game> gamesFiltered = db.Games.AsExpandable().Where(searchPredicate).OrderBy(g => g.Name);
+            IQueryable<Game> gamesFiltered = db.Games.AsExpandable().
+                Where(searchPredicate).
+                OrderBy(g => g.Name);
 
             string platformName =
                 await db.Platforms.
@@ -201,10 +217,16 @@ namespace Veil.Controllers
 
             var gamesListViewModel = new GameListViewModel()
             {
-                Games = await gamesFiltered.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
-                CurrentPage = page,
-                TotalPages = (int)Math.Ceiling(await gamesFiltered.CountAsync() / (float)GAMES_PER_PAGE)
+                CurrentPage = page
             };
+
+            gamesListViewModel.Games = await gamesFiltered.
+                Skip((gamesListViewModel.CurrentPage - 1) * GamesPerPage).
+                Take(GamesPerPage).
+                ToListAsync();
+
+            gamesListViewModel.TotalPages = 
+                (int) Math.Ceiling(await gamesFiltered.CountAsync() / (float) GamesPerPage);
 
             return View("Index", gamesListViewModel);
         }
@@ -218,13 +240,14 @@ namespace Veil.Controllers
         /// <returns>
         ///     Details view if the Id is for a game
         ///     404 Not Found view if the Id couldn't be matched to a game
-        ///     404 Not Found view if the Id is for a game marked as Not For Sale and the user isn't an employee or admin
+        ///     404 Not Found view if the Id is for a game marked as Not For Sale 
+        ///         and the user isn't an employee or admin
         /// </returns>
         public async Task<ActionResult> Details(Guid? id)
         {
             if (id == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             // TODO: When doing reviews, this will likely need to include all reviews too
@@ -232,7 +255,7 @@ namespace Veil.Controllers
 
             if (game == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             if (User.IsEmployeeOrAdmin())
@@ -243,7 +266,7 @@ namespace Veil.Controllers
             // User is anonymous or member, don't show not for sale games
             if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             // Remove formats that are not for sale unless the user is an employee
@@ -275,8 +298,12 @@ namespace Veil.Controllers
 
             if (currentMember != null)
             {
-                model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
-                model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
+                model.NewIsInCart = currentMember.Cart.Items.
+                    Any(i => i.ProductId == gameProduct.Id && i.IsNew);
+
+                model.UsedIsInCart = currentMember.Cart.Items.
+                    Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
+
                 model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
             }
 
@@ -387,7 +414,7 @@ namespace Veil.Controllers
 
             if (game == null)
             {
-                throw new HttpException(HTTP_NOT_FOUND, "some message");
+                throw new HttpException(NotFound, "some message");
             }
 
             return View(game);
@@ -441,7 +468,7 @@ namespace Veil.Controllers
             }
             else
             {
-                throw new HttpException(HTTP_NOT_FOUND, "some message");
+                throw new HttpException(NotFound, "some message");
             }
 
             return RedirectToAction("Index");
@@ -460,7 +487,7 @@ namespace Veil.Controllers
             if (gameProduct == null)
             {
                 //replace this when it is finished
-                throw new HttpException(HTTP_NOT_FOUND, "failed at 358");
+                throw new HttpException(NotFound, "failed at 358");
             }
             return View(gameProduct);
         }
@@ -497,7 +524,7 @@ namespace Veil.Controllers
             }
             else
             {
-                throw new HttpException(HTTP_NOT_FOUND, "some message");
+                throw new HttpException(NotFound, "some message");
             }
 
             return RedirectToAction("Index");
@@ -634,5 +661,24 @@ namespace Veil.Controllers
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
         #endregion
+
+        /// <summary>
+        ///     Filters out not for sale games if the user isn't an employee or admin
+        /// </summary>
+        /// <param name="queryable">
+        ///     The current Game IQueryable
+        /// </param>
+        /// <returns>
+        ///     The filtered queryable
+        /// </returns>
+        private IQueryable<Game> FilterOutInternalOnly(IQueryable<Game> queryable)
+        {
+            if (!User.IsEmployeeOrAdmin())
+            {
+                return queryable.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+            }
+
+            return queryable;;
+        } 
     }
 }

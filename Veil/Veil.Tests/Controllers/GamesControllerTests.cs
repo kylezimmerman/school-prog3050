@@ -88,6 +88,62 @@ namespace Veil.Tests.Controllers
             };
         }
 
+        [Test]
+        public void Search_EmptyKeyword_DoesNotFilterByName()
+        {
+            List<Game> games = new List<Game>
+            {
+                new Game
+                {
+                    Name = null
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            // Calling contains on the null Name would throw
+            Assert.That(async () => await controller.Search(), Throws.Nothing);
+        }
+
+        [TestCase(0)]
+        [TestCase(-1)]
+        [TestCase(int.MinValue)]
+        public async void Search_PageLessThan1_SetsPageTo1(int currentPage)
+        {
+            List<Game> games = GetGameSearchList();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.Search(keyword: "", page: currentPage) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(model.CurrentPage, Is.EqualTo(1));
+        }
+
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(null /* Stand-in for No Role */)]
         public async void Search_EmptyString_UnprivilegedRole_ReturnsFullListExceptNotForSale(string role)
@@ -289,6 +345,173 @@ namespace Veil.Tests.Controllers
             var model = (GameListViewModel)result.Model;
 
             Assert.That(model.Games, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public async void Search_EmptyString_OrdersResultByName()
+        {
+            List<Game> games = GetGameSearchList();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+            
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.Search() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(games, Is.Not.Ordered.By(nameof(Game.Name)));
+            Assert.That(model.Games, Is.Ordered.By(nameof(Game.Name)));
+        }
+
+        [Test]
+        public async void Search_NonDefaultPage_SetsCurrentPageToPassedPage()
+        {
+            List<Game> games = GetGameSearchList();
+            int currentPage = 2;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.Search(keyword: "", page: currentPage) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(model.CurrentPage, Is.EqualTo(currentPage));
+        }
+
+        [Test]
+        public async void Search_5Games_SetsTotalPagesToListCountDividedByGamesPerPage()
+        {
+            List<Game> games = new List<Game>
+            {
+                new Game(),
+                new Game(),
+                new Game(),
+                new Game(),
+                new Game()
+            };
+
+            int gamesPerPage = 1;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object,
+                GamesPerPage = gamesPerPage
+            };
+
+            var result = await controller.Search() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(model.TotalPages, Is.EqualTo(5 /* 5 games, one per page */));
+        }
+
+        [Test]
+        public async void Search_2GamesPerPage_ReturnsGamesListWith2Games()
+        {
+            List<Game> games = new List<Game>
+            {
+                new Game(),
+                new Game(),
+                new Game(),
+                new Game(),
+                new Game()
+            };
+
+            int gamesPerPage = 2;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object,
+                GamesPerPage = gamesPerPage
+            };
+
+            var result = await controller.Search() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(model.Games, Has.Count.EqualTo(gamesPerPage));
+        }
+
+        [Test]
+        public async void Search_PageGreaterThanPagesSupportedByGameCount_ReturnsEmptyGameList()
+        {
+            List<Game> games = new List<Game>
+            {
+                new Game(),
+                new Game(),
+                new Game(),
+                new Game(),
+                new Game()
+            };
+
+            int gamesPerPage = games.Count;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object,
+                GamesPerPage = gamesPerPage
+            };
+
+            var result = await controller.Search(keyword: "", page: 2) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(model.Games, Is.Empty);
         }
 
         [Test]
