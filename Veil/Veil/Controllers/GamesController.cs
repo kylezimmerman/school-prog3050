@@ -2,7 +2,6 @@
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Net;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -136,40 +135,70 @@ namespace Veil.Controllers
         }
 
         // GET: Games/Details/5
+        /// <summary>
+        /// Displays information for a specified game, its products, and reviews of them
+        /// Presents options to purchase if a member, or edit/delete options if an employee
+        /// </summary>
+        /// <param name="id">The ID of the Game to display</param>
+        /// <returns></returns>
         public async Task<ActionResult> Details(Guid? id)
         {
             if (id == null)
             {
+                // TODO: Use new error handling
                 this.AddAlert(AlertType.Error, "No game was specified.");
                 return View("Error");
             }
 
-            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
+            GameDetailsViewModel model = new GameDetailsViewModel();
 
-            if (game == null)
+            model.Game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
+
+            if (model.Game == null)
             {
+                // TODO: Use new error handling
                 this.AddAlert(AlertType.Error, "The selected game could not be found.");
                 return View("Error");
             }
 
             if (User.IsEmployeeOrAdmin())
             {
-                return View(game);
+                return View(model.Game);
             }
 
             // User is anonymous or member, don't show not for sale games
-            if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
+            if (model.Game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
             {
+                // TODO: Use new error handling
                 this.AddAlert(AlertType.Error, "The selected game could not be found.");
                 return View("Error");
             }
 
             // Remove formats that are not for sale unless the user is an employee
-            game.GameSKUs = game.GameSKUs.
+            model.Game.GameSKUs = model.Game.GameSKUs.
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
 
-            return View(game);
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            model.CurrentMember = await db.Members.FirstOrDefaultAsync(m => m.UserId == currentUserId);
+
+            return View(model);
+        }
+
+        [ChildActionOnly]
+        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Member currentMember)
+        {
+            PhysicalGameProductViewModel model = new PhysicalGameProductViewModel
+            {
+                GameProduct = gameProduct
+            };
+            if (currentMember != null)
+            {
+                model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
+                model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
+                model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
+            }
+            return PartialView("_PhysicalGameProductPartial", model);
         }
 
         // TODO: Every action after this should be employee only
