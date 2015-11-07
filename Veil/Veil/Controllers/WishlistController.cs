@@ -36,34 +36,31 @@ namespace Veil.Controllers
         /// <returns></returns>
         public async Task<ActionResult> Index(Guid? wishlistOwnerId)
         {
-            Member wishlistMember;
+            WishlistViewModel model = new WishlistViewModel();
 
             if (!User.Identity.IsAuthenticated)
             {
                 if (wishlistOwnerId != null)
                 {
                     // Even anonymous users can see public wishlists
-                    wishlistMember = await db.Members.FindAsync(wishlistOwnerId);
-                    if (wishlistMember != null &&
-                        wishlistMember.WishListVisibility == WishListVisibility.Public)
+                    model.WishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+
+                    if (model.WishlistOwner != null &&
+                        model.WishlistOwner.WishListVisibility == WishListVisibility.Public)
                     {
-                        return View(wishlistMember);
+                        return View(model);
                     }
                 }
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
             Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            WishlistViewModel model = new WishlistViewModel
-            {
-                CurrentMember = await db.Members.FirstOrDefaultAsync(m => m.UserId == currentUserId)
-            };
-            
+            Member currentMember = await db.Members.FindAsync(currentUserId);
 
             if (wishlistOwnerId == null)
             {
                 // If a wishlistOwnerId was not given, the user is viewing their own wishlist
-                model.WishlistOwner = model.CurrentMember;
+                model.WishlistOwner = currentMember;
             }
             else
             {
@@ -76,13 +73,13 @@ namespace Veil.Controllers
             }
 
             if (model.WishlistOwner.WishListVisibility == WishListVisibility.Private &&
-                model.WishlistOwner.UserId != model.CurrentMember.UserId)
+                model.WishlistOwner.UserId != currentMember.UserId)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
             else if (model.WishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
-                (model.WishlistOwner.UserId != model.CurrentMember.UserId &&
-                !model.WishlistOwner.ConfirmedFriends.Contains(model.CurrentMember)))
+                (model.WishlistOwner.UserId != currentMember.UserId &&
+                !model.WishlistOwner.ConfirmedFriends.Contains(currentMember)))
             {
                 this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
                 return RedirectToAction("Index", "FriendList");
@@ -92,19 +89,22 @@ namespace Veil.Controllers
         }
 
         [ChildActionOnly]
-        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Member currentMember, bool currentMemberIsWishlistOwner)
+        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Guid wishlistOwnerId)
         {
             var model = new WishlistPhysicalGameProductViewModel
             {
                 GameProduct = gameProduct
             };
 
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = db.Members.Find(currentUserId);
+
             if (currentMember != null)
             {
                 model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
                 model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
                 model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
-                model.MemberIsCurrentUser = currentMemberIsWishlistOwner;
+                model.MemberIsCurrentUser = currentMember.UserId == wishlistOwnerId;
             }
 
             return PartialView("_PhysicalGameProductPartial", model);

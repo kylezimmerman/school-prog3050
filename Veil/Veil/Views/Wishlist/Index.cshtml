@@ -23,11 +23,8 @@
 }
 else
 {
-    bool memberIsWishlistOwner = Model.CurrentMember.UserId == Model.WishlistOwner.UserId;
     foreach (var gameProduct in Model.WishlistOwner.Wishlist.OfType<PhysicalGameProduct>())
     {
-        Html.RenderAction("RenderPhysicalGameProduct", new { gameProduct = gameProduct,
-                currentMember = Model.CurrentMember,
-                currentMemberIsWishlistOwner = memberIsWishlistOwner });
+        Html.RenderAction("RenderPhysicalGameProduct", new { gameProduct = gameProduct, wishlistOwnerId = Model.WishlistOwner.UserId });
     }
 }
