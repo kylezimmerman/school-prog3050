@@ -7,7 +7,7 @@ using Veil.DataAccess.Interfaces;
 
 namespace Veil.Controllers
 {
-    public class FriendListController : Controller
+    public class FriendListController : BaseController
     {
         protected readonly IVeilDataAccess db;
 

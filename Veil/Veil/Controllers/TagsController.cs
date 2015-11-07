@@ -11,7 +11,7 @@ using Veil.Models;
 
 namespace Veil.Controllers
 {
-    public class TagsController : Controller
+    public class TagsController : BaseController
     {
         protected readonly IVeilDataAccess db;
 

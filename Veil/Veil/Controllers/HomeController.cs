@@ -17,7 +17,7 @@ using Veil.Models;
 
 namespace Veil.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private const int NEW_RELEASE_COUNT = 6; // Note: This should always be a multiple of three
 
