@@ -10,6 +10,8 @@ using Veil.Helpers;
 using Veil.Extensions;
 using Veil.Models;
 using System.Data.Entity;
+using System.Web;
+using System.Net;
 
 namespace Veil.Controllers
 {
@@ -34,88 +36,75 @@ namespace Veil.Controllers
         /// <returns></returns>
         public async Task<ActionResult> Index(Guid? wishlistOwnerId)
         {
-            Member wishlistMember;
+            Member wishlistOwner;
 
             if (!User.Identity.IsAuthenticated)
             {
                 if (wishlistOwnerId != null)
                 {
                     // Even anonymous users can see public wishlists
-                    wishlistMember = await db.Members.FindAsync(wishlistOwnerId);
-                    if (wishlistMember != null &&
-                        wishlistMember.WishListVisibility == WishListVisibility.Public)
+                    wishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+
+                    if (wishlistOwner != null &&
+                        wishlistOwner.WishListVisibility == WishListVisibility.Public)
                     {
-                        return View(wishlistMember);
+                        return View(wishlistOwner);
                     }
                 }
-                // TODO: Use the new error handling
-                this.AddAlert(AlertType.Error, "Wishlist not found.");
-                if (Request.UrlReferrer != null)
-                {
-                    return Redirect(Request.UrlReferrer.ToString());
-                }
-                return RedirectToAction("Index", "Home");
+                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
             Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            WishlistViewModel model = new WishlistViewModel
-            {
-                CurrentMember = await db.Members.FirstOrDefaultAsync(m => m.UserId == currentUserId)
-            };
-            
+            Member currentMember = await db.Members.FindAsync(currentUserId);
 
             if (wishlistOwnerId == null)
             {
                 // If a wishlistOwnerId was not given, the user is viewing their own wishlist
-                model.WishlistOwner = model.CurrentMember;
+                wishlistOwner = currentMember;
             }
             else
             {
-                model.WishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+                wishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
             }
             
-            if (model.WishlistOwner == null)
+            if (wishlistOwner == null)
             {
-                // TODO: Use the new error handling
-                this.AddAlert(AlertType.Error, "Wishlist not found.");
+                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
+            }
+
+            if (wishlistOwner.WishListVisibility == WishListVisibility.Private &&
+                wishlistOwner.UserId != currentMember.UserId)
+            {
+                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
+            }
+            else if (wishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
+                (wishlistOwner.UserId != currentMember.UserId &&
+                !wishlistOwner.ConfirmedFriends.Contains(currentMember)))
+            {
+                this.AddAlert(AlertType.Error, wishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
                 return RedirectToAction("Index", "FriendList");
             }
 
-            if (model.WishlistOwner.WishListVisibility == WishListVisibility.Private &&
-                model.WishlistOwner.UserId != model.CurrentMember.UserId)
-            {
-                this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is private.");
-                if (Request.UrlReferrer != null)
-                {
-                    return Redirect(Request.UrlReferrer.ToString());
-                }
-                return RedirectToAction("Index", "Home");
-            }
-            else if (model.WishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
-                (model.WishlistOwner.UserId != model.CurrentMember.UserId &&
-                !model.WishlistOwner.ConfirmedFriends.Contains(model.CurrentMember)))
-            {
-                this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
-                return RedirectToAction("Index", "FriendList");
-            }
-
-            return View(model);
+            return View(wishlistOwner);
         }
 
         [ChildActionOnly]
-        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Member currentMember, bool currentMemberIsWishlistOwner)
+        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Guid wishlistOwnerId)
         {
             var model = new WishlistPhysicalGameProductViewModel
             {
                 GameProduct = gameProduct
             };
 
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = db.Members.Find(currentUserId);
+
             if (currentMember != null)
             {
                 model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
                 model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
                 model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
-                model.MemberIsCurrentUser = currentMemberIsWishlistOwner;
+                model.MemberIsCurrentUser = currentMember.UserId == wishlistOwnerId;
             }
 
             return PartialView("_PhysicalGameProductPartial", model);
