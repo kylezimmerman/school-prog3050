@@ -13,12 +13,15 @@ using Veil.Models;
 using System.Transactions;
 using LinqKit;
 using Veil.Extensions;
+using Veil.DataModels;
+using System.Web;
 
 namespace Veil.Controllers
 {
     public class GamesController : Controller
     {
         private const int GAMES_PER_PAGE = 50;
+        private const int HTTP_NOT_FOUND = 404;
 
         protected readonly IVeilDataAccess db;
 
@@ -265,8 +268,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        //For deleting Games
-        // GET: Games/Delete/5
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -279,14 +281,13 @@ namespace Veil.Controllers
 
             if (game == null)
             {
-                return HttpNotFound();
+                throw new HttpException(HTTP_NOT_FOUND, "some message");
             }
-
 
             return View(game);
         }
 
-        // POST: Games/Delete/5
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteGameConfirmed(Guid id)
@@ -315,23 +316,19 @@ namespace Veil.Controllers
                     }
                     catch (Exception)
                     {
-                        //display an error code about not being able to remove game products
-                        //return back to delete confiramtion page
-                        this.AddAlert(AlertType.Error, "Error");
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name +", one or more of the game sku's could not be removed. No changes were made to the database");
                         return View();
                     }
 
                     try
-        {
-            db.Games.Remove(game);
-            await db.SaveChangesAsync();
+                    {
+                        db.Games.Remove(game);
+                        await db.SaveChangesAsync();
                         deleteScope.Complete();
                     }
                     catch (Exception)
                     {
-                        //display an error about not being able to remove game
-                        //return back to delete confiramtion page
-                        this.AddAlert(AlertType.Error, "");
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + " no changes were saved to the database");
                         return View();
                     }
                 }
@@ -339,14 +336,13 @@ namespace Veil.Controllers
             }
             else
             {
-                //httpnotfound
+                throw new HttpException(HTTP_NOT_FOUND, "some message");
             }
 
             return RedirectToAction("Index");
         }
 
-        //for deleting game products
-        // GET: Games/Delete/5
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         public async Task<ActionResult> DeleteGameProduct(Guid? id)
         {
             if (id == null)
@@ -358,12 +354,14 @@ namespace Veil.Controllers
             GameProduct gameProduct = await db.GameProducts.FindAsync(id);
             if (gameProduct == null)
             {
-                return HttpNotFound();
+                //replace this when it is finished
+                throw new HttpException(HTTP_NOT_FOUND, "failed at 358");
             }
             return View(gameProduct);
         }
 
-        // POST: Games/Delete/5
+
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("DeleteGameProduct")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteGameProductConfirmed(Guid id)
@@ -389,12 +387,14 @@ namespace Veil.Controllers
                 }
                 catch (Exception)
                 {
-                    //displays error message that product cant be deleted
-                    //return back to delete confiramtion page
-                    this.AddAlert(AlertType.Error, "Error happened");
+                    this.AddAlert(AlertType.Error, "There was an error deleting " + gameProduct.Platform + ": " + gameProduct.Name);
                     return View();
                 }
                 
+            }
+            else
+            {
+                throw new HttpException(HTTP_NOT_FOUND, "some message");
             }
 
             return RedirectToAction("Index");
