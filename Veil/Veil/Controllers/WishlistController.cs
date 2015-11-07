@@ -10,6 +10,8 @@ using Veil.Helpers;
 using Veil.Extensions;
 using Veil.Models;
 using System.Data.Entity;
+using System.Web;
+using System.Net;
 
 namespace Veil.Controllers
 {
@@ -48,13 +50,7 @@ namespace Veil.Controllers
                         return View(wishlistMember);
                     }
                 }
-                // TODO: Use the new error handling
-                this.AddAlert(AlertType.Error, "Wishlist not found.");
-                if (Request.UrlReferrer != null)
-                {
-                    return Redirect(Request.UrlReferrer.ToString());
-                }
-                return RedirectToAction("Index", "Home");
+                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
             Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
@@ -76,20 +72,13 @@ namespace Veil.Controllers
             
             if (model.WishlistOwner == null)
             {
-                // TODO: Use the new error handling
-                this.AddAlert(AlertType.Error, "Wishlist not found.");
-                return RedirectToAction("Index", "FriendList");
+                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
             if (model.WishlistOwner.WishListVisibility == WishListVisibility.Private &&
                 model.WishlistOwner.UserId != model.CurrentMember.UserId)
             {
-                this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is private.");
-                if (Request.UrlReferrer != null)
-                {
-                    return Redirect(Request.UrlReferrer.ToString());
-                }
-                return RedirectToAction("Index", "Home");
+                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
             else if (model.WishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
                 (model.WishlistOwner.UserId != model.CurrentMember.UserId &&
