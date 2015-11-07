@@ -16,20 +16,23 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
-using Veil.Models;
 using System.Transactions;
 using System.Net;
 using System.Web;
 using LinqKit;
 using Veil.Extensions;
+using Veil.DataModels;
+using System.Web;
 
 namespace Veil.Controllers
 {
     public class GamesController : BaseController
     {
+
+        private const int HTTP_NOT_FOUND = 404;
         private const int GAMES_PER_PAGE = 10;
 
-        protected readonly IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
 
         public GamesController(IVeilDataAccess veilDataAccess)
         {
@@ -50,7 +53,7 @@ namespace Veil.Controllers
             IQueryable<Game> games = db.Games.Include(g => g.Rating);
 
             if (!User.IsEmployeeOrAdmin())
-            {
+        {
                 games = games.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
@@ -64,19 +67,22 @@ namespace Veil.Controllers
             };
 
             return View(gamesListViewModel);
-            }
+        }
 
         /// <summary>
-        ///     Processes simple search game search. This is used by the navbar search
+        ///     Processes simple search game search. This is used by the nav-bar search
         /// </summary>
         /// <param name="keyword">
         ///     Fragment of a game title to filter by
+        /// </param>
+        /// <param name="page">
+        ///     The page number being requested
         /// </param>
         /// <returns>
         ///     IQueryable of type 'Game' to Index view of Games controller.
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult> Search(string keyword = "")
+        public async Task<ActionResult> Search(string keyword = "", int page = 1)
         {
             keyword = keyword.Trim();
 
@@ -90,7 +96,14 @@ namespace Veil.Controllers
 
             ViewBag.SearchTerm = keyword;
 
-            return View("Index", await gamesFiltered.ToListAsync());
+            var gamesListViewModel = new GameListViewModel()
+            {
+                Games = await gamesFiltered.Skip((page - 1) * GAMES_PER_PAGE).Take(GAMES_PER_PAGE).ToListAsync(),
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(await gamesFiltered.CountAsync() / (float)GAMES_PER_PAGE)
+            };
+
+            return View("Index", gamesListViewModel);
         }
 
         /// <summary>
@@ -104,6 +117,9 @@ namespace Veil.Controllers
         /// </param>
         /// <param name="platform">
         ///     Platform Code for the platform to filter by
+        /// </param>
+        /// <param name="page">
+        ///     The page number being requested
         /// </param>
         /// <returns>
         ///     Index view with the filtered results
@@ -124,9 +140,11 @@ namespace Veil.Controllers
 
             if (tags.Count == 0 && title == "" && platform == "")
             {
-                SearchViewModel searchViewModel = new SearchViewModel();
-                searchViewModel.Platforms = await db.Platforms.ToListAsync();
-                searchViewModel.Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync();
+                SearchViewModel searchViewModel = new SearchViewModel
+                {
+                    Platforms = await db.Platforms.ToListAsync(),
+                    Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync()
+                };
 
                 return View(searchViewModel);
             }
@@ -139,7 +157,7 @@ namespace Veil.Controllers
                 // Filter by title
                 searchPredicate = searchPredicate.Or(g => g.Name.Contains(title));
             }
-
+                
             if (tags.Count > 0)
             {
                 // Filter by tags
@@ -209,51 +227,59 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
-            GameDetailsViewModel model = new GameDetailsViewModel();
-
             // TODO: When doing reviews, this will likely need to include all reviews too
-            model.Game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
+            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
 
-            if (model.Game == null)
+            if (game == null)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             if (User.IsEmployeeOrAdmin())
             {
-                return View(model.Game);
+                return View(game);
             }
 
             // User is anonymous or member, don't show not for sale games
-            if (model.Game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
+            if (game.GameAvailabilityStatus == AvailabilityStatus.NotForSale)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Game));
             }
 
             // Remove formats that are not for sale unless the user is an employee
-            model.Game.GameSKUs = model.Game.GameSKUs.
+            game.GameSKUs = game.GameSKUs.
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            model.CurrentMember = await db.Members.FirstOrDefaultAsync(m => m.UserId == currentUserId);
-
-            return View(model);
+            return View(game);
         }
 
+        /// <summary>
+        ///     Renders the Game SKU partial for a physical game product
+        /// </summary>
+        /// <param name="gameProduct">
+        ///     The physical game sku to render.
+        /// </param>
+        /// <returns>
+        ///     Partial view containing the information specific to PhysicalGameProducts
+        /// </returns>
         [ChildActionOnly]
-        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Member currentMember)
+        public PartialViewResult RenderPhysicalGameProductPartial(PhysicalGameProduct gameProduct)
         {
             PhysicalGameProductViewModel model = new PhysicalGameProductViewModel
             {
                 GameProduct = gameProduct
             };
+
+            Member currentMember = db.Members.Find(User.Identity.GetUserId());
+
             if (currentMember != null)
             {
                 model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
                 model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
                 model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
             }
+
             return PartialView("_PhysicalGameProductPartial", model);
         }
 
@@ -348,8 +374,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        //For deleting Games
-        // GET: Games/Delete/5
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -362,13 +387,13 @@ namespace Veil.Controllers
 
             if (game == null)
             {
-                return HttpNotFound();
+                throw new HttpException(HTTP_NOT_FOUND, "some message");
             }
 
             return View(game);
         }
 
-        // POST: Games/Delete/5
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteGameConfirmed(Guid id)
@@ -397,9 +422,7 @@ namespace Veil.Controllers
                     }
                     catch (Exception)
                     {
-                        //display an error code about not being able to remove game products
-                        //return back to delete confiramtion page
-                        this.AddAlert(AlertType.Error, "Error");
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name +", one or more of the game sku's could not be removed. No changes were made to the database");
                         return View();
                     }
 
@@ -411,40 +434,39 @@ namespace Veil.Controllers
                     }
                     catch (Exception)
                     {
-                        //display an error about not being able to remove game
-                        //return back to delete confiramtion page
-                        this.AddAlert(AlertType.Error, "");
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + " no changes were saved to the database");
                         return View();
                     }
                 }
             }
             else
             {
-                //httpnotfound
+                throw new HttpException(HTTP_NOT_FOUND, "some message");
             }
 
             return RedirectToAction("Index");
         }
 
-        //for deleting game products
-        // GET: Games/Delete/5
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         public async Task<ActionResult> DeleteGameProduct(Guid? id)
         {
             if (id == null)
             {
                 this.AddAlert(AlertType.Error, "Please select a game product to delete.");
-            return RedirectToAction("Index");
-        }
+                return RedirectToAction("Index");
+            }
 
             GameProduct gameProduct = await db.GameProducts.FindAsync(id);
             if (gameProduct == null)
             {
-                return HttpNotFound();
+                //replace this when it is finished
+                throw new HttpException(HTTP_NOT_FOUND, "failed at 358");
             }
             return View(gameProduct);
         }
 
-        // POST: Games/Delete/5
+
+        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("DeleteGameProduct")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteGameProductConfirmed(Guid id)
@@ -469,11 +491,13 @@ namespace Veil.Controllers
                 }
                 catch (Exception)
                 {
-                    //displays error message that product cant be deleted
-                    //return back to delete confiramtion page
-                    this.AddAlert(AlertType.Error, "Error happened");
+                    this.AddAlert(AlertType.Error, "There was an error deleting " + gameProduct.Platform + ": " + gameProduct.Name);
                     return View();
                 }
+            }
+            else
+            {
+                throw new HttpException(HTTP_NOT_FOUND, "some message");
             }
 
             return RedirectToAction("Index");

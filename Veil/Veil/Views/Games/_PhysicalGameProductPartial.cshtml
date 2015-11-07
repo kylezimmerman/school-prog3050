@@ -21,7 +21,7 @@
     @if (User.IsEmployeeOrAdmin())
     {
         Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small" });
-        Html.ActionLink("Delete", "DeletePhysicalGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small alert" });
+        Html.ActionLink("Delete", "DeleteGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small alert" });
     }
     else
     {
@@ -70,7 +70,7 @@
         }
         else
         {
-        @Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
+            @Html.ActionLink("Add to Wishlist", "Add", "Wishlist",
                 new { itemId = Model.GameProduct.Id },
                 new { @class = wishlistClasses })
         }

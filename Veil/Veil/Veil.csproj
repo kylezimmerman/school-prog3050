@@ -225,7 +225,6 @@
     <Compile Include="Helpers\CommonErrorResults.cs" />
     <Compile Include="Models\ErrorViewModel.cs" />
     <Compile Include="Models\EventViewModel.cs" />
-    <Compile Include="Models\GameDetailsViewModel.cs" />
     <Compile Include="Models\PhysicalGameProductViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
