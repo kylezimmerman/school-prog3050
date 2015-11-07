@@ -232,7 +232,6 @@
     <Compile Include="Models\SearchViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
-    <Compile Include="Models\WishlistViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
     <Compile Include="Services\StripeService.cs" />
     <Compile Include="Services\VeilSignInManager.cs" />

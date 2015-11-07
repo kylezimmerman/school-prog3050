@@ -36,19 +36,19 @@ namespace Veil.Controllers
         /// <returns></returns>
         public async Task<ActionResult> Index(Guid? wishlistOwnerId)
         {
-            WishlistViewModel model = new WishlistViewModel();
+            Member wishlistOwner;
 
             if (!User.Identity.IsAuthenticated)
             {
                 if (wishlistOwnerId != null)
                 {
                     // Even anonymous users can see public wishlists
-                    model.WishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+                    wishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
 
-                    if (model.WishlistOwner != null &&
-                        model.WishlistOwner.WishListVisibility == WishListVisibility.Public)
+                    if (wishlistOwner != null &&
+                        wishlistOwner.WishListVisibility == WishListVisibility.Public)
                     {
-                        return View(model);
+                        return View(wishlistOwner);
                     }
                 }
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
@@ -60,32 +60,32 @@ namespace Veil.Controllers
             if (wishlistOwnerId == null)
             {
                 // If a wishlistOwnerId was not given, the user is viewing their own wishlist
-                model.WishlistOwner = currentMember;
+                wishlistOwner = currentMember;
             }
             else
             {
-                model.WishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+                wishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
             }
             
-            if (model.WishlistOwner == null)
+            if (wishlistOwner == null)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
-            if (model.WishlistOwner.WishListVisibility == WishListVisibility.Private &&
-                model.WishlistOwner.UserId != currentMember.UserId)
+            if (wishlistOwner.WishListVisibility == WishListVisibility.Private &&
+                wishlistOwner.UserId != currentMember.UserId)
             {
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
-            else if (model.WishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
-                (model.WishlistOwner.UserId != currentMember.UserId &&
-                !model.WishlistOwner.ConfirmedFriends.Contains(currentMember)))
+            else if (wishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
+                (wishlistOwner.UserId != currentMember.UserId &&
+                !wishlistOwner.ConfirmedFriends.Contains(currentMember)))
             {
-                this.AddAlert(AlertType.Error, model.WishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
+                this.AddAlert(AlertType.Error, wishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
                 return RedirectToAction("Index", "FriendList");
             }
 
-            return View(model);
+            return View(wishlistOwner);
         }
 
         [ChildActionOnly]
