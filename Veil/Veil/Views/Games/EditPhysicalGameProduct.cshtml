@@ -1,8 +1,163 @@
-﻿@using Veil.DataModels.Models
-@model PhysicalGameProduct
+﻿@model Veil.DataModels.Models.PhysicalGameProduct
 
 @{
-    ViewBag.Title = "title";
+    ViewBag.Title = "Create Physical Game Product";
 }
 
-<h2>title</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.GameId)
+
+    <div class="row">
+        <div class="medium-10 medium-centered  column">
+            <h2>@ViewBag.Title</h2>
+            @Html.ValidationSummary(true, "", new { @class = "" })
+
+            <h3>@Html.Encode(Model?.Game?.Name ?? "")</h3>
+
+            <fieldset>
+                <legend>Game Details</legend>
+
+                <div class="row collapse">
+                    <div class="small-12 medium-4 large-2 columns">
+                        @Html.LabelFor(model => model.SKUNameSuffix, htmlAttributes: new { @class = "prefix" })
+                    </div>
+                    <div class="medium-8 large-10 columns">
+                        @Html.EditorFor(model => model.SKUNameSuffix, new { htmlAttributes = new { @class = "expand", placeholder = "E.g. Collectors Edition" } })
+                        @Html.ValidationMessageFor(model => model.SKUDescription, "", new { @class = "" })
+                    </div>
+                </div>
+
+                <div class="row collapse">
+                    <div class="small-12 medium-4 large-2 columns">
+                        @Html.LabelFor(model => model.SKUDescription, htmlAttributes: new { @class = "prefix" })
+                    </div>
+                    <div class="medium-8 large-10 columns">
+                        @Html.EditorFor(model => model.SKUDescription, new { htmlAttributes = new { @class = "expand" } })
+                        @Html.ValidationMessageFor(model => model.SKUDescription, "", new { @class = "" })
+                    </div>
+                </div>
+
+                <div class="row collapse">
+                    <div class="small-12 medium-4 large-2 columns">
+                        @Html.LabelFor(model => model.PlatformCode, htmlAttributes: new { @class = "prefix" })
+                    </div>
+                    <div class="medium-8 large-10 columns">
+                        @Html.DropDownListFor(model => model.PlatformCode, null, new { htmlAttributes = new { @class = "expand" } })
+                        @Html.ValidationMessageFor(model => model.PlatformCode, "", new { @class = "" })
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="medium-6 columns">
+                        <div class="row collapse">
+                            <div class="small-12 medium-8 large-4 columns">
+                                @Html.LabelFor(model => model.DeveloperId, htmlAttributes: new { @class = "prefix" })
+                            </div>
+                            <div class="medium-4 large-8 columns">
+                                @Html.DropDownListFor(model => model.DeveloperId, null, new { htmlAttributes = new { @class = "expand" } })
+                                @Html.ValidationMessageFor(model => model.DeveloperId, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="medium-6 columns">
+                        <div class="row collapse">
+                            <div class="small-12 medium-8 large-4 columns">
+                                @Html.LabelFor(model => model.PublisherId, htmlAttributes: new { @class = "prefix" })
+                            </div>
+                            <div class="medium-4 large-8 columns">
+                                @Html.DropDownListFor(model => model.PublisherId, null, new { htmlAttributes = new { @class = "expand" } })
+                                @Html.ValidationMessageFor(model => model.PublisherId, "", new { @class = "" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row collapse">
+                    <div class="small-12 medium-4 large-2 columns">
+                        @Html.LabelFor(model => model.BoxArtImageURL, htmlAttributes: new { @class = "prefix" })
+                    </div>
+                    <div class="medium-8 large-10 columns">
+                        @Html.EditorFor(model => model.BoxArtImageURL, new { htmlAttributes = new { @class = "expand" } })
+                        @Html.ValidationMessageFor(model => model.BoxArtImageURL, "", new { @class = "" })
+                    </div>
+                </div>
+
+                <div class="row collapse">
+                    <div class="small-12 medium-4 large-2 columns">
+                        @Html.LabelFor(model => model.ReleaseDate, htmlAttributes: new { @class = "prefix" })
+                    </div>
+                    <div class="medium-8 large-10 columns">
+                        @Html.EditorFor(model => model.ReleaseDate, new { htmlAttributes = new { @class = "expand" } })
+                        @Html.ValidationMessageFor(model => model.ReleaseDate, "", new { @class = "" })
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="row" data-equalizer>
+                <div class="medium-6 columns">
+                    <fieldset data-equalizer-watch>
+                        <legend>New Details</legend>
+
+                        <div class="row collapse">
+                            <div class="small-12 medium-4 columns">
+                                @Html.LabelFor(model => model.ProductAvailabilityStatus, htmlAttributes: new {@class = "prefix"})
+                            </div>
+                            <div class="medium-8 columns">
+                                @Html.EnumDropDownListFor(model => model.ProductAvailabilityStatus, new {htmlAttributes = new {@class = "expand"}})
+                                @Html.ValidationMessageFor(model => model.ProductAvailabilityStatus, "", new {@class = ""})
+                            </div>
+                        </div>
+
+                        <div class="row collapse">
+                            <div class="small-12 medium-4 columns">
+                                @Html.LabelFor(model => model.NewWebPrice, htmlAttributes: new {@class = "prefix"})
+                            </div>
+                            <div class="medium-8 columns">
+                                @Html.EditorFor(model => model.NewWebPrice, new {htmlAttributes = new {@class = "expand"}})
+                                @Html.ValidationMessageFor(model => model.NewWebPrice, "", new {@class = ""})
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="medium-6 columns">
+                    <fieldset data-equalizer-watch>
+                        <legend>Used Details</legend>
+
+                        <div class="row collapse">
+                            <div class="small-12 medium-4 columns">
+                                @Html.LabelFor(model => model.WillBuyBackUsedCopy, htmlAttributes: new {@class = "prefix"})
+                            </div>
+                            <div class="medium-8 columns panel">
+                                @Html.EditorFor(model => model.WillBuyBackUsedCopy, new {htmlAttributes = new {@class = "expand"}})
+                                @Html.ValidationMessageFor(model => model.WillBuyBackUsedCopy, "", new {@class = ""})
+                            </div>
+                        </div>
+
+                        <div class="row collapse">
+                            <div class="small-12 medium-4 columns">
+                                @Html.LabelFor(model => model.UsedWebPrice, htmlAttributes: new {@class = "prefix"})
+                            </div>
+                            <div class="medium-8 columns">
+                                @Html.EditorFor(model => model.UsedWebPrice, new {htmlAttributes = new {@class = "expand"}})
+                                @Html.ValidationMessageFor(model => model.UsedWebPrice, "", new {@class = ""})
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="medium-10 column">
+                    <button type="submit" class="expand">Save Changes</button>
+                </div>
+                <div class="medium-2 column">
+                    @Html.ActionLink("Delete", "DeleteGameProduct", new { id = Model.Id }, new { @class = "button alert expand" })
+                </div>
+            </div>
+        </div>
+    </div>
+}
