@@ -221,6 +221,9 @@
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\UriExtensions.cs" />
+    <Compile Include="Models\EventDetailsViewModel.cs" />
+    <Compile Include="Models\EventListItemViewModel.cs" />
+    <Compile Include="Models\EventListViewModel.cs" />
     <Compile Include="Models\GameListViewModel.cs" />
     <Compile Include="Helpers\CommonErrorResults.cs" />
     <Compile Include="Models\ErrorViewModel.cs" />
@@ -485,6 +488,7 @@
     <Content Include="Views\Games\_DownloadGameProduct.cshtml" />
     <Content Include="Views\Games\_GameProductPartial.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
+    <Content Include="Views\Events\_EventListItem.cshtml" />
     <None Include="Views\Games\EditDownloadGameProduct.cshtml" />
     <None Include="Views\Games\EditPhysicalGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />

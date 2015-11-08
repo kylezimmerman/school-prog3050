@@ -134,6 +134,10 @@
     <Compile Include="Migrations\201511050128405_Reduced_User_PhoneNumber_Size.Designer.cs">
       <DependentUpon>201511050128405_Reduced_User_PhoneNumber_Size.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511072238245_Removed-ManyToMany-CascadeDelete.cs" />
+    <Compile Include="Migrations\201511072238245_Removed-ManyToMany-CascadeDelete.Designer.cs">
+      <DependentUpon>201511072238245_Removed-ManyToMany-CascadeDelete.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -166,6 +170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511050128405_Reduced_User_PhoneNumber_Size.resx">
       <DependentUpon>201511050128405_Reduced_User_PhoneNumber_Size.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511072238245_Removed-ManyToMany-CascadeDelete.resx">
+      <DependentUpon>201511072238245_Removed-ManyToMany-CascadeDelete.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

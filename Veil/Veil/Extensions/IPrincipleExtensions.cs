@@ -9,7 +9,7 @@ namespace Veil.Extensions
         {
             return principal.IsInRole(VeilRoles.EMPLOYEE_ROLE) ||
                 principal.IsInRole(VeilRoles.ADMIN_ROLE)/* ||
-                HttpContext.Current.IsDebuggingEnabled*/; /* TODO: Remove the debugging check */
+                System.Web.HttpContext.Current.IsDebuggingEnabled*/; /* TODO: Remove the debugging check */
         }
     }
 }
