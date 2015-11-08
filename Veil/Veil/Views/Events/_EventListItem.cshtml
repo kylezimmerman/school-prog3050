@@ -2,11 +2,11 @@
 
 <div class="row panel">
     <div class="medium-9 columns">
-        <h4><a href="@Url.Action("Details", new { id = Model.Event.Id })">@Model.Event.Name</a></h4>
+        <h4 class="inline"><a href="@Url.Action("Details", new { id = Model.Event.Id })">@Model.Event.Name</a></h4>
         @if (Model.CurrentMemberIsRegistered)
         {
-            //TODO: See how this looks
-            <span><i class="fa fa-check-circle-o"></i>You're registered!</span>
+            <i class="fa fa-check-circle-o"></i>
+            <span class="event-register-badge">Registered</span>
         }
         <p>@Model.Event.Description</p>
     </div>

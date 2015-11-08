@@ -25,6 +25,12 @@ namespace Veil.Controllers
         }
 
         // GET: Events
+        /// <summary>
+        ///     Displays a list of upcoming events
+        /// </summary>
+        /// <returns>
+        ///     Index view with all upcoming events
+        /// </returns>
         public async Task<ActionResult> Index()
         {
             var model = new EventListViewModel
@@ -38,6 +44,12 @@ namespace Veil.Controllers
         }
 
         // GET: Events/MyEvents
+        /// <summary>
+        ///     Displays a list of upcoming events that the current member is registered to attend
+        /// </summary>
+        /// <returns>
+        ///     Index view filtered to the current member's registered events
+        /// </returns>
         [Authorize(Roles = "Member")]
         public async Task<ActionResult> MyEvents()
         {
@@ -55,6 +67,18 @@ namespace Veil.Controllers
             return View("Index", model);
         }
 
+        /// <summary>
+        ///     Renders an individual event for a list of events
+        /// </summary>
+        /// <param name="eventItem">
+        ///     The Event being displayed on this item of the list
+        /// </param>
+        /// <param name="onlyRegisteredEvents">
+        ///     If true filters out any events the current member is not registered for
+        /// </param>
+        /// <returns>
+        ///     Partial view specific to eventItem
+        /// </returns>
         [ChildActionOnly]
         public ActionResult RenderEventListItem(Event eventItem, bool onlyRegisteredEvents)
         {
@@ -67,13 +91,25 @@ namespace Veil.Controllers
             Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
             Member currentMember = db.Members.Find(currentUserId);
 
-            model.CurrentMemberIsRegistered =
-                currentMember.RegisteredEvents.Contains(model.Event);
+            if (currentMember != null)
+            {
+                model.CurrentMemberIsRegistered = currentMember.RegisteredEvents.Contains(model.Event);
+            }
 
             return PartialView("_EventListItem", model);
         }
 
         // GET: Events/Details/5
+        /// <summary>
+        ///     Displays information about a specific event
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the event to view details of
+        /// </param>
+        /// <returns>
+        ///     Details view for the Event matching id
+        ///     404 Not Found view if the id does not match an Event
+        /// </returns>
         public async Task<ActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -102,43 +138,90 @@ namespace Veil.Controllers
             return View(model);
         }
 
-        // TODO: Member only action
+        // GET: Events/Register/5
+        /// <summary>
+        ///     Registers the current member as an attendee of an Event
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the event the member is registering for
+        /// </param>
+        /// <returns>
+        ///     Details view for the Event matching id
+        ///     404 Not Found view if the id does not match an Event
+        /// </returns>
+        [Authorize(Roles = "Member")]
         public async Task<ActionResult> Register(Guid? id)
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
             }
 
-            Member currentMember = new Member();
             Event currentEvent = await db.Events.FindAsync(id);
+
+            if (currentEvent == null)
+            {
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+            }
+
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = await db.Members.FindAsync(currentUserId);
 
             currentMember.RegisteredEvents.Add(currentEvent);
             db.MarkAsModified(currentMember);
 
             await db.SaveChangesAsync();
 
-            return View("Details", currentEvent);
+            var model = new EventDetailsViewModel
+            {
+                Event = currentEvent,
+                CurrentMemberIsRegistered = currentEvent.RegisteredMembers.Contains(currentMember)
+            };
+
+            return View("Details", model);
         }
 
-        // TODO: Member only action
+        // GET: Events/Unregister/5
+        /// <summary>
+        ///     Unregisters the current member to no longer be an attendee of an Event
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the event the member is unregistering from
+        /// </param>
+        /// <returns>
+        ///     Details view for the Event matching id
+        ///     404 Not Found view if the id does not match an Event
+        /// </returns>
+        [Authorize(Roles = "Member")]
         public async Task<ActionResult> Unregister(Guid? id)
         {
-            if (id == null)
+            if(id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
             }
 
-            Member currentMember = new Member();
             Event currentEvent = await db.Events.FindAsync(id);
 
+            if (currentEvent == null)
+            {
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+            }
+
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = await db.Members.FindAsync(currentUserId);
 
             currentMember.RegisteredEvents.Remove(currentEvent);
             db.MarkAsModified(currentMember);
 
             await db.SaveChangesAsync();
 
-            return View("Details", currentEvent);
+            var model = new EventDetailsViewModel
+            {
+                Event = currentEvent,
+                CurrentMemberIsRegistered = currentEvent.RegisteredMembers.Contains(currentMember)
+            };
+
+            return View("Details", model);
         }
 
         // TODO: Every action after this should be employee only
