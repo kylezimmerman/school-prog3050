@@ -1,7 +1,14 @@
-﻿@model IEnumerable<Veil.DataModels.Models.Event>
+﻿@model Veil.Models.EventListViewModel
 
 @{
-    ViewBag.Title = "Upcoming Events";
+    if (Model.OnlyRegisteredEvents)
+    {
+        ViewBag.Title = "Your Upcoming Events";
+    }
+    else
+    {
+        ViewBag.Title = "Upcoming Events";
+    }
 }
 
 <div class="row">
@@ -10,30 +17,18 @@
     </div>
 </div>
 
-<div class="row">
-    <a href="@Url.Action("Details", new { id = "75F0C710-9864-4FDE-9074-5A2A1FFE89A7" })" class="button secondary text-left">
-        <div class="medium-9 columns">
-            <h4>Event Name</h4>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
+@if (!Model.Events.Any())
+{
+    <div class="row">
+        <div class="column">
+            <p>There are no events to display.</p>
         </div>
-        <div class="medium-3 columns">
-            <p><strong>Date: </strong>March 31st, 2016</p>
-            <p><strong>Time: </strong>11:00 AM</p>
-            <p><strong>Duration: </strong>2hrs</p>
-        </div>
-    </a>
-</div>
-
-<div class="row">
-    <a href="@Url.Action("Details", new { id = "75F0C710-9864-4FDE-9074-5A2A1FFE89A7" })" class="button secondary text-left">
-        <div class="medium-9 columns">
-            <h4>Another Event Name</h4>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
-        </div>
-        <div class="medium-3 columns">
-            <p><strong>Date: </strong>June 5th, 2016</p>
-            <p><strong>Time: </strong>8:00 PM</p>
-            <p><strong>Duration: </strong>3-4hrs</p>
-        </div>
-    </a>
-</div>
+    </div>
+}
+else
+{
+    foreach (var eventItem in Model.Events)
+    {
+        Html.RenderAction("RenderEventListItem", new { eventItem = eventItem, onlyRegisteredEvents = Model.OnlyRegisteredEvents });
+    }
+}

@@ -3,25 +3,74 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
+using System.Linq;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Models;
+using Veil.Services;
+using Veil.Extensions;
+using System.Web;
 
 namespace Veil.Controllers
 {
     public class EventsController : BaseController
     {
-        protected readonly IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
+        private readonly VeilUserManager userManager;
 
-        public EventsController(IVeilDataAccess veilDataAccess)
+        public EventsController(IVeilDataAccess veilDataAccess, VeilUserManager userManager)
         {
             db = veilDataAccess;
+            this.userManager = userManager;
         }
 
         // GET: Events
         public async Task<ActionResult> Index()
         {
-            return View(await db.Events.ToListAsync());
+            var model = new EventListViewModel
+            {
+                Events = await db.Events
+                    .Where(e => e.Date > DateTime.Now)
+                    .OrderBy(e => e.Date).ToListAsync(),
+                OnlyRegisteredEvents = false
+            };
+            return View(model);
+        }
+
+        // GET: Events/MyEvents
+        [Authorize(Roles = "Member")]
+        public async Task<ActionResult> MyEvents()
+        {
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = await db.Members.FindAsync(currentUserId);
+
+            var model = new EventListViewModel
+            {
+                Events = currentMember.RegisteredEvents
+                    .Where(e => e.Date > DateTime.Now)
+                    .OrderBy(e => e.Date),
+                OnlyRegisteredEvents = true
+            };
+
+            return View("Index", model);
+        }
+
+        [ChildActionOnly]
+        public ActionResult RenderEventListItem(Event eventItem, bool onlyRegisteredEvents)
+        {
+            var model = new EventListItemViewModel
+            {
+                Event = eventItem,
+                OnlyRegisteredEvents = onlyRegisteredEvents
+            };
+
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = db.Members.Find(currentUserId);
+
+            model.CurrentMemberIsRegistered =
+                currentMember.RegisteredEvents.Contains(model.Event);
+
+            return PartialView("_EventListItem", model);
         }
 
         // GET: Events/Details/5
@@ -29,17 +78,28 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
             }
-            Event theEvent = await db.Events.FindAsync(id);
-            /*if (theEvent == null)
-            {
-                return HttpNotFound();
-            }*/
 
-            // TODO: Remove this and add back DB usage
-            theEvent = new Event();
-            return View(theEvent);
+            var model = new EventDetailsViewModel
+            {
+                Event = await db.Events.FindAsync(id),
+            };
+
+            if (model.Event == null)
+            {
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+            }
+
+            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Member currentMember = await db.Members.FindAsync(currentUserId);
+
+            if (currentMember != null)
+            {
+                model.CurrentMemberIsRegistered = model.Event.RegisteredMembers.Contains(currentMember);
+            }
+
+            return View(model);
         }
 
         // TODO: Member only action
@@ -52,7 +112,6 @@ namespace Veil.Controllers
 
             Member currentMember = new Member();
             Event currentEvent = await db.Events.FindAsync(id);
-
 
             currentMember.RegisteredEvents.Add(currentEvent);
             db.MarkAsModified(currentMember);
@@ -80,12 +139,6 @@ namespace Veil.Controllers
             await db.SaveChangesAsync();
 
             return View("Details", currentEvent);
-        }
-
-        // TODO: Member only page
-        public async Task<ActionResult> MyEvents()
-        {
-            return View("Index", await db.Events.ToListAsync());
         }
 
         // TODO: Every action after this should be employee only

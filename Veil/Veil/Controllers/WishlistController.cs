@@ -18,7 +18,6 @@ namespace Veil.Controllers
     public class WishlistController : BaseController
     {
         private readonly IVeilDataAccess db;
-
         private readonly VeilUserManager userManager;
 
         public WishlistController(IVeilDataAccess veilDataAccess, VeilUserManager userManager)
@@ -88,6 +87,12 @@ namespace Veil.Controllers
             return View(wishlistOwner);
         }
 
+        /// <summary>
+        /// Gets a partial view for a single PhysicalGameProduct on the wishlist
+        /// </summary>
+        /// <param name="gameProduct">The gameProduct</param>
+        /// <param name="wishlistOwnerId">The ID of the owner of the wishlist</param>
+        /// <returns></returns>
         [ChildActionOnly]
         public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Guid wishlistOwnerId)
         {
@@ -115,6 +120,7 @@ namespace Veil.Controllers
         /// </summary>
         /// <param name="itemId">The ID of the product to be added.</param>
         /// <returns></returns>
+        [Authorize(Roles = "Member")]
         public async Task<ActionResult> Add(Guid? itemId)
         {
             // TODO: Make this work for future Products that are not GameProducts
@@ -149,6 +155,7 @@ namespace Veil.Controllers
         /// </summary>
         /// <param name="itemId">The ID of the product to be removed.</param>
         /// <returns></returns>
+        [Authorize(Roles = "Member")]
         public async Task<ActionResult> Remove(Guid? itemId)
         {
             Product toRemove = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
