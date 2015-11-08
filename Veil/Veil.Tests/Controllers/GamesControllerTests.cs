@@ -633,7 +633,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Details_NotForSaleStatusShouldNotBeVisibleToMember_Throws404Exception()
+        public void Details_NotForSaleStatusShouldNotBeVisibleToMember_ReturnsErrorView()
         {
             Game matchingGame = new Game
             {
@@ -661,7 +661,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Details_NotForSaleStatusAndUserInNoRoles_Throws404Exception()
+        public void Details_NotForSaleStatusAndUserInNoRoles_ReturnsErrorView()
         {
             Game matchingGame = new Game
             {
@@ -771,7 +771,9 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> {gameSku}.AsQueryable());
             gameProductDbSetStub.SetupForInclude();
 
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
@@ -784,8 +786,8 @@ namespace Veil.Tests.Controllers
             var result = await controller.DeleteGameProduct(gameSku.Id) as ViewResult;
 
             Assert.That(result != null);
-            //Assert.That(result.Model, Is.Not.Null);
-            //Assert.That(result.Model, Is.InstanceOf<GameProduct>());
+            Assert.That(result.Model, Is.Not.Null);
+            Assert.That(result.Model, Is.InstanceOf<GameProduct>());
         }
     }
 }

@@ -1,33 +1,42 @@
-﻿@model Veil.DataModels.Models.Event
+﻿@model Veil.Models.EventDetailsViewModel
+@using Veil.Extensions
 
 @{
-    ViewBag.Title = "Event Name";
+    ViewBag.Title = Model.Event.Name;
 }
 
 <div class="row">
     <div class="small-12 columns">
-        <h2>@ViewBag.Title</h2>
+        <h2 class="inline">@ViewBag.Title</h2>
+        @if (Model.CurrentMemberIsRegistered)
+        {
+            <i class="fa fa-check-circle-o"></i>
+            <span class="event-register-badge">Registered</span>
+        }
     </div>
 </div>
 <div class="row">
     <div class="medium-8 columns">
-        <p>Event discription is Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi iusto reprehenderit voluptatem odio deleniti provident aliquam qui magnam aspernatur necessitatibus.</p>
+        <p>@Model.Event.Description</p>
     </div>
     <div class="medium-4 columns">
         <div class="panel">
-            <p><strong>Date: </strong>March 31st, 2016</p>
-            <p><strong>Time: </strong>11:00 AM</p>
-            <p><strong>Duration: </strong>2hrs</p>
-            <p><strong>Attendees: </strong>38</p>
+            <p><strong>Date: </strong>@Model.Event.Date.ToString("MMM dd, yyyy")</p>
+            <p><strong>Time: </strong>@Model.Event.Date.ToString("t")</p>
+            <p><strong>Duration: </strong>@Model.Event.Duration</p>
+            <p><strong>Attendees: </strong>@Model.Event.RegisteredMembers.Count</p>
         </div>
-        <button class="expand">Register</button>
-    </div>
-</div>
-
-<div class="row">
-    <div class="small 1 column">
-        <p>
-            @Html.ActionLink("Back to Event List", "Index")
-        </p>
+        @if (User.IsEmployeeOrAdmin())
+        {
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Event.Id }, new { @class = "button expand" });
+        }
+        else if (Model.CurrentMemberIsRegistered)
+        {
+            @Html.ActionLink("Unregister", "Unregister", new { id = Model.Event.Id }, new { @class = "button expand alert" });
+        }
+        else
+        {
+            @Html.ActionLink("Register", "Register", new { id = Model.Event.Id }, new { @class = "button expand" });
+        }
     </div>
 </div>

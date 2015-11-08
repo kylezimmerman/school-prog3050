@@ -1,0 +1,21 @@
+﻿@model Veil.DataModels.Models.GameProduct
+
+@{
+    ViewBag.Title = "DeleteGameProduct";
+}
+
+<div class="row">
+    <div class="columns">
+        <h2>Delete @Model.Platform.PlatformName @Model.Name</h2>
+        <h3>Are you sure you want to delete this?</h3>
+            <hr />
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <ul class="button-group">
+                    <li><input type="submit" value="Delete" class="button alert" /></li>
+                    <li>@Html.ActionLink("Cancel", "Index", null, new { @class = "button" })</li>
+                </ul>
+            }
+    </div>
+</div>

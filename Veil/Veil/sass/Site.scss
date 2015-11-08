@@ -84,7 +84,11 @@ select.expand, input.expand {
 }
 
 .indent {
-    text-indent:2em;
+    text-indent: 2em;
+}
+
+.inline {
+    display: inline;
 }
 
 .width-100 {
@@ -151,4 +155,9 @@ strong.label {
 
 .clear-both {
     clear: both;
+}
+
+.event-register-badge {
+    font-size: 80%;
+    color: darkgray;
 }
