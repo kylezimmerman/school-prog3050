@@ -10,6 +10,7 @@ using Veil.Models;
 using Veil.Services;
 using Veil.Extensions;
 using System.Web;
+using Veil.DataModels;
 
 namespace Veil.Controllers
 {
@@ -50,10 +51,10 @@ namespace Veil.Controllers
         /// <returns>
         ///     Index view filtered to the current member's registered events
         /// </returns>
-        [Authorize(Roles = "Member")]
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> MyEvents()
         {
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Guid currentUserId = User.Identity.GetUserId();
             Member currentMember = await db.Members.FindAsync(currentUserId);
 
             var model = new EventListViewModel
@@ -88,7 +89,7 @@ namespace Veil.Controllers
                 OnlyRegisteredEvents = onlyRegisteredEvents
             };
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Guid currentUserId = User.Identity.GetUserId();
             Member currentMember = db.Members.Find(currentUserId);
 
             if (currentMember != null)
@@ -127,7 +128,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
             }
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Guid currentUserId = User.Identity.GetUserId();
             Member currentMember = await db.Members.FindAsync(currentUserId);
 
             if (currentMember != null)
@@ -149,7 +150,7 @@ namespace Veil.Controllers
         ///     Details view for the Event matching id
         ///     404 Not Found view if the id does not match an Event
         /// </returns>
-        [Authorize(Roles = "Member")]
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> Register(Guid? id)
         {
             if (id == null)
@@ -164,7 +165,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
             }
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Guid currentUserId = User.Identity.GetUserId();
             Member currentMember = await db.Members.FindAsync(currentUserId);
 
             currentMember.RegisteredEvents.Add(currentEvent);
@@ -181,7 +182,6 @@ namespace Veil.Controllers
             return View("Details", model);
         }
 
-        // GET: Events/Unregister/5
         /// <summary>
         ///     Unregisters the current member to no longer be an attendee of an Event
         /// </summary>
@@ -192,7 +192,7 @@ namespace Veil.Controllers
         ///     Details view for the Event matching id
         ///     404 Not Found view if the id does not match an Event
         /// </returns>
-        [Authorize(Roles = "Member")]
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> Unregister(Guid? id)
         {
             if(id == null)
@@ -207,7 +207,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
             }
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
+            Guid currentUserId = User.Identity.GetUserId();
             Member currentMember = await db.Members.FindAsync(currentUserId);
 
             currentMember.RegisteredEvents.Remove(currentEvent);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -9,6 +10,7 @@ using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.Models;
 
 namespace Veil.Tests.Controllers
 {
@@ -203,19 +205,38 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Details_NullId_ReturnsErrorView()
+        public async void Search_DoesNotMatchAnyTitle_ReturnsEmpty()
         {
-            GamesController controller = new GamesController(null);
+            List<Game> games = GetGameSearchList();
 
-            var result = await controller.Details(null) as ViewResult;
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InAllRoles();
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.Search("not a match for anything") as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(result.Model, Is.InstanceOf<GameListViewModel>());
+
+            var model = (GameListViewModel)result.Model;
+
+            Assert.That(model.Games, Is.Empty);
         }
 
         [Test]
-        public async void Details_IdNotInDb_ReturnsErrorView()
+        public async void Search_KeywordFullMatchOfOneTitle_ReturnsIEnumerableOfMatchingGame()
         {
+            List<Game> games = GetGameSearchList();
+
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
 
@@ -513,10 +534,7 @@ namespace Veil.Tests.Controllers
 
             GamesController controller = new GamesController(dbStub.Object);
 
-            var result = await controller.Details(Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [Test]
@@ -615,7 +633,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Details_NotForSaleStatusShouldNotBeVisibleToMember_ReturnsErrorView()
+        public void Details_NotForSaleStatusShouldNotBeVisibleToMember_ReturnsErrorView()
         {
             Game matchingGame = new Game
             {
@@ -639,14 +657,11 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.Details(matchingGame.Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(matchingGame.Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [Test]
-        public async void Details_NotForSaleStatusAndUserInNoRoles_ReturnsErrorView()
+        public void Details_NotForSaleStatusAndUserInNoRoles_ReturnsErrorView()
         {
             Game matchingGame = new Game
             {
@@ -669,10 +684,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.Details(matchingGame.Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewName, Is.EqualTo("Error"));
+            Assert.That(async () => await controller.Details(matchingGame.Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
