@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Veil.DataModels.Models
 {
@@ -101,6 +102,22 @@ namespace Veil.DataModels.Models
         [MaxLength(1024)]
         [DisplayName("SKU Description")]
         public string SKUDescription { get; set; }
+
+        public int NewInventory
+        {
+            get
+            {
+                return LocationInventories?.Sum(i => i.NewOnHand) ?? 0;
+            }
+        }
+
+        public int UsedInventory
+        {
+            get
+            {
+                return LocationInventories?.Sum(i => i.UsedOnHand) ?? 0;
+            }
+        }
 
         /// <summary>
         /// Collection navigation property for this Product's invetory level at locations

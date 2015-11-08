@@ -20,7 +20,7 @@
         <ul class="right">
             <li class="has-form">
                 <div class="row collapse">
-                    @using (Html.BeginForm("Search", "Games", FormMethod.Post))
+                    @using (Html.BeginForm("Search", "Games", FormMethod.Get))
                     {
                         <div id="nav-bar-search-container" class="small-9 columns">
                             <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name"/>
