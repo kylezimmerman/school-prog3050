@@ -981,5 +981,78 @@ namespace Veil.Tests.Controllers
 
             Assert.That(model.Games, Is.Empty);
         }
+
+        [TestCase(null)]
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        public void Create_Unprivilaged_Throws404(string role)
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        [TestCase(VeilRoles.EMPLOYEE_ROLE)]
+        public void Create_Privilaged_CanView(string roll)
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Valid_MinimumRequirements()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Valid_WithTags()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Valid_AllFields()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Create_Valid_DuplicateName()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_NoFieldsFilledOut()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_MinimumPlayerCountNotNumber()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_MinimumPlayerCounterGreaterThanMax()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_LongDescriptionTooLong()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_ShortDescriptionTooLong()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_BadUrl()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
