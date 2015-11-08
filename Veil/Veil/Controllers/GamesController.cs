@@ -54,7 +54,7 @@ namespace Veil.Controllers
                 CurrentPage = page
             };
 
-            IQueryable<Game> games = db.Games.Include(g => g.Rating);
+            IQueryable<Game> games = db.Games;
 
             games = FilterOutInternalOnly(games).OrderBy(g => g.Name);
 
