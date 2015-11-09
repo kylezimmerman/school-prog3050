@@ -11,6 +11,7 @@ using Veil.Services;
 using Veil.Extensions;
 using System.Web;
 using Veil.DataModels;
+using Veil.Helpers;
 
 namespace Veil.Controllers
 {
@@ -179,6 +180,8 @@ namespace Veil.Controllers
                 CurrentMemberIsRegistered = currentEvent.RegisteredMembers.Contains(currentMember)
             };
 
+            this.AddAlert(AlertType.Success, $"You have been registered to attend {currentEvent.Name}");
+
             return View("Details", model);
         }
 
@@ -220,6 +223,8 @@ namespace Veil.Controllers
                 Event = currentEvent,
                 CurrentMemberIsRegistered = currentEvent.RegisteredMembers.Contains(currentMember)
             };
+
+            this.AddAlert(AlertType.Info, $"You are no longer attending {currentEvent.Name}");
 
             return View("Details", model);
         }
