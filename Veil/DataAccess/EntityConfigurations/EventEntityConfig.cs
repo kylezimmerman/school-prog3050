@@ -11,7 +11,7 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
-    public class EventEntityConfig : EntityTypeConfiguration<Event>
+    internal class EventEntityConfig : EntityTypeConfiguration<Event>
     {
         public EventEntityConfig()
         {

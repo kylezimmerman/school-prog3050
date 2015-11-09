@@ -398,7 +398,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -417,17 +417,15 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameConfirmed(Guid? id)
+        public async Task<ActionResult> DeleteGameConfirmed(Guid id = default(Guid))
         {
-            if (id == null)
+            if (id == Guid.Empty)
             {
-                this.AddAlert(AlertType.Error, "No game selected");
-
+                this.AddAlert(AlertType.Error, "You must select a Game to delete.");
                 return RedirectToAction("Index");
-                
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -456,7 +454,7 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> DeleteGameProduct(Guid? id)
         {
             if (id == null)
@@ -476,21 +474,18 @@ namespace Veil.Controllers
         }
 
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("DeleteGameProduct")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameProductConfirmed(Guid? id)
+        public async Task<ActionResult> DeleteGameProductConfirmed(Guid id = default(Guid))
         {
-            GameProduct gameProduct = null;
+            if (id == Guid.Empty)
+            {
+                this.AddAlert(AlertType.Error, "You must select a Game SKU to delete.");
+                return RedirectToAction("Index");
+            }
 
-            if (id != null)
-            {
-                gameProduct = await db.GameProducts.FindAsync(id);
-            }
-            else
-            {
-                this.AddAlert(AlertType.Error, "No game selected");
-            }
+            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
 
             if (gameProduct != null)
             {
@@ -507,6 +502,7 @@ namespace Veil.Controllers
             }
             else
             {
+                // TODO: Actually give this a message. Cmon!
                 throw new HttpException(NotFound, "some message");
             }
 

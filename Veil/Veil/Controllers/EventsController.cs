@@ -7,7 +7,6 @@ using System.Linq;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Models;
-using Veil.Services;
 using Veil.Extensions;
 using System.Web;
 using Veil.DataModels;
@@ -18,12 +17,10 @@ namespace Veil.Controllers
     public class EventsController : BaseController
     {
         private readonly IVeilDataAccess db;
-        private readonly VeilUserManager userManager;
 
-        public EventsController(IVeilDataAccess veilDataAccess, VeilUserManager userManager)
+        public EventsController(IVeilDataAccess veilDataAccess)
         {
             db = veilDataAccess;
-            this.userManager = userManager;
         }
 
         // GET: Events
@@ -302,7 +299,7 @@ namespace Veil.Controllers
         /// <returns>
         ///     The Delete confirmation page
         /// </returns>
-        [Authorize(Roles = VeilRoles.EMPLOYEE_ROLE + "," + VeilRoles.ADMIN_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -320,17 +317,39 @@ namespace Veil.Controllers
             return View(item);
         }
 
-        [Authorize(Roles = VeilRoles.EMPLOYEE_ROLE + "," + VeilRoles.ADMIN_ROLE)]
+        /// <summary>
+        ///     Deletes the identified event
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the event to delete
+        /// </param>
+        /// <returns>
+        ///     Redirection to Index with a success alert if successful
+        ///     404 Not Found view if the identified event can't be found
+        /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(Guid id)
+        public async Task<ActionResult> DeleteConfirmed(Guid id = default(Guid))
         {
+            if (id == Guid.Empty)
+            {
+                this.AddAlert(AlertType.Error, "You must select an Event to delete.");
+                return RedirectToAction("Index");
+            }
+
             Event item = await db.Events.FindAsync(id);
+
+            if (item == null)
+            {
+                throw new HttpException(NotFound, nameof(Event));
+            }
 
             db.Events.Remove(item);
 
             await db.SaveChangesAsync();
 
+            this.AddAlert(AlertType.Success, "Successfully deleted the event.");
             return RedirectToAction("Index");
         }
     }
