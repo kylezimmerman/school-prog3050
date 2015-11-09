@@ -490,6 +490,7 @@
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Events\_EventListItem.cshtml" />
     <Content Include="Views\Events\_EventDetailsSidePanel.cshtml" />
+    <Content Include="Views\Events\_EventFormFields.cshtml" />
     <None Include="Views\Games\EditDownloadGameProduct.cshtml" />
     <None Include="Views\Games\EditPhysicalGameProduct.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />

@@ -6,70 +6,13 @@
 
 @using (Html.BeginForm()) 
 {
-    @Html.AntiForgeryToken()
-
     <div class="row">
-        <div class="medium-10 medium-centered  column">
+        <div class="medium-10 medium-centered column">
             <h2>@ViewBag.Title</h2>
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-            <div class="row collapse">
-                <div class="medium-4 large-2 columns">
-                    @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "prefix"})
-                </div>
-                <div class="medium-8 large-10 columns">
-                    @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "expand"}})
-                    @Html.ValidationMessageFor(model => model.Name, "", new {@class = ""})
-                </div>
-            </div>
+            @{ Html.RenderPartial("_EventFormFields", Model); }
 
-            <div class="row collapse">
-                <div class="medium-4 large-2 columns">
-                    @Html.LabelFor(model => model.Description, htmlAttributes: new {@class = "prefix"})
-                </div>
-                <div class="medium-8 large-10 columns">
-                    @Html.EditorFor(model => model.Description, new {htmlAttributes = new {@class = "expand"}})
-                    @Html.ValidationMessageFor(model => model.Description, "", new {@class = ""})
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="medium-6 large-4 columns">
-                    <div class="row collapse">
-                        <div class="medium-4 columns">
-                            @Html.LabelFor(model => model.Date, htmlAttributes: new { @class = "prefix" })
-                        </div>
-                        <div class="medium-8 columns">
-                            @Html.EditorFor(model => model.Date, new { htmlAttributes = new { @class = "expand" } })
-                            @Html.ValidationMessageFor(model => model.Date, "", new { @class = "" })
-                        </div>
-                    </div>
-                </div>
-                <div class="medium-6 large-4 columns">
-                    <div class="row collapse">
-                        <div class="medium-4 columns">
-                            @Html.LabelFor(model => model.Time, htmlAttributes: new {@class = "prefix"})
-                        </div>
-                        <div class="medium-8 columns">
-                            @Html.EditorFor(model => model.Time, new {htmlAttributes = new {@class = "expand"}})
-                            @Html.ValidationMessageFor(model => model.Time, "", new {@class = ""})
-                        </div>
-                    </div>
-                </div>
-                <div class="large-4 columns">
-                    <div class="row collapse">
-                        <div class="medium-4 columns">
-                            @Html.LabelFor(model => model.Duration, htmlAttributes: new { @class = "prefix" })
-                        </div>
-                        <div class="medium-8 columns">
-                            @Html.EditorFor(model => model.Duration, new { htmlAttributes = new { @class = "expand" } })
-                            @Html.ValidationMessageFor(model => model.Duration, "", new { @class = "" })
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="right expand">Create Game</button>
+            <button type="submit" class="right expand">Create Event</button>
         </div>
     </div>
 }

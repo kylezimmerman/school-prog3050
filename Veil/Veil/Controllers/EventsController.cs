@@ -256,38 +256,90 @@ namespace Veil.Controllers
 
             db.Events.Add(@event);
             await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, $"Successfully created the \"{@event.Name}\" event.");
+
             return RedirectToAction("Index");
         }
 
-        // GET: Events/Edit/5
+        /// <summary>
+        ///     Displays a form for editting the Event
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the event to be editted
+        /// </param>
+        /// <returns>
+        ///     The edit page if a matching Event is found
+        ///     404 Not Found is a matching Event is not found
+        /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                throw new HttpException(NotFound, nameof(Event));
             }
-            Event @event = await db.Events.FindAsync(id);
-            if (@event == null)
+
+            Event item = await db.Events.FindAsync(id);
+
+            if (item == null)
             {
-                return HttpNotFound();
+                throw new HttpException(NotFound, nameof(Event));
             }
-            return View(@event);
+
+            EventViewModel viewModel = new EventViewModel
+            {
+                Date = item.Date.Date,
+                Description = item.Description,
+                Duration = item.Duration,
+                Id = item.Id,
+                Name = item.Name,
+                Time = item.Date
+            };
+
+            return View(viewModel);
         }
 
-        // POST: Events/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        ///     Persists the edits to the event.
+        /// </summary>
+        /// <param name="editedEvent">
+        ///     The view model for containing the details for the event being editted.
+        /// </param>
+        /// <returns>
+        ///     Redirection to the Details page for the Event if successful
+        ///     Redisplays the Edit page if the information isn't valid
+        ///     404 Not Found if the information is valid but an Event matching the Id can't be found
+        /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Description,Date,Duration")] Event editedEvent)
+        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Description,Date,Time,Duration")] EventViewModel editedEvent)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                db.MarkAsModified(editedEvent);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return View(editedEvent);
             }
-            return View(editedEvent);
+
+            Event item = await db.Events.FindAsync(editedEvent.Id);
+
+            if (item == null)
+            {
+                throw new HttpException(NotFound, nameof(Event));
+            }
+
+            item.Date = editedEvent.DateTime;
+            item.Description = editedEvent.Description;
+            item.Duration = editedEvent.Duration;
+            item.Name = editedEvent.Name;
+
+            db.MarkAsModified(item);
+
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Successfully edited the event.");
+
+            return RedirectToAction("Details", new { Id = item.Id });
         }
 
         /// <summary>
