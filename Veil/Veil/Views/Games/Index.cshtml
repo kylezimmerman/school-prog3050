@@ -57,6 +57,7 @@
                     </div>
                     <div class="row">
                         <div class="column text-center margin-bottom-1 bordered">
+                            @* TODO: Exclude downloadable things? Demos make this show $0 *@
                             <small>Starting at</small>&nbsp;<strong>@($"{game.GameSKUs.Min(product => product.NewWebPrice):C}")</strong>
                         </div>
                     </div>
