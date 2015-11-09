@@ -108,11 +108,21 @@
 
             <div class="row collapse">
                 <div class="medium-4 large-2 columns">
-                    @Html.LabelFor(model => model.LongDescription, htmlAttributes: new { @class = "prefix" })
+                    @Html.LabelFor(model => model.LongDescription, htmlAttributes: new {@class = "prefix"})
                 </div>
                 <div class="medium-8 large-10 columns">
-                    @Html.EditorFor(model => model.LongDescription, new { htmlAttributes = new { @class = "" } })
-                    @Html.ValidationMessageFor(model => model.LongDescription, "", new { @class = "" })
+                    @Html.EditorFor(model => model.LongDescription, new {htmlAttributes = new {@class = ""}})
+                    @Html.ValidationMessageFor(model => model.LongDescription, "", new {@class = ""})
+                </div>
+            </div>
+
+            <div class="row collapse">
+                <div class="medium-4 large-2 columns">
+                    @Html.LabelFor(model => model.Tags, new { @class = "prefix" })
+                </div>
+                <div class="medium-8 large-10 columns panel">
+                    @{ Html.RenderAction("Index", "Tags", new { selected = Model?.Tags?.ToList() }); }
+                    @Html.ValidationMessageFor(model => model.Tags, "", new { @class = "" })
                 </div>
             </div>
 

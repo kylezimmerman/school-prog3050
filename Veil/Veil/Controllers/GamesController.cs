@@ -54,7 +54,7 @@ namespace Veil.Controllers
                 CurrentPage = page
             };
 
-            IQueryable<Game> games = db.Games.Include(g => g.Rating);
+            IQueryable<Game> games = db.Games;
 
             games = FilterOutInternalOnly(games).OrderBy(g => g.Name);
 
@@ -326,13 +326,17 @@ namespace Veil.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "Id,Name,GameAvailabilityStatus,ESRBRatingId,MinimumPlayerCount,MaximumPlayerCount,TrailerURL,ShortDescription,LongDescription,PrimaryImageURL")] Game game)
+        public async Task<ActionResult> Create([Bind(Exclude = nameof(Game.Tags))] Game game, List<string> tags)
         {
             if (ModelState.IsValid)
             {
+                game.Tags = new List<Tag>();
+                await SetTags(game, tags);
+
                 db.Games.Add(game);
                 await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+
+                return RedirectToAction("Details", new { id = game.Id });
             }
 
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
@@ -380,14 +384,7 @@ namespace Veil.Controllers
                 //Get the game we just saved, including the tags this time
                 game = await db.Games.Include(g => g.Tags).FirstAsync(g => g.Id == game.Id);
 
-                //Remove all existing tags
-                game.Tags.Clear();
-
-                //Add tags
-                foreach (var tag in tags)
-                {
-                    game.Tags.Add(db.Tags.First(t => t.Name == tag));
-                }
+                await SetTags(game, tags);
 
                 //Save the game again now with the tag info included
                 await db.SaveChangesAsync();
@@ -517,6 +514,14 @@ namespace Veil.Controllers
         }
 
         #region GameProduct Actions
+        /// <summary>
+        /// A view to create a new PhysicalGameProduct
+        /// </summary>
+        /// <param name="id">The ID of the game to add this product to</param>
+        /// <returns>
+        ///     Redirects to the Game Details page if successful
+        ///     Redirects to the Game List page if the id does not match an existing Game.
+        /// </returns>
         public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id)
         {
             if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
@@ -525,16 +530,21 @@ namespace Veil.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+            SetupGameProductSelectLists();
 
             return View();
         }
 
-        // POST: Games/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates an saves a new PhysicalGameProduct to the database.
+        /// </summary>
+        /// <param name="id">The ID of the game to add this product to</param>
+        /// <param name="gameProduct">The PhysicalGameProduct to add to the game</param>
+        /// <returns>
+        ///     Redirects to the Game Details page if successful
+        ///     A view of the create screen with validation errors if there were any
+        ///     Redirects to the Game List if the id doesn't match an existing Game.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id, 
@@ -556,29 +566,78 @@ namespace Veil.Controllers
                 return await SaveGameProduct(id.Value, gameProduct);
             }
 
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+            SetupGameProductSelectLists();
 
             return View(gameProduct);
         }
 
+        /// <summary>
+        /// Displays existing information for a Physical Game Product and allows the user to edit it.
+        /// </summary>
+        /// <param name="id">The ID of the Physical Game Product to edit</param>
+        /// <returns>
+        ///     Edit view if the Id is for a physical game product
+        ///     404 Not Found view if the Id couldn't be matched to a game product
+        /// </returns>
         public async Task<ActionResult> EditPhysicalGameProduct(Guid? id)
         {
-            // TODO: Actually implement this
+            if (id == null)
+            {
+                throw new HttpException(NotFound, "Physical Game Product");
+            }
 
-            return View(new PhysicalGameProduct());
+            var physicalGameProduct = await db.PhysicalGameProducts.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (physicalGameProduct == null)
+            {
+                throw new HttpException(NotFound, "Physical Game Product");
+            }
+
+            SetupGameProductSelectLists();
+
+            return View(physicalGameProduct);
         }
 
+        /// <summary>
+        /// Saves the changes made to a Physical Game Product 
+        /// </summary>
+        /// <param name="id">The ID of the Physical Game Product to edit</param>
+        /// <returns>
+        ///     Redirects to the Game Details page if the Id is for a physical game product and the edited information is valid
+        ///     A view of the Edit Physical Game Product page if the Id is for a physical game broduct but has validation errors
+        ///     404 Not Found view if the Id couldn't be matched to a game product
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id, PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id, [Bind]PhysicalGameProduct gameProduct)
         {
-            // TODO: Actually implement this
+            if (id == null)
+            {
+                throw new HttpException(NotFound, "Physical Game Product");
+            }
 
-            return RedirectToAction("Index");
+            if (ModelState.IsValid)
+            {
+                db.MarkAsModified(gameProduct);
+                await db.SaveChangesAsync();
+
+                this.AddAlert(AlertType.Success, "Successfully edited the Physical Game Product");
+                return RedirectToAction("Details", new {id = gameProduct.GameId });
+            }
+
+            SetupGameProductSelectLists();
+
+            return View(gameProduct);
         }
 
+        /// <summary>
+        /// Displays a view for the user to create a new Download Game Product
+        /// </summary>
+        /// <param name="id">The ID of the Game that this is a product for</param>
+        /// <returns>
+        ///     A View to create the new downloadable product for if the id is a valid game
+        ///     Redirects to the Game List page if the game id was invalid
+        /// </returns>
         public async Task<ActionResult> CreateDownloadGameProduct(Guid? id)
         {
             if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
@@ -587,16 +646,21 @@ namespace Veil.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+            SetupGameProductSelectLists();
 
             return View();
         }
 
-        // POST: Games/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates and saves a new Downloadable Game Product to the database.
+        /// </summary>
+        /// <param name="id">The ID of the Game that this is a product for</param>
+        /// <param name="gameProduct">The GameProduct to be created and saved</param>
+        /// <returns>
+        ///     Redirects to the Game Page with an alert if the game id and game product are valid
+        ///     A view to correct any errors if the game id is valid but the game product is not
+        ///     Redirects to the Game List page with an alert if the game id is invalid
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateDownloadGameProduct(Guid? id, [Bind] DownloadGameProduct gameProduct)
@@ -612,29 +676,87 @@ namespace Veil.Controllers
                 return await SaveGameProduct(id.Value, gameProduct);
             }
 
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+            SetupGameProductSelectLists();
 
             return View(gameProduct);
         }
 
+        /// <summary>
+        /// Displays a view to edit download game products
+        /// </summary>
+        /// <param name="id">The ID of the download game product to edit</param>
+        /// <returns>
+        ///     A view to edit the existing Download Game Product
+        ///     404 Not Found if the id does not map to a valid Download Game Product
+        /// </returns>
         public async Task<ActionResult> EditDownloadGameProduct(Guid? id)
         {
-            // TODO: Actually implement this
+            if (id == null)
+            {
+                throw new HttpException(NotFound, "Download Game Product");
+            }
 
-            return View(new DownloadGameProduct());
+            var physicalGameProduct = await db.DownloadGameProducts.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (physicalGameProduct == null)
+            {
+                throw new HttpException(NotFound, "Download Game Product");
+            }
+
+            SetupGameProductSelectLists();
+
+            return View(physicalGameProduct);
         }
 
+        /// <summary>
+        /// Saves changes to an existing DownloadGameProduct
+        /// </summary>
+        /// <param name="id">The ID of the DownloadGameProduct to edit</param>
+        /// <param name="gameProduct">The DownloadGameProduct with edited values to save.</param>
+        /// <returns>
+        ///     Redirects to the Game's details page if successful
+        ///     The edit view to fix any validation errors if the provided DownloadGameProduct is invalid
+        ///     404 Not Found if the id was not provided
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EditDownloadGameProduct(Guid? id, DownloadGameProduct gameProduct)
         {
-            // TODO: Actually implement this
+            if (id == null)
+            {
+                throw new HttpException(NotFound, "Download Game Product");
+            }
 
-            return RedirectToAction("Index");
+            if (ModelState.IsValid)
+            {
+                db.MarkAsModified(gameProduct);
+                await db.SaveChangesAsync();
+
+                this.AddAlert(AlertType.Success, "Successfully edited the Download Game Product");
+                return RedirectToAction("Details", new { id = gameProduct.GameId });
+            }
+
+            SetupGameProductSelectLists();
+
+            return View(gameProduct);
         }
 
+        /// <summary>
+        /// Sets up the required Select Lists in Viewbag so that dropdowns can work
+        /// </summary>
+        private void SetupGameProductSelectLists()
+        {
+            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
+            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
+            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
+        }
+
+        /// <summary>
+        /// Saves a new Game Product and attaches it to a game.
+        /// </summary>
+        /// <param name="gameId">The Id of the game this product belongs to</param>
+        /// <param name="gameProduct">The new gameProduct to save</param>
+        /// <returns>Redirects to the details page for the game.</returns>
         private async Task<ActionResult> SaveGameProduct(Guid gameId, GameProduct gameProduct)
         {
             gameProduct.Id = Guid.NewGuid();
@@ -646,6 +768,27 @@ namespace Veil.Controllers
             this.AddAlert(AlertType.Success, "Successfully added a new SKU.");
 
             return RedirectToAction("Details", "Games", new { id = gameId });
+        }
+
+        /// <summary>
+        /// Sets a Game's Tag to the provided list of tags by name. Note that this clears any existing tags.
+        /// </summary>
+        /// <param name="game">The game to set the tags on.</param>
+        /// <param name="tagNames">A list of tag names to add to the game.</param>
+        private async Task SetTags(Game game, List<string> tagNames)
+        {
+            //Clear any existing tags in the game
+            game.Tags.Clear();
+
+            //Add all of the new tags by name
+            foreach (var tagName in tagNames)
+            {
+                var tag = await db.Tags.FirstOrDefaultAsync(t => t.Name == tagName);
+                if (tag != null)
+                {
+                    game.Tags.Add(tag);
+                }
+            }
         }
         #endregion
 
@@ -665,7 +808,7 @@ namespace Veil.Controllers
                 return queryable.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
-            return queryable;;
-        } 
+            return queryable;
+        }
     }
 }
