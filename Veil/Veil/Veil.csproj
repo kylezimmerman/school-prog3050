@@ -232,7 +232,7 @@
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
-    <Compile Include="Models\SearchViewModel.cs" />
+    <Compile Include="Models\AdvancedSearchViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />

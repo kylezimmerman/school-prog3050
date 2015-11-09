@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -21,7 +17,7 @@ namespace Veil.Controllers
         }
 
         [ChildActionOnly]
-        public ActionResult Index([Bind]List<Tag> selected)
+        public ActionResult Index(List<Tag> selected)
         {
             var tagsViewModel = new TagViewModel()
             {
