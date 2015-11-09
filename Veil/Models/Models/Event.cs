@@ -19,6 +19,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Id for the event
         /// </summary>
+        [Key]
         public Guid Id { get; set; }
 
         /// <summary>

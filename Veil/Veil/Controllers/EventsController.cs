@@ -288,29 +288,44 @@ namespace Veil.Controllers
             return View(editedEvent);
         }
 
-        // GET: Events/Delete/5
+        /// <summary>
+        ///     Displays a delete confirmation page for the identified event
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the event to delete
+        /// </param>
+        /// <returns>
+        ///     The Delete confirmation page
+        /// </returns>
+        [Authorize(Roles = VeilRoles.EMPLOYEE_ROLE + "," + VeilRoles.ADMIN_ROLE)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                throw new HttpException(NotFound, nameof(Event));
             }
-            Event @event = await db.Events.FindAsync(id);
-            if (@event == null)
+
+            Event item = await db.Events.FindAsync(id);
+
+            if (item == null)
             {
-                return HttpNotFound();
+                throw new HttpException(NotFound, nameof(Event));
             }
-            return View(@event);
+
+            return View(item);
         }
 
-        // POST: Events/Delete/5
+        [Authorize(Roles = VeilRoles.EMPLOYEE_ROLE + "," + VeilRoles.ADMIN_ROLE)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(Guid id)
         {
-            Event @event = await db.Events.FindAsync(id);
-            db.Events.Remove(@event);
+            Event item = await db.Events.FindAsync(id);
+
+            db.Events.Remove(item);
+
             await db.SaveChangesAsync();
+
             return RedirectToAction("Index");
         }
     }
