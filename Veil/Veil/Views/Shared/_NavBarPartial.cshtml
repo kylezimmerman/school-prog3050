@@ -26,7 +26,10 @@
                             <input type="text" id="nav-bar-search" name="keyword" placeholder="Game Name"/>
                         </div>
                         <div id="nav-bar-search-button-container" class="small-3 columns">
-                            <button type="submit"><i class="fa fa-search"></i></button>
+                            <button type="submit">
+                                <i class="fa fa-search"></i>
+                                <span class="show-for-sr">Search</span>
+                            </button>
                         </div>
                     }
                 </div>
@@ -35,7 +38,11 @@
             @if (User.IsInRole(VeilRoles.MEMBER_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
             {
                 <li class="active">
-                    @Html.ActionLink("Cart (1)", "Index", new { Controller = "Cart" })
+                    <a href="@Url.Action("Index", "Cart")">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span class="show-for-sr">Cart</span>
+                        <span>(1)</span>
+                    </a>
                 </li>
             }
         </ul>
@@ -43,17 +50,21 @@
         <!-- Left Nav Section -->
         <ul class="left">
             <li>@Html.ActionLink("Games", "Index", new { Controller = "Games" }) </li>
-            <li class="has-dropdown">
-                @Html.ActionLink("Events", "Index", new { Controller = "Events" })
-                @if (User.IsInRole(VeilRoles.MEMBER_ROLE))
-                {
+            @if (User.IsInRole(VeilRoles.MEMBER_ROLE))
+            {
+                <li class="has-dropdown">
+                    @Html.ActionLink("Events", "Index", new { Controller = "Events" })
                     <ul class="dropdown">
                         <li>
                             @Html.ActionLink("My Events", "MyEvents", new {Controller = "Events"})
                         </li>
                     </ul>
-                }
-            </li>
+                </li>
+            }
+            else
+            {
+                <li>@Html.ActionLink("Events", "Index", new { Controller = "Events" })</li>
+            }
         </ul>
     </section>
 </nav>

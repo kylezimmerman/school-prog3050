@@ -11,6 +11,7 @@ using Veil.Extensions;
 using Veil.Models;
 using System.Web;
 using System.Net;
+using Veil.DataModels;
 
 namespace Veil.Controllers
 {
@@ -136,11 +137,10 @@ namespace Veil.Controllers
         ///     Index view for the current member's Wishlist
         ///     404 Not Found view if itemId does not match a Product
         /// </returns>
-        [Authorize(Roles = "Member")]
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> Add(Guid? itemId)
         {
-            // TODO: Make this work for future Products that are not GameProducts
-            Product newItem = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
+            Product newItem = await db.Products.FindAsync(itemId);
             User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
 
             if (newItem == null)
@@ -171,10 +171,10 @@ namespace Veil.Controllers
         ///     Index view for the current member's Wishlist
         ///     404 Not Found view if itemId does not match a Product
         /// </returns>
-        [Authorize(Roles = "Member")]
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> Remove(Guid? itemId)
         {
-            Product toRemove = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
+            Product toRemove = await db.Products.FindAsync(itemId);
             User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
 
             if (toRemove == null)
