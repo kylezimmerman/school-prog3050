@@ -144,22 +144,21 @@ namespace Veil.Controllers
             platform = platform.Trim();
             tags = tags ?? new List<string>();
 
+            if (tags.Count == 0 && title == "" && platform == "")
+            {
+                AdvancedSearchViewModel advancedAdvancedSearchViewModel = new AdvancedSearchViewModel
+                {
+                    Platforms = await db.Platforms.ToListAsync()
+                };
+
+                return View(advancedAdvancedSearchViewModel);
+            }
+
             for (int i = 0; i < tags.Count; i++)
             {
                 string t = tags[i];
                 t = t.Trim();
                 tags[i] = t;
-            }
-
-            if (tags.Count == 0 && title == "" && platform == "")
-            {
-                SearchViewModel searchViewModel = new SearchViewModel
-                {
-                    Platforms = await db.Platforms.ToListAsync(),
-                    Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync()
-                };
-
-                return View(searchViewModel);
             }
 
             // We are doing Or, so we need the first to be false
