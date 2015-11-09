@@ -31,12 +31,12 @@ namespace Veil.Tests.Controllers
         {
             notForSaleSKU = new PhysicalGameProduct
             {
-                ProductAvailabilityStatus = AvailabilityStatus.NotForSale,
+                ProductAvailabilityStatus = AvailabilityStatus.NotForSale
             };
 
             availableSKU = new PhysicalGameProduct
             {
-                ProductAvailabilityStatus = AvailabilityStatus.Available,
+                ProductAvailabilityStatus = AvailabilityStatus.Available
             };
 
             preOrderSKU = new PhysicalGameProduct
@@ -545,7 +545,8 @@ namespace Veil.Tests.Controllers
             Assert.That(model.Games, Is.Empty);
         }
 
-        private Mock<IVeilDataAccess> GetDbFakeForAdvancedSearch()
+        [Test]
+        public async void AdvancedSearch_EmptySearchParameters_ReturnsAdvancedSearchView()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(GetGameSearchList().AsQueryable());
@@ -555,14 +556,6 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
             dbStub.Setup(db => db.Tags).Returns(tagDbSetStub.Object);
             dbStub.Setup(db => db.Platforms).Returns(platformDbSetStub.Object);
-
-            return dbStub;
-        }
-
-        [Test]
-        public async void AdvancedSearch_EmptySearchParameters_ReturnsAdvancedSearchView()
-        {
-            Mock<IVeilDataAccess> dbStub = GetDbFakeForAdvancedSearch();
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
