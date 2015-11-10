@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -321,6 +322,11 @@ namespace Veil.Tests.Controllers
                 UserName = "userName"
             };
 
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
                 Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
@@ -342,9 +348,13 @@ namespace Veil.Tests.Controllers
 
             Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
 
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+
             AccountController controller = new AccountController(userManagerStub.Object, signInManagerMock.Object, stripeService: null)
             {
-                Url = urlHelperStub.Object
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
             };
 
             await controller.Login(viewModel, null);
@@ -379,6 +389,11 @@ namespace Veil.Tests.Controllers
                 UserName = "userName"
             };
 
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
                 Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
@@ -402,9 +417,13 @@ namespace Veil.Tests.Controllers
                 Setup(uh => uh.IsLocalUrl(It.Is<string>(val => val == returnUrl))).
                 Returns(false);
 
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+
             AccountController controller = new AccountController(userManagerStub.Object, signInManagerStub.Object, stripeService: null)
             {
-                Url = urlHelperStub.Object
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.Login(viewModel, returnUrl) as RedirectToRouteResult;
@@ -433,6 +452,11 @@ namespace Veil.Tests.Controllers
                 UserName = "userName"
             };
 
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
                 Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
@@ -456,9 +480,13 @@ namespace Veil.Tests.Controllers
                 Setup(uh => uh.IsLocalUrl(It.Is<string>(val => val == returnUrl))).
                 Returns(true);
 
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+
             AccountController controller = new AccountController(userManagerStub.Object, signInManagerStub.Object, stripeService: null)
             {
-                Url = urlHelperStub.Object
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.Login(viewModel, returnUrl) as RedirectResult;
@@ -619,6 +647,11 @@ namespace Veil.Tests.Controllers
                 Member = new Member()
             };
 
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
             Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerMock.
                 Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
@@ -646,9 +679,13 @@ namespace Veil.Tests.Controllers
 
             Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
 
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+
             AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
             {
-                Url = urlHelperStub.Object
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
             };
 
             await controller.Login(viewModel, returnUrl);
@@ -680,6 +717,11 @@ namespace Veil.Tests.Controllers
                 Employee = new Employee()
             };
 
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
             Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerMock.
                 Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
@@ -707,9 +749,13 @@ namespace Veil.Tests.Controllers
 
             Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
 
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+
             AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
             {
-                Url = urlHelperStub.Object
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
             };
 
             await controller.Login(viewModel, returnUrl);
@@ -751,8 +797,9 @@ namespace Veil.Tests.Controllers
                 Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
                 ReturnsAsync(true);
             userManagerMock.
-                Setup(um => um.IsInRoleAsync(user.Id, VeilRoles.MEMBER_ROLE)).
-                ReturnsAsync(true);
+                SetupSequence(um => um.IsInRoleAsync(user.Id, VeilRoles.MEMBER_ROLE)).
+                Returns(Task.FromResult(true)).
+                Returns(Task.FromResult(false));
             userManagerMock.
                 Setup(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.MEMBER_ROLE)).
                 ReturnsAsync(IdentityResult.Success).

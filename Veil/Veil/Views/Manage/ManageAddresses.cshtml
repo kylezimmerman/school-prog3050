@@ -57,7 +57,10 @@
                         $(this).prop('disabled', true);
                     } else {
                         $(this).prop('disabled', false);
-                        $('option', this).first().prop('selected', true);
+
+                        if ($('option:selected', this) === undefined) {
+                            $('option', this).first().prop('selected', true);
+                        }
                     }
                 });
             }).

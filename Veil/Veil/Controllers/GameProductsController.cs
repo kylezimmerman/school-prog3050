@@ -71,7 +71,7 @@ namespace Veil.Controllers
             if (gameProduct == null)
             {
                 //replace this when it is finished
-                throw new HttpException(NotFound, "failed at 358");
+                throw new HttpException(NotFound, "There was an error");
             }
 
             return View(gameProduct);

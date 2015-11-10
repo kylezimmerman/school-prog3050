@@ -230,8 +230,11 @@ namespace Veil.Controllers
         }
 
         // POST: Events/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates an event with the submitted details.
+        /// </summary>
+        /// <param name="eventViewModel">The model submitted </param>
+        /// <returns>Sends user to the Event Index action.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(EventViewModel eventViewModel)
