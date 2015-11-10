@@ -1463,6 +1463,7 @@ namespace Veil.Tests.Controllers
             Assert.That(model.Games, Is.Empty);
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [TestCase(null)]
         [TestCase(VeilRoles.MEMBER_ROLE)]
         public void Create_Unprivilaged_Throws404(string role)
@@ -1470,6 +1471,7 @@ namespace Veil.Tests.Controllers
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [TestCase(VeilRoles.ADMIN_ROLE)]
         [TestCase(VeilRoles.EMPLOYEE_ROLE)]
         public void Create_Privilaged_CanView(string roll)
@@ -1477,59 +1479,70 @@ namespace Veil.Tests.Controllers
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Valid_MinimumRequirements()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Valid_WithTags()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Valid_AllFields()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
+        [Test]
         public void Create_Valid_DuplicateName()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Invalid_NoFieldsFilledOut()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Invalid_MinimumPlayerCountNotNumber()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Invalid_MinimumPlayerCounterGreaterThanMax()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Invalid_LongDescriptionTooLong()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Invalid_ShortDescriptionTooLong()
         {
             throw new NotImplementedException();
         }
 
+        [Ignore] // TODO: Remove this when implemented
         [Test]
         public void Create_Invalid_BadUrl()
         {
