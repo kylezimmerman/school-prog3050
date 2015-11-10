@@ -318,6 +318,7 @@ namespace Veil.Controllers
         {
             if (!ModelState.IsValid)
             {
+                this.AddAlert(AlertType.Error, "Some Event information was invalid.");
                 return View(editedEvent);
             }
 

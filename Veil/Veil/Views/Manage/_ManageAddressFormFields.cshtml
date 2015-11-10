@@ -1,0 +1,62 @@
+﻿@using Veil.Extensions
+@model Veil.Models.ManageAddressViewModel
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.StreetAddress, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.EditorFor(m => m.StreetAddress)
+        @Html.ValidationMessageFor(model => model.StreetAddress)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.POBoxNumber, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.EditorFor(m => m.POBoxNumber)
+        @Html.ValidationMessageFor(model => model.POBoxNumber)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.PostalCode, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.EditorFor(m => m.PostalCode)
+        @Html.ValidationMessageFor(model => model.PostalCode)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.City, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.EditorFor(m => m.City)
+        @Html.ValidationMessageFor(model => model.City)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CountryCode, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.DropDownListFor(m => m.CountryCode, Model.Countries.CountryItems())
+        @Html.ValidationMessageFor(model => model.CountryCode)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.ProvinceCode, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.DropDownListFor(m => m.ProvinceCode, Model.Countries.GetProvinceItems())
+        @Html.ValidationMessageFor(model => model.ProvinceCode)
+    </div>
+</div>

@@ -76,7 +76,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(model.Id, Is.EqualTo(item.Id));
             Assert.That(model.Date, Is.EqualTo(item.Date.Date));
-            Assert.That(model.Time.ToShortTimeString(), Is.EqualTo(item.Date.ToShortTimeString()));
+            Assert.That(model.Time.TimeOfDay, Is.EqualTo(item.Date.TimeOfDay));
             Assert.That(model.Description, Is.EqualTo(item.Description));
             Assert.That(model.Duration, Is.EqualTo(item.Duration));
             Assert.That(model.Name, Is.EqualTo(item.Name));
