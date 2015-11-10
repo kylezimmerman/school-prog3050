@@ -120,6 +120,11 @@ namespace Veil.DataAccess.Interfaces
         DbSet<ProductLocationInventory> ProductLocationInventories { get; }
 
         /// <summary>
+        ///     DbSet of Products
+        /// </summary>
+        DbSet<Product> Products { get; }
+
+        /// <summary>
         ///     DbSet of Provinces
         /// </summary>
         DbSet<Province> Provinces { get; }

@@ -7,31 +7,33 @@
 
 <div class="row">
     <div class="small-12 columns">
-        <h2>@ViewBag.Title</h2>
+        <h2 class="inline">@ViewBag.Title</h2>
+        @if (Model.CurrentMemberIsRegistered)
+        {
+            <i class="fa fa-check-circle-o"></i>
+            <span class="event-register-badge">Registered</span>
+        }
     </div>
 </div>
 <div class="row">
     <div class="medium-8 columns">
+        <strong>@Html.DisplayNameFor(m => m.Event.Description)</strong>
         <p>@Model.Event.Description</p>
     </div>
     <div class="medium-4 columns">
-        <div class="panel">
-            <p><strong>Date: </strong>@Model.Event.Date.ToString("MMM dd, yyyy")</p>
-            <p><strong>Time: </strong>@Model.Event.Date.ToString("t")</p>
-            <p><strong>Duration: </strong>@Model.Event.Duration</p>
-            <p><strong>Attendees: </strong>@Model.Event.RegisteredMembers.Count</p>
-        </div>
+        @{ Html.RenderPartial("_EventDetailsSidePanel", Model.Event); }
         @if (User.IsEmployeeOrAdmin())
         {
-            @Html.ActionLink("Edit", "Edit", new { id = Model.Event.Id }, new { @class = "button expand" });
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Event.Id }, new { @class = "button expand" })
+            @Html.ActionLink("Delete", "Delete", new { id = Model.Event.Id }, new { @class = "button expand alert" })
         }
         else if (Model.CurrentMemberIsRegistered)
         {
-            @Html.ActionLink("Unregister", "Unregister", new { id = Model.Event.Id }, new { @class = "button expand alert" });
+            @Html.ActionLink("Unregister", "Unregister", new { id = Model.Event.Id }, new { @class = "button expand alert" })
         }
         else
         {
-            @Html.ActionLink("Register", "Register", new { id = Model.Event.Id }, new { @class = "button expand" });
+            @Html.ActionLink("Register", "Register", new { id = Model.Event.Id }, new { @class = "button expand" })
         }
     </div>
 </div>

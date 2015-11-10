@@ -20,8 +20,8 @@
 
     @if (User.IsEmployeeOrAdmin())
     {
-        @Html.ActionLink("Edit", "EditPhysicalGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small" });
-        @Html.ActionLink("Delete", "DeleteGameProduct", new { id = Model.GameProduct.Id }, new { @class = "button expand small alert" });
+        @Html.ActionLink("Edit", "EditPhysicalSKU", new { id = Model.GameProduct.Id }, new { @class = "button expand small" })
+        @Html.ActionLink("Delete", "Delete", new { id = Model.GameProduct.Id }, new { @class = "button expand small alert" })
     }
     else
     {
@@ -29,7 +29,7 @@
 
         if (Model.NewIsInCart)
         {
-            <a class="@buyNewClasses disabled">Buy Used @($"{Model.GameProduct.NewWebPrice:C} (in your cart)")</a>
+            <a class="@buyNewClasses disabled">Buy New @($"{Model.GameProduct.NewWebPrice:C} (in your cart)")</a>
         }
         else if (Model.GameProduct.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
             Model.GameProduct.NewInventory < 1)

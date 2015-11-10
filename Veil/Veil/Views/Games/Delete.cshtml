@@ -8,27 +8,48 @@
     <div class="columns">
         <h2>Delete @Model.Name</h2>
 
-        <p>By deleting this game you will also be deleting the following gameproducts</p>
-
         <div>
+            <h3>Are you sure you want to continue?</h3>
             <hr />
 
-            <ul>
-                @foreach (var game in Model.GameSKUs)
+            <p>
+                <strong>@Html.DisplayNameFor(model => model.Name): </strong>
+                @Html.DisplayFor(model => model.Name)
+            </p>
+
+            <p>
+                <strong>@Html.DisplayNameFor(model => model.ESRBRatingId): </strong>
+                @Html.DisplayFor(model => model.ESRBRatingId)
+            </p>
+
+            <p>
+                <strong>@Html.DisplayNameFor(model => model.ShortDescription): </strong>
+                @Html.DisplayFor(model => model.ShortDescription)
+            </p>
+
+            @if (Model.GameSKUs != null && Model.GameSKUs.Any())
             {
-                    <li>@game.Platform.PlatformName: @game.Name</li>
-                }
-            </ul>
-            <h4>Are you sure you want to continue?</h4>
+                <div class="panel">
+                    <h4>By deleting this game you will also be deleting the following SKUs:</h4>
+
+                    @foreach (var game in Model.GameSKUs)
+                    {
+                        <p>
+                            <strong>@Html.DisplayNameFor(m => game.Platform.PlatformName): </strong>@game.Platform.PlatformName
+                            <br />
+                            <strong>SKU Name: </strong>@game.Name
+                        </p>
+                    }
+                </div>
+
+            }
 
             @using (Html.BeginForm())
             {
                 @Html.AntiForgeryToken()
-                <ul class="button-group">
-                    <li><input type="submit" value="Delete" class="button alert" /></li>
-                    <li>@Html.ActionLink("Cancel", "Index", null, new { @class = "button"})</li>
-                    
-                </ul>
+
+                @Html.ActionLink("Cancel", "Details", new { Id = Model.Id }, new { @class = "button" })
+                <input type="submit" value="Delete" class="button alert right" />
             }
         </div>
     </div>

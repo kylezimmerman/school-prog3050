@@ -54,7 +54,7 @@ namespace Veil.Controllers
                 CurrentPage = page
             };
 
-            IQueryable<Game> games = db.Games.Include(g => g.Rating);
+            IQueryable<Game> games = db.Games;
 
             games = FilterOutInternalOnly(games).OrderBy(g => g.Name);
 
@@ -144,22 +144,21 @@ namespace Veil.Controllers
             platform = platform.Trim();
             tags = tags ?? new List<string>();
 
+            if (tags.Count == 0 && title == "" && platform == "")
+            {
+                AdvancedSearchViewModel advancedAdvancedSearchViewModel = new AdvancedSearchViewModel
+                {
+                    Platforms = await db.Platforms.ToListAsync()
+                };
+
+                return View(advancedAdvancedSearchViewModel);
+            }
+
             for (int i = 0; i < tags.Count; i++)
             {
                 string t = tags[i];
                 t = t.Trim();
                 tags[i] = t;
-            }
-
-            if (tags.Count == 0 && title == "" && platform == "")
-            {
-                SearchViewModel searchViewModel = new SearchViewModel
-                {
-                    Platforms = await db.Platforms.ToListAsync(),
-                    Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync()
-                };
-
-                return View(searchViewModel);
             }
 
             // We are doing Or, so we need the first to be false
@@ -278,39 +277,6 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        /// <summary>
-        ///     Renders the Game SKU partial for a physical game product
-        /// </summary>
-        /// <param name="gameProduct">
-        ///     The physical game sku to render.
-        /// </param>
-        /// <returns>
-        ///     Partial view containing the information specific to PhysicalGameProducts
-        /// </returns>
-        [ChildActionOnly]
-        public PartialViewResult RenderPhysicalGameProductPartial(PhysicalGameProduct gameProduct)
-        {
-            PhysicalGameProductViewModel model = new PhysicalGameProductViewModel
-            {
-                GameProduct = gameProduct
-            };
-
-            Member currentMember = db.Members.Find(User.Identity.GetUserId());
-
-            if (currentMember != null)
-            {
-                model.NewIsInCart = currentMember.Cart.Items.
-                    Any(i => i.ProductId == gameProduct.Id && i.IsNew);
-
-                model.UsedIsInCart = currentMember.Cart.Items.
-                    Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
-
-                model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
-            }
-
-            return PartialView("_PhysicalGameProductPartial", model);
-        }
-
         /* TODO: Every action after this should be employee only */
 
         /// <summary>
@@ -327,13 +293,17 @@ namespace Veil.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "Id,Name,GameAvailabilityStatus,ESRBRatingId,MinimumPlayerCount,MaximumPlayerCount,TrailerURL,ShortDescription,LongDescription,PrimaryImageURL")] Game game)
+        public async Task<ActionResult> Create([Bind(Exclude = nameof(Game.Tags))] Game game, List<string> tags)
         {
             if (ModelState.IsValid)
             {
+                game.Tags = new List<Tag>();
+                await SetTags(game, tags);
+
                 db.Games.Add(game);
                 await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+
+                return RedirectToAction("Details", new { id = game.Id });
             }
 
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
@@ -381,14 +351,7 @@ namespace Veil.Controllers
                 //Get the game we just saved, including the tags this time
                 game = await db.Games.Include(g => g.Tags).FirstAsync(g => g.Id == game.Id);
 
-                //Remove all existing tags
-                game.Tags.Clear();
-
-                //Add tags
-                foreach (var tag in tags)
-                {
-                    game.Tags.Add(db.Tags.First(t => t.Name == tag));
-                }
+                await SetTags(game, tags);
 
                 //Save the game again now with the tag info included
                 await db.SaveChangesAsync();
@@ -402,7 +365,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -421,17 +384,15 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameConfirmed(Guid? id)
+        public async Task<ActionResult> DeleteGameConfirmed(Guid id = default(Guid))
         {
-            if (id == null)
+            if (id == Guid.Empty)
             {
-                this.AddAlert(AlertType.Error, "No game selected");
-
+                this.AddAlert(AlertType.Error, "You must select a Game to delete.");
                 return RedirectToAction("Index");
-                
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -457,198 +418,34 @@ namespace Veil.Controllers
                 }
             }
 
-            return RedirectToAction("Index");
-        }
-
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
-        public async Task<ActionResult> DeleteGameProduct(Guid? id)
-        {
-            if (id == null)
-            {
-                this.AddAlert(AlertType.Error, "Please select a game product to delete.");
                 return RedirectToAction("Index");
             }
 
-            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
-
-            if (gameProduct == null)
-            {
-                //replace this when it is finished
-                throw new HttpException(NotFound, "failed at 358");
-            }
-            return View(gameProduct);
-        }
-
-
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
-        [HttpPost, ActionName("DeleteGameProduct")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameProductConfirmed(Guid? id)
+        /// <summary>
+        /// Sets a Game's Tag to the provided list of tags by name. Note that this clears any existing tags.
+        /// </summary>
+        /// <param name="game">The game to set the tags on.</param>
+        /// <param name="tagNames">A list of tag names to add to the game.</param>
+        private async Task SetTags(Game game, List<string> tagNames)
         {
-            GameProduct gameProduct = null;
+            //Clear any existing tags in the game
+            game.Tags.Clear();
 
-            if (id != null)
+            if (tagNames == null)
             {
-                gameProduct = await db.GameProducts.FindAsync(id);
-            }
-            else
-            {
-                this.AddAlert(AlertType.Error, "No game selected");
+                return;
             }
 
-            if (gameProduct != null)
+            //Add all of the new tags by name
+            foreach (var tagName in tagNames)
             {
-                try
+                var tag = await db.Tags.FirstOrDefaultAsync(t => t.Name == tagName);
+                if (tag != null)
                 {
-                    db.GameProducts.Remove(gameProduct);
-                    await db.SaveChangesAsync();
-                }
-                catch (DbUpdateException)
-                {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + gameProduct.Platform + ": " + gameProduct.Name);
-                    return View(gameProduct);
+                    game.Tags.Add(tag);
                 }
             }
-            else
-            {
-                throw new HttpException(NotFound, "some message");
-            }
-
-            return RedirectToAction("Index");
         }
-
-        #region GameProduct Actions
-        public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id)
-        {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
-            {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
-
-            return View();
-        }
-
-        // POST: Games/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreatePhysicalGameProduct(Guid? id, 
-            [Bind(Exclude = nameof(PhysicalGameProduct.NewInventory) + "," + nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
-        {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
-            {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index");
-            }
-
-            if (ModelState.IsValid)
-            {
-                var internalSku = db.GetNextPhysicalGameProductSku();
-
-                gameProduct.InteralUsedSKU = $"1{internalSku}";
-                gameProduct.InternalNewSKU = $"0{internalSku}";
-
-                return await SaveGameProduct(id.Value, gameProduct);
-            }
-
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
-
-            return View(gameProduct);
-        }
-
-        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id)
-        {
-            // TODO: Actually implement this
-
-            return View(new PhysicalGameProduct());
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditPhysicalGameProduct(Guid? id, PhysicalGameProduct gameProduct)
-        {
-            // TODO: Actually implement this
-
-            return RedirectToAction("Index");
-        }
-
-        public async Task<ActionResult> CreateDownloadGameProduct(Guid? id)
-        {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
-            {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
-
-            return View();
-        }
-
-        // POST: Games/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateDownloadGameProduct(Guid? id, [Bind] DownloadGameProduct gameProduct)
-        {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
-            {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index");
-            }
-
-            if (ModelState.IsValid)
-            {
-                return await SaveGameProduct(id.Value, gameProduct);
-            }
-
-            ViewBag.PlatformCode = new SelectList(db.Platforms, "PlatformCode", "PlatformName");
-            ViewBag.DeveloperId = new SelectList(db.Companies, "Id", "Name");
-            ViewBag.PublisherId = new SelectList(db.Companies, "Id", "Name");
-
-            return View(gameProduct);
-        }
-
-        public async Task<ActionResult> EditDownloadGameProduct(Guid? id)
-        {
-            // TODO: Actually implement this
-
-            return View(new DownloadGameProduct());
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditDownloadGameProduct(Guid? id, DownloadGameProduct gameProduct)
-        {
-            // TODO: Actually implement this
-
-            return RedirectToAction("Index");
-        }
-
-        private async Task<ActionResult> SaveGameProduct(Guid gameId, GameProduct gameProduct)
-        {
-            gameProduct.Id = Guid.NewGuid();
-            gameProduct.Game = await db.Games.FindAsync(gameId);
-            db.GameProducts.Add(gameProduct);
-
-            await db.SaveChangesAsync();
-
-            this.AddAlert(AlertType.Success, "Successfully added a new SKU.");
-
-            return RedirectToAction("Details", "Games", new { id = gameId });
-        }
-        #endregion
 
         /// <summary>
         ///     Filters out not for sale games if the user isn't an employee or admin
@@ -666,7 +463,7 @@ namespace Veil.Controllers
                 return queryable.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
             }
 
-            return queryable;;
-        } 
+            return queryable;
+        }
     }
 }

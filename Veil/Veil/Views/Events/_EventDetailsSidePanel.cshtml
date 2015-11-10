@@ -1,0 +1,8 @@
+﻿@model Veil.DataModels.Models.Event
+
+<div class="panel">
+    <p><strong>Date: </strong>@Model.Date.ToString("MMM dd, yyyy")</p>
+    <p><strong>Time: </strong>@Model.Date.ToString("t")</p>
+    <p><strong>Duration: </strong>@Model.Duration</p>
+    <p><strong>Attendees: </strong>@Model.RegisteredMembers.Count</p>
+</div>

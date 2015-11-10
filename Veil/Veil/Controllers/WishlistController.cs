@@ -9,9 +9,9 @@ using Veil.Services;
 using Veil.Helpers;
 using Veil.Extensions;
 using Veil.Models;
-using System.Data.Entity;
 using System.Web;
 using System.Net;
+using Veil.DataModels;
 
 namespace Veil.Controllers
 {
@@ -19,20 +19,28 @@ namespace Veil.Controllers
     {
         private readonly IVeilDataAccess db;
         private readonly VeilUserManager userManager;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public WishlistController(IVeilDataAccess veilDataAccess, VeilUserManager userManager)
+        public WishlistController(IVeilDataAccess veilDataAccess, VeilUserManager userManager, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
             this.userManager = userManager;
+            this.idGetter = idGetter;
         }
 
         // GET: Wishlist
         /// <summary>
-        /// Displays the wishlist of the user indicated
-        /// If no ID is given the current user's wishlist is shown
+        ///     Displays the wishlist of the user indicated
+        ///     If no ID is given the current user's wishlist is shown
         /// </summary>
-        /// <param name="wishlistOwnerId">The ID of the owner of the wishlist to be displayed. Set to current user if null.</param>
-        /// <returns></returns>
+        /// <param name="wishlistOwnerId">
+        ///     The ID of the owner of the wishlist to be displayed. Set to current user if null.
+        /// </param>
+        /// <returns>
+        ///     Index view for the Wishlist matching wishlistOwnerId
+        ///     Index view for the current member's Wishlist if wishlistOwnerId is null
+        ///     404 Not Found view if the id does not match a Member
+        /// </returns>
         public async Task<ActionResult> Index(Guid? wishlistOwnerId)
         {
             Member wishlistOwner;
@@ -53,8 +61,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            Member currentMember = await db.Members.FindAsync(currentUserId);
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             if (wishlistOwnerId == null)
             {
@@ -88,11 +95,17 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Gets a partial view for a single PhysicalGameProduct on the wishlist
+        ///     Gets a partial view for a single PhysicalGameProduct on the wishlist
         /// </summary>
-        /// <param name="gameProduct">The gameProduct</param>
-        /// <param name="wishlistOwnerId">The ID of the owner of the wishlist</param>
-        /// <returns></returns>
+        /// <param name="gameProduct">
+        ///     The gameProduct for this line of the list
+        /// </param>
+        /// <param name="wishlistOwnerId">
+        ///     The ID of the owner of the wishlist
+        /// </param>
+        /// <returns>
+        ///     Partial view for the provided gameProduct
+        /// </returns>
         [ChildActionOnly]
         public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Guid wishlistOwnerId)
         {
@@ -101,8 +114,7 @@ namespace Veil.Controllers
                 GameProduct = gameProduct
             };
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            Member currentMember = db.Members.Find(currentUserId);
+            Member currentMember = db.Members.Find(idGetter.GetUserId(User.Identity));
 
             if (currentMember != null)
             {
@@ -116,25 +128,24 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Adds an item to the current user's wishlist.
+        ///     Adds an item to the current member's wishlist.
         /// </summary>
-        /// <param name="itemId">The ID of the product to be added.</param>
-        /// <returns></returns>
-        [Authorize(Roles = "Member")]
+        /// <param name="itemId">
+        ///     The ID of the product to be added.
+        /// </param>
+        /// <returns>
+        ///     Index view for the current member's Wishlist
+        ///     404 Not Found view if itemId does not match a Product
+        /// </returns>
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> Add(Guid? itemId)
         {
-            // TODO: Make this work for future Products that are not GameProducts
-            Product newItem = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
-            User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            Product newItem = await db.Products.FindAsync(itemId);
+            User user = await userManager.FindByIdAsync(idGetter.GetUserId(User.Identity));
 
             if (newItem == null)
             {
-                this.AddAlert(AlertType.Error, "Error adding product to wishlist.");
-                if (Request.UrlReferrer != null)
-                {
-                    return Redirect(Request.UrlReferrer.ToString());
-                }
-                return View();
+                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Product));
             }
 
             if (user.Member.Wishlist.Contains(newItem))
@@ -151,15 +162,20 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Removes a product from the current user's wishlist.
+        ///     Removes an item from the current member's wishlist.
         /// </summary>
-        /// <param name="itemId">The ID of the product to be removed.</param>
-        /// <returns></returns>
-        [Authorize(Roles = "Member")]
+        /// <param name="itemId">
+        ///     The ID of the product to be removed.
+        /// </param>
+        /// <returns>
+        ///     Index view for the current member's Wishlist
+        ///     404 Not Found view if itemId does not match a Product
+        /// </returns>
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> Remove(Guid? itemId)
         {
-            Product toRemove = await db.GameProducts.FindAsync(itemId) ?? new PhysicalGameProduct();
-            User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            Product toRemove = await db.Products.FindAsync(itemId);
+            User user = await userManager.FindByIdAsync(idGetter.GetUserId(User.Identity));
 
             if (toRemove == null)
             {

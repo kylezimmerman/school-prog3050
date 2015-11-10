@@ -6,6 +6,7 @@
  */
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -28,6 +29,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Required]
         [MaxLength(128)]
+        [DisplayName("Platform")]
         public string PlatformName { get; set; }
 
         /// <summary>

@@ -50,6 +50,7 @@ namespace Veil.DataAccess
         public DbSet<PhysicalGameProduct> PhysicalGameProducts { get; set; }
         public DbSet<Platform> Platforms { get; set; }
         public DbSet<ProductLocationInventory> ProductLocationInventories { get; set; }
+        public DbSet<Product> Products { get; set; } 
         public DbSet<Province> Provinces { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<WebOrder> WebOrders { get; set; }
