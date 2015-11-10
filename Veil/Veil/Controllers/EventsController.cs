@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Threading.Tasks;
-using System.Net;
 using System.Web.Mvc;
 using System.Linq;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Models;
-using Veil.Extensions;
 using System.Web;
 using Veil.DataModels;
 using Veil.Helpers;
@@ -37,7 +35,7 @@ namespace Veil.Controllers
             var model = new EventListViewModel
             {
                 Events = await db.Events
-                    .Where(e => e.Date > DateTime.Now)
+                    .Where(e => e.Date >= DateTime.Today)
                     .OrderBy(e => e.Date).ToListAsync(),
                 OnlyRegisteredEvents = false
             };
@@ -59,7 +57,7 @@ namespace Veil.Controllers
             var model = new EventListViewModel
             {
                 Events = currentMember.RegisteredEvents
-                    .Where(e => e.Date > DateTime.Now)
+                    .Where(e => e.Date >= DateTime.Today)
                     .OrderBy(e => e.Date),
                 OnlyRegisteredEvents = true
             };
@@ -232,8 +230,11 @@ namespace Veil.Controllers
         }
 
         // POST: Events/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates an event with the submitted details.
+        /// </summary>
+        /// <param name="eventViewModel">The model submitted </param>
+        /// <returns>Sends user to the Event Index action.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(EventViewModel eventViewModel)
@@ -256,7 +257,7 @@ namespace Veil.Controllers
 
             this.AddAlert(AlertType.Success, $"Successfully created the \"{@event.Name}\" event.");
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", new { id = @event.Id });
         }
 
         /// <summary>
