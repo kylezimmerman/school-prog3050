@@ -5,6 +5,7 @@ using Microsoft.Owin.Security;
 using Microsoft.Practices.Unity;
 using Veil.DataAccess;
 using Veil.DataAccess.Interfaces;
+using Veil.Helpers;
 using Veil.Services;
 using Veil.Services.Interfaces;
 
@@ -33,6 +34,9 @@ namespace Veil
 
             // Used by controllers and anywhere except UserStore contruction
             container.RegisterType<IVeilDataAccess, VeilDataContext>(new HierarchicalLifetimeManager());
+
+            container.RegisterType<IGuidUserIdGetter, GuidUserIdGetter>(
+                new ContainerControlledLifetimeManager());
 
             container.RegisterType<VeilUserManager>(new HierarchicalLifetimeManager());
             container.RegisterType<VeilSignInManager>(new HierarchicalLifetimeManager());

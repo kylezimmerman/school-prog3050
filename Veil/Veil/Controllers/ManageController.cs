@@ -21,13 +21,14 @@ namespace Veil.Controllers
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
-
-        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess)
+        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         //
@@ -345,7 +346,7 @@ namespace Veil.Controllers
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
             }
-            var result = await userManager.AddLoginAsync(IIdentityExtensions.GetUserId(User.Identity), loginInfo.Login);
+            var result = await userManager.AddLoginAsync(GetUserId(), loginInfo.Login);
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
 
@@ -386,7 +387,7 @@ namespace Veil.Controllers
 
         private Guid GetUserId()
         {
-            return IIdentityExtensions.GetUserId(User.Identity);
+            return idGetter.GetUserId(User.Identity);
         }
 
         /// <summary>
@@ -418,7 +419,7 @@ namespace Veil.Controllers
 
         private bool HasPassword()
         {
-            var user = userManager.FindById(IIdentityExtensions.GetUserId(User.Identity));
+            var user = userManager.FindById(idGetter.GetUserId(User.Identity));
             if (user != null)
             {
                 return user.PasswordHash != null;
@@ -428,7 +429,7 @@ namespace Veil.Controllers
 
         private bool HasPhoneNumber()
         {
-            var user = userManager.FindById(IIdentityExtensions.GetUserId(User.Identity));
+            var user = userManager.FindById(idGetter.GetUserId(User.Identity));
             if (user != null)
             {
                 return user.PhoneNumber != null;

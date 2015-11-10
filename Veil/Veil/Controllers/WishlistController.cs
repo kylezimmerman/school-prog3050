@@ -19,11 +19,13 @@ namespace Veil.Controllers
     {
         private readonly IVeilDataAccess db;
         private readonly VeilUserManager userManager;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public WishlistController(IVeilDataAccess veilDataAccess, VeilUserManager userManager)
+        public WishlistController(IVeilDataAccess veilDataAccess, VeilUserManager userManager, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
             this.userManager = userManager;
+            this.idGetter = idGetter;
         }
 
         // GET: Wishlist
@@ -59,7 +61,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
-            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             if (wishlistOwnerId == null)
             {
@@ -112,7 +114,7 @@ namespace Veil.Controllers
                 GameProduct = gameProduct
             };
 
-            Member currentMember = db.Members.Find(User.Identity.GetUserId());
+            Member currentMember = db.Members.Find(idGetter.GetUserId(User.Identity));
 
             if (currentMember != null)
             {
@@ -139,7 +141,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> Add(Guid? itemId)
         {
             Product newItem = await db.Products.FindAsync(itemId);
-            User user = await userManager.FindByIdAsync(User.Identity.GetUserId());
+            User user = await userManager.FindByIdAsync(idGetter.GetUserId(User.Identity));
 
             if (newItem == null)
             {
@@ -173,7 +175,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> Remove(Guid? itemId)
         {
             Product toRemove = await db.Products.FindAsync(itemId);
-            User user = await userManager.FindByIdAsync(User.Identity.GetUserId());
+            User user = await userManager.FindByIdAsync(idGetter.GetUserId(User.Identity));
 
             if (toRemove == null)
             {

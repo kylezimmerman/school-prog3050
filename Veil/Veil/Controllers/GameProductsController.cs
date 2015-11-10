@@ -8,7 +8,6 @@ using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
-using Veil.Extensions;
 using Veil.Helpers;
 using Veil.Models;
 
@@ -17,10 +16,12 @@ namespace Veil.Controllers
     public class GameProductsController : BaseController
     {
         private readonly IVeilDataAccess db;
+        private IGuidUserIdGetter idGetter;
 
-        public GameProductsController(IVeilDataAccess veilDataAccess)
+        public GameProductsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Veil.Controllers
                 GameProduct = gameProduct
             };
 
-            Member currentMember = db.Members.Find(User.Identity.GetUserId());
+            Member currentMember = db.Members.Find(idGetter.GetUserId(User.Identity));
 
             if (currentMember != null)
             {

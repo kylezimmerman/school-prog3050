@@ -12,6 +12,7 @@ using NUnit.Framework;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Helpers;
 using Veil.Models;
 
 namespace Veil.Tests.Controllers
@@ -30,7 +31,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void EditGET_NullId_Throws404Exception()
         {
-            EventsController controller = new EventsController(veilDataAccess: null);
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Edit((Guid?)null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -43,7 +44,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Edit(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -68,7 +69,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             var result = await controller.Edit(item.Id) as ViewResult;
 
@@ -93,7 +94,7 @@ namespace Veil.Tests.Controllers
                 Id = Id
             };
 
-            EventsController controller = new EventsController(veilDataAccess: null);
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
             controller.ModelState.AddModelError("Name", "Name is required");
 
             var result = await controller.Edit(item) as ViewResult;
@@ -117,7 +118,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Edit(viewModel), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -142,7 +143,7 @@ namespace Veil.Tests.Controllers
             dbMock.Setup(db => db.Events).Returns(eventDbSetStub.Object);
             dbMock.Setup(db => db.MarkAsModified(item)).Verifiable();
 
-            EventsController controller = new EventsController(dbMock.Object);
+            EventsController controller = new EventsController(dbMock.Object, idGetter: null);
 
             await controller.Edit(viewModel);
 
@@ -181,7 +182,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             await controller.Edit(viewModel);
 
@@ -212,7 +213,7 @@ namespace Veil.Tests.Controllers
             dbMock.Setup(db => db.Events).Returns(eventDbSetStub.Object);
             dbMock.Setup(db => db.SaveChangesAsync()).ReturnsAsync(1).Verifiable();
 
-            EventsController controller = new EventsController(dbMock.Object);
+            EventsController controller = new EventsController(dbMock.Object, idGetter: null);
 
             await controller.Edit(viewModel);
 
@@ -242,7 +243,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             var result = await controller.Edit(viewModel) as RedirectToRouteResult;
 
@@ -254,7 +255,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Details_NullId_Throws404Exception()
         {
-            EventsController controller = new EventsController(null);
+            EventsController controller = new EventsController(veilDataAccess: null,  idGetter: null);
 
             Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -267,7 +268,7 @@ namespace Veil.Tests.Controllers
             
             dbStub.Setup(db => db.Events).Returns(gameDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Details(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -304,13 +305,15 @@ namespace Veil.Tests.Controllers
             memberDbSetStub.Setup(db => db.FindAsync(eventItem.Id)).ReturnsAsync(member);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
-            var claim = new Claim("CurrentUserTest", Id.ToString());
-            var mockIdentity = Mock.Of<ClaimsIdentity>(ci => ci.FindFirst(It.IsAny<string>()) == claim);
-            var context = Mock.Of<ControllerContext>(c => c.HttpContext.User.Identity == mockIdentity);
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
 
-            EventsController controller = new EventsController(dbStub.Object)
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            EventsController controller = new EventsController(dbStub.Object, idGetterStub.Object)
             {
-                ControllerContext = context
+                ControllerContext = context.Object
             };
             
             var result = await controller.Details(Id) as ViewResult;
@@ -328,7 +331,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Register_NullId_Throws404Exception()
         {
-            EventsController controller = new EventsController(veilDataAccess: null);
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Register(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -341,7 +344,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Register(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -371,13 +374,15 @@ namespace Veil.Tests.Controllers
             memberDbSetStub.Setup(db => db.FindAsync(eventItem.Id)).ReturnsAsync(member);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
-            var claim = new Claim("CurrentUserTest", Id.ToString());
-            var mockIdentity = Mock.Of<ClaimsIdentity>(ci => ci.FindFirst(It.IsAny<string>()) == claim);
-            var context = Mock.Of<ControllerContext>(c => c.HttpContext.User.Identity == mockIdentity);
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
 
-            EventsController controller = new EventsController(dbStub.Object)
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            EventsController controller = new EventsController(dbStub.Object, idGetterStub.Object)
             {
-                ControllerContext = context
+                ControllerContext = context.Object
             };
 
             var result = await controller.Register(eventItem.Id) as ViewResult;
@@ -393,7 +398,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Unregister_NullId_Throws404Exception()
         {
-            EventsController controller = new EventsController(veilDataAccess: null);
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Unregister(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -406,7 +411,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Unregister(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -439,13 +444,15 @@ namespace Veil.Tests.Controllers
             memberDbSetStub.Setup(db => db.FindAsync(eventItem.Id)).ReturnsAsync(member);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
-            var claim = new Claim("CurrentUserTest", Id.ToString());
-            var mockIdentity = Mock.Of<ClaimsIdentity>(ci => ci.FindFirst(It.IsAny<string>()) == claim);
-            var context = Mock.Of<ControllerContext>(c => c.HttpContext.User.Identity == mockIdentity);
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
 
-            EventsController controller = new EventsController(dbStub.Object)
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            EventsController controller = new EventsController(dbStub.Object, idGetterStub.Object)
             {
-                ControllerContext = context
+                ControllerContext = context.Object
             };
 
             var result = await controller.Unregister(eventItem.Id) as ViewResult;
@@ -461,7 +468,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Delete_NullId_Throws404Exception()
         {
-            EventsController controller = new EventsController(veilDataAccess: null);
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Delete(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -474,7 +481,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Delete(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -493,7 +500,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             var result = await controller.Delete(item.Id) as ViewResult;
 
@@ -508,7 +515,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void DeleteConfirmed_EmptyGuid_RedirectsToIndex()
         {
-            EventsController controller = new EventsController(veilDataAccess: null);
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
 
             var result = await controller.DeleteConfirmed(Guid.Empty) as RedirectToRouteResult;
 
@@ -524,7 +531,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.DeleteConfirmed(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -545,7 +552,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetMock.Object);
 
-            EventsController controller = new EventsController(dbStub.Object);
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
 
             await controller.DeleteConfirmed(item.Id);
 
@@ -573,7 +580,7 @@ namespace Veil.Tests.Controllers
             dbMock.Setup(db => db.Events).Returns(eventDbSetStub.Object);
             dbMock.Setup(db => db.SaveChangesAsync()).ReturnsAsync(1).Verifiable();
 
-            EventsController controller = new EventsController(dbMock.Object);
+            EventsController controller = new EventsController(dbMock.Object, idGetter: null);
 
             await controller.DeleteConfirmed(item.Id);
 

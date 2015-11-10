@@ -218,9 +218,10 @@
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
-    <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
+    <Compile Include="Helpers\GuidUserIdGetter.cs" />
+    <Compile Include="Helpers\IGuidUserIdGetter.cs" />
     <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
@@ -484,7 +485,7 @@
     <Content Include="Views\Games\AdvancedSearch.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Events\_EventListItem.cshtml" />
-	<Content Include="Views\Events\_EventDetailsSidePanel.cshtml" />
+    <Content Include="Views\Events\_EventDetailsSidePanel.cshtml" />
     <Content Include="Views\Events\_EventFormFields.cshtml" />
     <Content Include="Views\GameProducts\_DownloadGameProduct.cshtml" />
     <Content Include="Views\GameProducts\_GameProductPartial.cshtml" />

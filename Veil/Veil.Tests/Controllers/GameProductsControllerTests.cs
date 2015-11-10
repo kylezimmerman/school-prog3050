@@ -45,7 +45,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GameProductsController controller = new GameProductsController(dbStub.Object)
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };

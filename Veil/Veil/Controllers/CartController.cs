@@ -5,18 +5,22 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Extensions;
+using Veil.Helpers;
 
 namespace Veil.Controllers
 {
     [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class CartController : BaseController
     {
-        protected readonly IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
+
         public const string CART_QTY_KEY = "Cart.Quantity";
         
-        public CartController(IVeilDataAccess veilDataAccess)
+        public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         // GET: Cart
@@ -63,7 +67,7 @@ namespace Veil.Controllers
         [ChildActionOnly]
         public void SetSessionCartQty()
         {
-            Guid currentUserId = User.Identity.GetUserId();
+            Guid currentUserId = idGetter.GetUserId(User.Identity);
             Member currentMember = db.Members.Find(currentUserId);
 
             Session[CART_QTY_KEY] = currentMember.Cart.Items.Count;

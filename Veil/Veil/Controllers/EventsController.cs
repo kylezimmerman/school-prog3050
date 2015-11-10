@@ -17,10 +17,12 @@ namespace Veil.Controllers
     public class EventsController : BaseController
     {
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public EventsController(IVeilDataAccess veilDataAccess)
+        public EventsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         // GET: Events
@@ -52,7 +54,7 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> MyEvents()
         {
-            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             var model = new EventListViewModel
             {
@@ -86,7 +88,7 @@ namespace Veil.Controllers
                 OnlyRegisteredEvents = onlyRegisteredEvents
             };
 
-            Member currentMember = db.Members.Find(User.Identity.GetUserId());
+            Member currentMember = db.Members.Find(idGetter.GetUserId(User.Identity));
 
             if (currentMember != null)
             {
@@ -124,7 +126,7 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Event));
             }
 
-            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             if (currentMember != null)
             {
@@ -160,7 +162,7 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Event));
             }
 
-            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             currentMember.RegisteredEvents.Add(currentEvent);
             db.MarkAsModified(currentMember);
@@ -203,7 +205,7 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Event));
             }
 
-            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             currentMember.RegisteredEvents.Remove(currentEvent);
             db.MarkAsModified(currentMember);

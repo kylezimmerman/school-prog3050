@@ -7,7 +7,7 @@ using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Practices.Unity;
 using Owin;
 using Veil.DataModels.Models.Identity;
-using Veil.Extensions;
+using Veil.Helpers;
 using Veil.Services;
 
 namespace Veil
@@ -19,6 +19,8 @@ namespace Veil
         {
             // Setup Unity to Configure IDataProtectionProvider for the VeilUserManager constructor
             UnityConfig.GetConfiguredContainer().RegisterInstance(app.GetDataProtectionProvider());
+
+            IGuidUserIdGetter idGetter = UnityConfig.GetConfiguredContainer().Resolve<IGuidUserIdGetter>();
 
             // Enable the application to use a cookie to store information for the signed in user
             // and to use a cookie to temporarily store information about a user logging in with a third party login provider
@@ -35,7 +37,7 @@ namespace Veil
                     OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<VeilUserManager, User, Guid>(
                         validateInterval: TimeSpan.FromMinutes(10),
                         regenerateIdentityCallback: (manager, user) => user.GenerateUserIdentityAsync(manager),
-                        getUserIdCallback: identity => IIdentityExtensions.GetUserId(identity))
+                        getUserIdCallback: identity => idGetter.GetUserId(identity))
                 }
             });            
             app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
