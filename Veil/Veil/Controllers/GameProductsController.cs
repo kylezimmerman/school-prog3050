@@ -56,7 +56,7 @@ namespace Veil.Controllers
             return PartialView("_PhysicalGameProductPartial", model);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -79,18 +79,15 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(Guid? id)
+        public async Task<ActionResult> DeleteConfirmed(Guid id = default(Guid))
         {
-            GameProduct gameProduct = null;
+            if (id == Guid.Empty)
+            {
+                this.AddAlert(AlertType.Error, "You must select a Game SKU to delete.");
+                return RedirectToAction("Index", "Games");
+            }
 
-            if (id != null)
-            {
-                gameProduct = await db.GameProducts.FindAsync(id);
-            }
-            else
-            {
-                this.AddAlert(AlertType.Error, "No game selected");
-            }
+            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
 
             if (gameProduct != null)
             {
@@ -107,6 +104,7 @@ namespace Veil.Controllers
             }
             else
             {
+                // TODO: Actually give this a message. Cmon!
                 throw new HttpException(NotFound, "some message");
             }
 
