@@ -82,11 +82,11 @@
         </div>
 
         <div class="small-4 medium-3 columns">
-            @Html.ActionLink("Add Physical SKU", "CreatePhysicalGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
+            @Html.ActionLink("Add Physical SKU", "CreatePhysicalSKU", "GameProducts", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
 
         <div class="small-4 medium-3 columns">
-            @Html.ActionLink("Add Download SKU", "CreateDownloadGameProduct", new { id = Model.Id }, new { @class = "button expand small" })
+            @Html.ActionLink("Add Download SKU", "CreateDownloadSKU", "GameProducts", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
     </div>
 }
@@ -94,16 +94,16 @@
 @foreach (var physicalGameProduct in Model.GameSKUs.OfType<PhysicalGameProduct>())
 {
     <div class="row panel" data-equalizer>
-        @{ Html.RenderPartial("_GameProductPartial", physicalGameProduct); }
-        @{ Html.RenderAction("RenderPhysicalGameProductPartial", physicalGameProduct); }
+        @{ Html.RenderPartial("~/Views/GameProducts/_GameProductPartial.cshtml", physicalGameProduct); }
+        @{ Html.RenderAction("RenderPhysicalGameProductPartial", "GameProducts" ,physicalGameProduct); }
     </div>
 }
 
 @foreach (var downloadGameProduct in Model.GameSKUs.OfType<DownloadGameProduct>())
 {
     <div class="row panel" data-equalizer>
-        @{ Html.RenderPartial("_GameProductPartial", downloadGameProduct); }
-        @{ Html.RenderPartial("_DownloadGameProduct", downloadGameProduct); }
+        @{ Html.RenderPartial("~/Views/GameProducts/_GameProductPartial.cshtml", downloadGameProduct); }
+        @{ Html.RenderPartial("~/Views/GameProducts/_DownloadGameProduct.cshtml", downloadGameProduct); }
     </div>
 }
 

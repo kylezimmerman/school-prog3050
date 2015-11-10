@@ -1,7 +1,7 @@
 ﻿@model Veil.DataModels.Models.GameProduct
 
 @{
-    ViewBag.Title = "DeleteGameProduct";
+    ViewBag.Title = "Delete";
 }
 
 <div class="row">
@@ -14,7 +14,7 @@
                 @Html.AntiForgeryToken()
                 <ul class="button-group">
                     <li><input type="submit" value="Delete" class="button alert" /></li>
-                    <li>@Html.ActionLink("Cancel", "Index", null, new { @class = "button" })</li>
+                    <li>@Html.ActionLink("Cancel", "Index", "Games", null, new { @class = "button" })</li>
                 </ul>
             }
     </div>

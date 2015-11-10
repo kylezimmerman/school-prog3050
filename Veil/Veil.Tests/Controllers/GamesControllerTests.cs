@@ -1271,37 +1271,6 @@ namespace Veil.Tests.Controllers
             Assert.That(model.GameSKUs, Has.Some.Matches<Product>(p => p.ProductAvailabilityStatus == AvailabilityStatus.NotForSale));
         }
 
-        [TestCase(VeilRoles.MEMBER_ROLE)]
-        [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeletePhysicalGameProduct_ValidDelete(string role)
-        {
-            GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
-            gameSku.Id = Id;
-
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> {gameSku}.AsQueryable());
-            gameProductDbSetStub.SetupForInclude();
-
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
-            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
-
-
-            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUser().IsInRole(role);
-
-            GamesController controller = new GamesController(dbStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
-
-            var result = await controller.DeleteGameProduct(gameSku.Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.Model, Is.Not.Null);
-            Assert.That(result.Model, Is.InstanceOf<GameProduct>());
-        }
-
         [TestCase(null)] //Unauthenticated
         [TestCase(VeilRoles.MEMBER_ROLE)]
         public async void Index_Unprivilaged_NotForSaleGame(string role)
@@ -1492,6 +1461,79 @@ namespace Veil.Tests.Controllers
             var model = (GameListViewModel) result.Model;
 
             Assert.That(model.Games, Is.Empty);
+        }
+
+        [TestCase(null)]
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        public void Create_Unprivilaged_Throws404(string role)
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        [TestCase(VeilRoles.EMPLOYEE_ROLE)]
+        public void Create_Privilaged_CanView(string roll)
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Valid_MinimumRequirements()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Valid_WithTags()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Valid_AllFields()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Create_Valid_DuplicateName()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_NoFieldsFilledOut()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_MinimumPlayerCountNotNumber()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_MinimumPlayerCounterGreaterThanMax()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_LongDescriptionTooLong()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_ShortDescriptionTooLong()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void Create_Invalid_BadUrl()
+        {
+            throw new NotImplementedException();
         }
     }
 }
