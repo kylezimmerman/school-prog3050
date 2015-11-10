@@ -29,6 +29,94 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public void CreateGET()
+        {
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
+
+            Assert.That(controller.Create() != null);
+        }
+
+        [Test]
+        public async void CreatePOST_InvalidModelState_ReturnsToCreateView()
+        {
+            EventViewModel item = new EventViewModel
+            {
+                Id = Id
+            };
+
+            EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
+            controller.ModelState.AddModelError("Name", "Name is required");
+
+            var result = await controller.Create(item) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<EventViewModel>());
+            Assert.That(result.Model, Is.EqualTo(item));
+        }
+
+        [Test]
+        public async void CreatePOST_EventCreatedWithCorrectData_ItemFromDbMatchesSubmittedViewModel()
+        {
+            Event addedEvent = null;
+
+            EventViewModel viewModel = new EventViewModel
+            {
+                Name = "New Name",
+                Description = "New Description",
+                Time = new DateTime(635827525788997554L, DateTimeKind.Local),
+                Date = new DateTime(2015, 11, 10),
+                Duration = "New Duration"
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            dbStub.Setup(db => db.Events.Add(It.IsAny<Event>())).Callback<Event>((model) =>
+            {
+                addedEvent = model;
+            });
+
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
+
+            await controller.Create(viewModel);
+
+            Assert.That(addedEvent != null);
+            Assert.That(addedEvent.Name, Is.EqualTo(viewModel.Name));
+            Assert.That(addedEvent.Description, Is.EqualTo(viewModel.Description));
+            Assert.That(addedEvent.Date, Is.EqualTo(viewModel.DateTime));
+            Assert.That(addedEvent.Duration, Is.EqualTo(viewModel.Duration));
+        }
+
+        [Test]
+        public async void CreatePOST_DbSavedChagnesCalled_ConfirmsSavedChanges()
+        {
+            EventViewModel viewModel = new EventViewModel
+            {
+                Name = "New Name",
+                Description = "New Description",
+                Time = new DateTime(635827525788997554L, DateTimeKind.Local),
+                Date = new DateTime(2015, 11, 10),
+                Duration = "New Duration"
+            };
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Event>> eventDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Event>().AsQueryable());
+            eventDbSetStub.Setup(edb => edb.Add(viewModel));
+
+            dbMock.Setup(db => db.Events).Returns(eventDbSetStub.Object);
+            dbMock.Setup(db => db.SaveChangesAsync()).ReturnsAsync(1).Verifiable();
+
+            EventsController controller = new EventsController(dbMock.Object, idGetter: null);
+
+            await controller.Create(viewModel);
+
+            Assert.That(
+                () =>
+                    dbMock.Verify(db => db.SaveChangesAsync(),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
         public void EditGET_NullId_Throws404Exception()
         {
             EventsController controller = new EventsController(veilDataAccess: null, idGetter: null);
