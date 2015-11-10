@@ -60,9 +60,8 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        // TODO: Is this the best place for this?
         /// <summary>
-        /// Stores the number of items in the current member's cart in the Session
+        ///     Stores the number of items in the current member's cart in the Session
         /// </summary>
         [ChildActionOnly]
         public void SetSessionCartQty()
