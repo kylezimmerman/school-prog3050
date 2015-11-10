@@ -759,37 +759,6 @@ namespace Veil.Tests.Controllers
             Assert.That(model.GameSKUs, Has.Some.Matches<Product>(p => p.ProductAvailabilityStatus == AvailabilityStatus.NotForSale));
         }
 
-        [TestCase(VeilRoles.MEMBER_ROLE)]
-        [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeletePhysicalGameProduct_ValidDelete(string role)
-        {
-            GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
-            gameSku.Id = Id;
-
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> {gameSku}.AsQueryable());
-            gameProductDbSetStub.SetupForInclude();
-
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
-            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
-
-
-            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUser().IsInRole(role);
-
-            GamesController controller = new GamesController(dbStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
-
-            var result = await controller.DeleteGameProduct(gameSku.Id) as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.Model, Is.Not.Null);
-            Assert.That(result.Model, Is.InstanceOf<GameProduct>());
-        }
-
         [TestCase(null)] //Unauthenticated
         [TestCase(VeilRoles.MEMBER_ROLE)]
         public async void Index_Unprivilaged_NotForSaleGame(string role)
