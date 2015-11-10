@@ -1548,36 +1548,5 @@ namespace Veil.Tests.Controllers
         {
             throw new NotImplementedException();
         }
-
-        [TestCase(VeilRoles.MEMBER_ROLE)]
-        [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeletePhysicalGameProduct_InvalidID(string role)
-        {
-            GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
-            gameSku.Id = Id;
-
-
-
-            Guid badId = new Guid("44B0752E - 998B - 477A - AAAD - 3ED535BA3559");
-
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
-            gameProductDbSetStub.SetupForInclude();
-
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
-            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
-
-
-            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUser().IsInRole(role);
-
-            GamesController controller = new GamesController(dbStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
-
-            Assert.That(async () => await controller.DeleteGameProduct(badId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
-        }
     }
 }
