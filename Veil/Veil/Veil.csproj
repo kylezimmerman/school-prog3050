@@ -233,7 +233,7 @@
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
-    <Compile Include="Models\SearchViewModel.cs" />
+    <Compile Include="Models\AdvancedSearchViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
@@ -484,6 +484,8 @@
     <Content Include="Views\Games\AdvancedSearch.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Events\_EventListItem.cshtml" />
+	<Content Include="Views\Events\_EventDetailsSidePanel.cshtml" />
+    <Content Include="Views\Events\_EventFormFields.cshtml" />
     <Content Include="Views\GameProducts\_DownloadGameProduct.cshtml" />
     <Content Include="Views\GameProducts\_GameProductPartial.cshtml" />
     <Content Include="Views\GameProducts\_PhysicalGameProductPartial.cshtml" />

@@ -144,22 +144,21 @@ namespace Veil.Controllers
             platform = platform.Trim();
             tags = tags ?? new List<string>();
 
+            if (tags.Count == 0 && title == "" && platform == "")
+            {
+                AdvancedSearchViewModel advancedAdvancedSearchViewModel = new AdvancedSearchViewModel
+                {
+                    Platforms = await db.Platforms.ToListAsync()
+                };
+
+                return View(advancedAdvancedSearchViewModel);
+            }
+
             for (int i = 0; i < tags.Count; i++)
             {
                 string t = tags[i];
                 t = t.Trim();
                 tags[i] = t;
-            }
-
-            if (tags.Count == 0 && title == "" && platform == "")
-            {
-                SearchViewModel searchViewModel = new SearchViewModel
-                {
-                    Platforms = await db.Platforms.ToListAsync(),
-                    Tags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync()
-                };
-
-                return View(searchViewModel);
             }
 
             // We are doing Or, so we need the first to be false
@@ -366,7 +365,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -385,17 +384,15 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameConfirmed(Guid? id)
+        public async Task<ActionResult> DeleteGameConfirmed(Guid id = default(Guid))
         {
-            if (id == null)
+            if (id == Guid.Empty)
             {
-                this.AddAlert(AlertType.Error, "No game selected");
-
+                this.AddAlert(AlertType.Error, "You must select a Game to delete.");
                 return RedirectToAction("Index");
-                
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -421,8 +418,8 @@ namespace Veil.Controllers
                 }
             }
 
-            return RedirectToAction("Index");
-        }
+                return RedirectToAction("Index");
+            }
 
         /// <summary>
         /// Sets a Game's Tag to the provided list of tags by name. Note that this clears any existing tags.
@@ -433,6 +430,11 @@ namespace Veil.Controllers
         {
             //Clear any existing tags in the game
             game.Tags.Clear();
+
+            if (tagNames == null)
+            {
+                return;
+            }
 
             //Add all of the new tags by name
             foreach (var tagName in tagNames)

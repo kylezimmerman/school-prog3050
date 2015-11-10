@@ -10,7 +10,7 @@
         <img src="@Model.GameProduct.BoxArtImageURL" alt="@Model.GameProduct.PlatformCode Box Art" />
     </div>
     <div class="small-6 columns" data-equalizer-watch>
-        <h5>@Html.ActionLink(Model.GameProduct.Name, "Details", "Games", new { id = Model.GameProduct.GameId }, null)  </h5>
+        <h5>@Html.ActionLink(Model.GameProduct.Name, "Details", "Games", new { id = Model.GameProduct.GameId }, null)</h5>
         <p class="margin-bottom-0 padding-bottom-half-em">@Model.GameProduct.SKUDescription</p>
         <p class="margin-bottom-0"><strong>Developer:</strong>&nbsp;@Model.GameProduct.Developer.Name</p>
         <p class="margin-bottom-0"><strong>Publisher:</strong>&nbsp;@Model.GameProduct.Publisher.Name</p>
@@ -43,7 +43,7 @@
             }
             else
             {
-                @Html.ActionLink($"Buy New {Model.GameProduct.NewWebPrice:C}", "AddItem", "Cart", new { productId = Model.GameProduct.Id, isNew = true }, new { @class = buyNewClasses });
+                @Html.ActionLink($"Buy New {Model.GameProduct.NewWebPrice:C}", "AddItem", "Cart", new { productId = Model.GameProduct.Id, isNew = true }, new { @class = buyNewClasses })
             }
 
             if (Model.GameProduct.UsedWebPrice.HasValue)
@@ -60,7 +60,7 @@
                 }
                 else
                 {
-                    Html.ActionLink($"Buy Used {Model.GameProduct.UsedWebPrice.Value:C}", "AddItem", "Cart", new { productId = Model.GameProduct.Id, isNew = false }, new { @class = buyUsedClasses });
+                    @Html.ActionLink($"Buy Used {Model.GameProduct.UsedWebPrice.Value:C}", "AddItem", "Cart", new { productId = Model.GameProduct.Id, isNew = false }, new { @class = buyUsedClasses })
                 }
             }
 
