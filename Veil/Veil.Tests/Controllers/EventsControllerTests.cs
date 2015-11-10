@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Security.Claims;
 using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
-using Microsoft.AspNet.Identity;
 using Moq;
 using NUnit.Framework;
 using Veil.Controllers;
@@ -21,11 +19,148 @@ namespace Veil.Tests.Controllers
     public class EventsControllerTests
     {
         private Guid Id;
+        private Guid UserId;
 
         [SetUp]
         public void Setup()
         {
             Id = new Guid("45B0752E-998B-466A-AAAD-3ED535BA3559");
+            UserId = new Guid("09EABF21-D5AC-4A5D-ADF8-27180E6D889B");
+        }
+
+        [TestCase(0, 0)]
+        [TestCase(2, 0)]
+        [TestCase(2, 1)]
+        [TestCase(0, 2)]
+        public async void Index_WithEvents_ReturnsMatchingModel(int futureEventCount, int pastEventCount)
+        {
+            DateTime futureDate = DateTime.Now.AddDays(1);
+            DateTime pastDate = DateTime.Now.AddDays(-1);
+
+            List<Event> events = new List<Event>();
+
+            for (int i = 0; i < futureEventCount; i++)
+            {
+                events.Add(new Event()
+                {
+                    Date = futureDate
+                });
+            }
+
+            for (int i = 0; i < futureEventCount; i++)
+            {
+                events.Add(new Event()
+                {
+                    Date = pastDate
+                });
+            }
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Event>> eventDbSetStub = TestHelpers.GetFakeAsyncDbSet(events.AsQueryable());
+            dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
+
+            EventsController controller = new EventsController(dbStub.Object, idGetter: null);
+
+            var result = await controller.Index() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<EventListViewModel>());
+
+            var model = (EventListViewModel)result.Model;
+
+            Assert.That(model.Events, Has.Count.EqualTo(futureEventCount));
+        }
+
+        [Test]
+        public async void MyEvents_ReturnsMatchingModel()
+        {
+            DateTime futureDate = DateTime.Now.AddDays(1);
+
+            Member member = new Member
+            {
+                UserId = UserId,
+                RegisteredEvents = new List<Event>
+                {  
+                    new Event
+                    {
+                        Date = futureDate
+                    },
+                    new Event
+                    {
+                        Date = futureDate
+                    }
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            EventsController controller = new EventsController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.MyEvents() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<EventListViewModel>());
+
+            var model = (EventListViewModel)result.Model;
+
+            Assert.That(model.Events.Count(), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void RenderEventListItem_MemberNotRegistered_ReturnsMatchingModel()
+        {
+            DateTime futureDate = DateTime.Now.AddDays(1);
+
+            Event eventItem = new Event
+            {
+                Id = Id,
+                Date = futureDate
+            };
+
+            Member member = new Member
+            {
+                UserId = UserId,
+                RegisteredEvents = new List<Event>()
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            EventsController controller = new EventsController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = controller.RenderEventListItem(eventItem, false) as PartialViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<EventListItemViewModel>());
+
+            var model = (EventListItemViewModel)result.Model;
+
+            Assert.That(model.Event.Id, Is.EqualTo(eventItem.Id));
         }
 
         [Test]
@@ -128,7 +263,7 @@ namespace Veil.Tests.Controllers
         public void EditGET_IdNotInDb_Throws404Exception()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<Event>> eventDbSetStub =TestHelpers.GetFakeAsyncDbSet(new List<Event>().AsQueryable());
+            Mock<DbSet<Event>> eventDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Event>().AsQueryable());
 
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
@@ -373,7 +508,7 @@ namespace Veil.Tests.Controllers
 
             Member member = new Member
             {
-                UserId = Id,
+                UserId = UserId,
                 RegisteredEvents = new List<Event>()
             };
 
@@ -390,7 +525,7 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
-            memberDbSetStub.Setup(db => db.FindAsync(eventItem.Id)).ReturnsAsync(member);
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
@@ -448,7 +583,7 @@ namespace Veil.Tests.Controllers
 
             Member member = new Member
             {
-                UserId = Id,
+                UserId = UserId,
                 RegisteredEvents = new List<Event>()
             };
 
@@ -459,7 +594,7 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
-            memberDbSetStub.Setup(db => db.FindAsync(eventItem.Id)).ReturnsAsync(member);
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
@@ -515,7 +650,7 @@ namespace Veil.Tests.Controllers
 
             Member member = new Member
             {
-                UserId = Id,
+                UserId = UserId,
                 RegisteredEvents = new List<Event>()
             };
 
@@ -529,7 +664,7 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Events).Returns(eventDbSetStub.Object);
 
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
-            memberDbSetStub.Setup(db => db.FindAsync(eventItem.Id)).ReturnsAsync(member);
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
