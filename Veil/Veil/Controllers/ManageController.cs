@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -8,7 +9,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
-using Veil.Extensions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -265,7 +265,8 @@ namespace Veil.Controllers
         ///     Redirects back to ManageAddresses if successful
         ///     Redisplays the form if the information is invalid or a database error occurs
         /// </returns>
-        public async Task<ActionResult> CreateAddress([Bind(Exclude = nameof(ManageAddressViewModel.Countries))]ManageAddressViewModel model)
+        public async Task<ActionResult> CreateAddress(
+            [Bind(Exclude = nameof(ManageAddressViewModel.Countries) + "," + nameof(ManageAddressViewModel.Addresses))]ManageAddressViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -295,13 +296,20 @@ namespace Veil.Controllers
             }
             catch (DbUpdateException ex)
             {
-                // Get the exception message which states if a foreign key constraint was violated
-                string exMessage = ex.InnerException?.InnerException?.Message;
+                // Get the exception which states if a foreign key constraint was violated
+                SqlException innermostException = ex.GetBaseException() as SqlException;
 
-                bool errorWasProvinceForeignKeyConstraint = 
-                    exMessage != null &&
-                    exMessage.Contains(nameof(Province.ProvinceCode)) &&
-                    exMessage.Contains(nameof(Province.CountryCode));
+                bool errorWasProvinceForeignKeyConstraint = false;
+
+                if (innermostException != null)
+                {
+                    string exMessage = innermostException.Message;
+                    
+                    errorWasProvinceForeignKeyConstraint =
+                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation &&
+                        exMessage.Contains(nameof(Province.ProvinceCode)) &&
+                        exMessage.Contains(nameof(Province.CountryCode));
+                }
 
                 this.AddAlert(AlertType.Error,
                     errorWasProvinceForeignKeyConstraint

@@ -15,6 +15,17 @@ using Veil.DataModels.Models.Identity;
 namespace Veil.DataAccess.Interfaces
 {
     /// <summary>
+    ///     An enum of to provide friendly names for SQL Server Error Numbers
+    /// </summary>
+    /// <remarks>
+    ///     Full List: https://technet.microsoft.com/en-us/library/cc645603%28v=sql.105%29.aspx
+    /// </remarks>
+    public enum SqlErrorNumbers
+    {
+        ConstraintViolation = 547
+    }
+
+    /// <summary>
     ///     Interface for Veil's Data Access layer
     /// </summary>
     public interface IVeilDataAccess : IDisposable
