@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Threading.Tasks;
-using System.Net;
 using System.Web.Mvc;
 using System.Linq;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Models;
-using Veil.Extensions;
 using System.Web;
 using Veil.DataModels;
 using Veil.Helpers;
