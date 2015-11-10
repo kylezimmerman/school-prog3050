@@ -59,8 +59,7 @@ namespace Veil.Controllers
                 throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
             }
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            Member currentMember = await db.Members.FindAsync(currentUserId);
+            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
 
             if (wishlistOwnerId == null)
             {
@@ -113,8 +112,7 @@ namespace Veil.Controllers
                 GameProduct = gameProduct
             };
 
-            Guid currentUserId = IIdentityExtensions.GetUserId(User.Identity);
-            Member currentMember = db.Members.Find(currentUserId);
+            Member currentMember = db.Members.Find(User.Identity.GetUserId());
 
             if (currentMember != null)
             {
@@ -141,7 +139,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> Add(Guid? itemId)
         {
             Product newItem = await db.Products.FindAsync(itemId);
-            User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            User user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
             if (newItem == null)
             {
@@ -175,7 +173,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> Remove(Guid? itemId)
         {
             Product toRemove = await db.Products.FindAsync(itemId);
-            User user = await userManager.FindByIdAsync(IIdentityExtensions.GetUserId(User.Identity));
+            User user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
             if (toRemove == null)
             {

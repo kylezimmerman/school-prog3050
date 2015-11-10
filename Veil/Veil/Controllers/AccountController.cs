@@ -141,6 +141,8 @@ namespace Veil.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    // Set the Cart Quantity in the Session for use in the NavBar
+                    Session[CartController.CART_QTY_KEY] = user.Member.Cart.Items.Count;
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
                     return View("Lockout");

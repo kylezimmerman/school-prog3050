@@ -52,8 +52,7 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> MyEvents()
         {
-            Guid currentUserId = User.Identity.GetUserId();
-            Member currentMember = await db.Members.FindAsync(currentUserId);
+            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
 
             var model = new EventListViewModel
             {
@@ -87,8 +86,7 @@ namespace Veil.Controllers
                 OnlyRegisteredEvents = onlyRegisteredEvents
             };
 
-            Guid currentUserId = User.Identity.GetUserId();
-            Member currentMember = db.Members.Find(currentUserId);
+            Member currentMember = db.Members.Find(User.Identity.GetUserId());
 
             if (currentMember != null)
             {
@@ -113,21 +111,20 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+                throw new HttpException(NotFound, nameof(Event));
             }
 
             var model = new EventDetailsViewModel
             {
-                Event = await db.Events.FindAsync(id),
+                Event = await db.Events.FindAsync(id)
             };
 
             if (model.Event == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+                throw new HttpException(NotFound, nameof(Event));
             }
 
-            Guid currentUserId = User.Identity.GetUserId();
-            Member currentMember = await db.Members.FindAsync(currentUserId);
+            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
 
             if (currentMember != null)
             {
@@ -153,18 +150,17 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+                throw new HttpException(NotFound, nameof(Event));
             }
 
             Event currentEvent = await db.Events.FindAsync(id);
 
             if (currentEvent == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+                throw new HttpException(NotFound, nameof(Event));
             }
 
-            Guid currentUserId = User.Identity.GetUserId();
-            Member currentMember = await db.Members.FindAsync(currentUserId);
+            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
 
             currentMember.RegisteredEvents.Add(currentEvent);
             db.MarkAsModified(currentMember);
@@ -197,18 +193,17 @@ namespace Veil.Controllers
         {
             if(id == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+                throw new HttpException(NotFound, nameof(Event));
             }
 
             Event currentEvent = await db.Events.FindAsync(id);
 
             if (currentEvent == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Event));
+                throw new HttpException(NotFound, nameof(Event));
             }
 
-            Guid currentUserId = User.Identity.GetUserId();
-            Member currentMember = await db.Members.FindAsync(currentUserId);
+            Member currentMember = await db.Members.FindAsync(User.Identity.GetUserId());
 
             currentMember.RegisteredEvents.Remove(currentEvent);
             db.MarkAsModified(currentMember);

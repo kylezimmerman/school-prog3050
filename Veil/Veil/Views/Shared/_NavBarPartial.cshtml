@@ -1,4 +1,6 @@
-﻿@using Veil.DataModels
+﻿@using Microsoft.Ajax.Utilities
+@using Veil.Controllers
+@using Veil.DataModels
 <nav class="top-bar" data-topbar role="navigation">
     <ul class="title-area">
         <li class="name">
@@ -35,13 +37,17 @@
                 </div>
             </li>
 
-            @if (User.IsInRole(VeilRoles.MEMBER_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+            @if (User.IsInRole(VeilRoles.MEMBER_ROLE))
             {
                 <li class="active">
                     <a href="@Url.Action("Index", "Cart")">
                         <i class="fa fa-shopping-cart"></i>
                         <span class="show-for-sr">Cart</span>
-                        <span>(1)</span>
+                        @if (Session[CartController.CART_QTY_KEY] == null)
+                        {
+                            Html.Action("SetSessionCartQty", "Cart");
+                        }
+                        <span>(@Session[CartController.CART_QTY_KEY])</span>
                     </a>
                 </li>
             }
