@@ -33,6 +33,7 @@ namespace Veil.DataModels.Models
         /// A description of the event
         /// </summary>
         [MaxLength(2048)]
+        [DataType(DataType.MultilineText)]
         public string Description { get; set; }
 
         /// <summary>
