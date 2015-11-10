@@ -310,20 +310,18 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // GET: Games/Edit/5
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
-                this.AddAlert(AlertType.Error, "Please select a game to edit.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             Game game = await db.Games.FindAsync(id);
             if (game == null)
             {
-                this.AddAlert(AlertType.Error, "Please select a game to edit.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description", game.ESRBRatingId);
