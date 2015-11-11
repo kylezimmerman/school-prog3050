@@ -67,12 +67,13 @@ namespace Veil.Controllers
             }
             //TODO: or ViewModel is List<Friendship>
             //friendsListViewModel.PendingReceivedFriendships = friendships
-            //                    .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
-            //                    .Where(f => f.ReceiverId == idGetter.GetUserId(User.Identity))
-            //                    .ToList();
+            //    .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
+            //    .Where(f => f.ReceiverId == idGetter.GetUserId(User.Identity))
+            //    .ToList();
             //friendsListViewModel.PendingSentFriendships = friendships
             //    .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
-            //    .Where(f => f.RequesterId == idGetter.GetUserId(User.Identity));
+            //    .Where(f => f.RequesterId == idGetter.GetUserId(User.Identity))
+            //    .ToList();
 
             return View(friendsListViewModel);
         }
