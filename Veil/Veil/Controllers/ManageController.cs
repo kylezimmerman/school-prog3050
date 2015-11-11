@@ -270,10 +270,12 @@ namespace Veil.Controllers
         ///     Redirects back to ManageAddresses if successful
         ///     Redisplays the form if the information is invalid or a database error occurs
         /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateAddress(
             [Bind(Exclude = nameof(ManageAddressViewModel.Countries) + "," + nameof(ManageAddressViewModel.Addresses))]ManageAddressViewModel model)
         {
-            if (ModelState.ContainsKey(nameof(model.PostalCode)) && !string.IsNullOrWhiteSpace(model.CountryCode))
+            if (!ModelState.IsValidField(nameof(model.PostalCode)) && !string.IsNullOrWhiteSpace(model.CountryCode))
             {
                 // Remove the default validation message to provide a more specific one.
                 ModelState.Remove(nameof(model.PostalCode));
