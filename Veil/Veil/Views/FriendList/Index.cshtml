@@ -67,10 +67,10 @@
         <table>
         @if (Model.ConfirmedFriends != null && Model.ConfirmedFriends.Count > 0)
         {
-            foreach (var friendship in Model.ConfirmedFriends)
+            foreach (var friend in Model.ConfirmedFriends)
             {
                 <tr>
-                    <td>@friendship.UserAccount.UserName</td>
+                    <td>@friend.UserAccount.UserName</td>
                 </tr>
             }
         }
