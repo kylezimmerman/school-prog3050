@@ -36,7 +36,24 @@ namespace Veil.Services
             return customer.Id;
         }
 
-        public string CreateCreditCard(Member member, CreditCardViewModel creditCard)
+        /// <summary>
+        ///     Adds the credit card represented by <see cref="stripeCardToken"/> to the
+        ///     <see cref="member"/>'s Customer account
+        /// </summary>
+        /// <param name="member">
+        ///     The <see cref="Member"/> who this credit card belongs to
+        /// </param>
+        /// <param name="stripeCardToken">
+        ///     The Stripe Token for the new credit card
+        /// </param>
+        /// <returns>
+        ///     A new <see cref="MemberCreditCard"/> containing the new card's information
+        /// </returns>
+        /// <exception cref="StripeException">
+        ///     Thrown if Stripe returns any errors.
+        ///     The messages are safe to display to the user.
+        /// </exception>
+        public MemberCreditCard CreateCreditCard(Member member, string stripeCardToken)
         {
             // Note: Stripe says their card_error messages are safe to display to the user
             //if (ex.StripeError.Code == "card_error")
@@ -45,17 +62,8 @@ namespace Veil.Services
             {
                 Source = new StripeSourceOptions
                 {
-                    ExpirationYear = creditCard.ExpirationYear.ToString(),
-                    ExpirationMonth = creditCard.ExpirationMonth.ToString(),
-                    AddressCountry = creditCard.AddressCountry, // optional
-                    AddressLine1 = creditCard.AddressLine1, // optional
-                    //AddressLine2 = "Apt 24", // optional
-                    AddressCity = creditCard.AddressCity, // optional
-                    AddressState = creditCard.AddressState, // optional
-                    AddressZip = creditCard.AddressZip, // optional
-                    Name = creditCard.Name, // optional
-                    Cvc = creditCard.Cvc, // optional
-                    Object = creditCard.Object
+                    TokenId = stripeCardToken
+                    // Note: Adding Object = "card" will result in a generic stripe error
                 }
             };
 
@@ -63,7 +71,23 @@ namespace Veil.Services
 
             StripeCard card = cardService.Create(member.StripeCustomerId, newCard);
 
-            return card.Id;
+            // TODO: Maybe check AddressLine1Check and CvcCheck and AddressZipCheck
+
+            int expiryMonth = int.Parse(card.ExpirationMonth);
+            int expiryYear = int.Parse(card.ExpirationYear);
+
+            MemberCreditCard newMemberCard = new MemberCreditCard
+            {
+                CardholderName = card.Name,
+                ExpiryMonth = expiryMonth,
+                ExpiryYear = expiryYear,
+                Last4Digits = card.Last4,
+                StripeCardId = card.Id,
+                Member = member,
+                MemberId = member.UserId
+            };
+
+            return newMemberCard;
         }
     }
 }

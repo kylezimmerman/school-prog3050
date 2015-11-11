@@ -3,37 +3,45 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using Stripe;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Validation;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
+using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class ManageController : BaseController
     {
+        public const string STRIPE_ISSUES_MODELSTATE_KEY = "StripeIssues";
+
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
+        private readonly IStripeService stripeService;
 
         private static readonly Regex postalCodeRegex = new Regex(ValidationRegex.POSTAL_CODE, RegexOptions.Compiled);
         private static readonly Regex zipCodeRegex = new Regex(ValidationRegex.ZIP_CODE, RegexOptions.Compiled);
 
-        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
+        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             db = veilDataAccess;
             this.idGetter = idGetter;
+            this.stripeService = stripeService;
         }
 
         //
@@ -255,7 +263,7 @@ namespace Veil.Controllers
         {
             ManageAddressViewModel model = new ManageAddressViewModel();
 
-            await SetupCountriesAndAddresses(model);
+            await SetupAddressesAndCountries(model);
 
             return View(model);
         }
@@ -303,7 +311,7 @@ namespace Veil.Controllers
             {
                 this.AddAlert(AlertType.Error, "Some address information was invalid.");
 
-                await SetupCountriesAndAddresses(model);
+                await SetupAddressesAndCountries(model);
 
                 return View("ManageAddresses", model);
             }
@@ -347,7 +355,7 @@ namespace Veil.Controllers
                         ? "The Province/State you selected isn't in the Country you selected."
                         : "An unknown error occured while adding the address.");
 
-                await SetupCountriesAndAddresses(model);
+                await SetupAddressesAndCountries(model);
         
                 return View("ManageAddresses", model);
             }
@@ -358,12 +366,66 @@ namespace Veil.Controllers
 
         public async Task<ActionResult> ManageCreditCards()
         {
-            ManageCreditCardViewModel model = new ManageCreditCardViewModel
-            {
-                Countries = await db.Countries.Include(c => c.Provinces).ToListAsync()
-            };
+            ManageCreditCardViewModel model = new ManageCreditCardViewModel();
+
+            await SetupCreditCardsAndCountries(model);
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
+        public async Task<ActionResult> CreateCreditCard(string stripeCardToken)
+        {
+            if (!ModelState.IsValid)
+            {
+                this.AddAlert(AlertType.Error, "Some credit card information is invalid.");
+
+                return RedirectToAction("ManageCreditCards");
+            }
+
+            Member currentMember = await db.Members.FindAsync(GetUserId());
+
+            if (currentMember == null)
+            {
+                // Note: There should be no way for this to happen.
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+
+            MemberCreditCard newCard;
+
+            try
+            {
+                newCard = stripeService.CreateCreditCard(currentMember, stripeCardToken);
+            }
+            catch (StripeException ex)
+            {
+                // Note: Stripe says their card_error messages are safe to display to the user
+                if (ex.StripeError.Code == "card_error")
+                {
+                    this.AddAlert(AlertType.Error, ex.Message);
+                    ModelState.AddModelError("StripeIssues", ex.Message);
+                }
+                else
+                {
+                    this.AddAlert(AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
+                }
+
+                var viewModel = new ManageCreditCardViewModel();
+
+                await SetupCreditCardsAndCountries(viewModel);
+
+                return View("ManageCreditCards", viewModel);
+            }
+
+            currentMember.CreditCards.Add(newCard);
+
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Successfully added a new Credit Card.");
+
+            return RedirectToAction("ManageCreditCards");
         }
 
         //
@@ -430,7 +492,7 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        ///     Sets up the Countries and Addresses properties of the passed <see cref="ManageAddressViewModel"/>
+        ///     Sets up the Addresses and Countries properties of the passed <see cref="ManageAddressViewModel"/>
         /// </summary>
         /// <param name="model">
         ///     The model to setup
@@ -438,7 +500,7 @@ namespace Veil.Controllers
         /// <returns>
         ///     A task to await
         /// </returns>
-        private async Task SetupCountriesAndAddresses(ManageAddressViewModel model)
+        private async Task SetupAddressesAndCountries(ManageAddressViewModel model)
         {
             Guid memberId = GetUserId();
 
@@ -454,6 +516,46 @@ namespace Veil.Controllers
 
             model.Countries = await db.Countries.Include(c => c.Provinces).ToListAsync();
             model.Addresses = new SelectList(memberAddresses, nameof(MemberAddress.Id), nameof(MemberAddress.StreetAddress));
+        }
+
+        /// <summary>
+        ///     Sets up the CreditCards and Countries properties of the passed <see cref="ManageCreditCardViewModel"/>
+        /// </summary>
+        /// <param name="model">
+        ///     The model to setup
+        /// </param>
+        /// <returns>
+        ///     A task to await
+        /// </returns>
+        private async Task SetupCreditCardsAndCountries(ManageCreditCardViewModel model)
+        {
+            const int CREDIT_CARD_NUMBER_LENGTH = 12;
+
+            Guid memberId = GetUserId();
+
+            var memberCreditCards =
+                await db.Members.
+                    Where(m => m.UserId == memberId).
+                    SelectMany(m => m.CreditCards).
+                    Select(cc =>
+                        new
+                        {
+                            cc.Id,
+                            cc.Last4Digits
+                        }).
+                    ToListAsync();
+
+            memberCreditCards = memberCreditCards.
+                Select(cc =>
+                    new
+                    {
+                        cc.Id,
+                        Last4Digits = cc.Last4Digits.PadLeft(CREDIT_CARD_NUMBER_LENGTH, '*')
+                    }).
+                ToList();
+
+            model.Countries = await db.Countries.Include(c => c.Provinces).ToListAsync();
+            model.CreditCards = new SelectList(memberCreditCards, nameof(MemberCreditCard.Id), nameof(MemberCreditCard.Last4Digits));
         }
 
         private bool HasPassword()

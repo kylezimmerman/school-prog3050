@@ -24,10 +24,10 @@ namespace Veil.Controllers
     public class AccountController : Controller
     {
         /* This must be kept in sync with the value used in _LoginAccountPartial */
-        private const string LOGIN_MODEL_ERRORS_KEY = "loginModel";
+        public const string LOGIN_MODEL_ERRORS_KEY = "loginModel";
 
         /* This must be kept in sync with the value used in _RegisterAccountParial */
-        private const string REGISTER_MODEL_ERRORS_KEY = "registerModel";
+        public const string REGISTER_MODEL_ERRORS_KEY = "registerModel";
 
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;

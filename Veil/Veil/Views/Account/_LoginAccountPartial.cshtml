@@ -1,4 +1,5 @@
-﻿@model Veil.Models.LoginViewModel
+﻿@using Veil.Controllers
+@model Veil.Models.LoginViewModel
 
 <div class="row">
     <div class="column">
@@ -11,7 +12,7 @@
     @Html.AntiForgeryToken()
     <hr/>
 
-    @Html.ValidationMessage("loginModel") @* This must be kept in sync with AccountController's LOGIN_MODEL_ERRORS_KEY *@
+    @Html.ValidationMessage(AccountController.LOGIN_MODEL_ERRORS_KEY)
 
     <div class="row">
         <div class="column">

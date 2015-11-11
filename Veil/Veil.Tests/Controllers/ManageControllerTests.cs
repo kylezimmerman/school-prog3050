@@ -12,6 +12,8 @@ using Veil.DataModels.Models;
 using Veil.DataModels.Validation;
 using Veil.Helpers;
 using Veil.Models;
+using Veil.Services;
+using Veil.Services.Interfaces;
 
 namespace Veil.Tests.Controllers
 {
@@ -24,6 +26,14 @@ namespace Veil.Tests.Controllers
         public void Setup()
         {
             memberId = new Guid("59EF92BE-D71F-49ED-992D-DF15773DAF98");
+        }
+
+        private ManageController CreateManageController(
+            VeilUserManager userManager = null, VeilSignInManager signInManager = null,
+            IVeilDataAccess veilDataAccess = null, IGuidUserIdGetter idGetter = null,
+            IStripeService stripeService = null)
+        {
+            return new ManageController(userManager, signInManager, veilDataAccess, idGetter, stripeService);
         }
 
         private List<MemberAddress> GetMemberAddresses()
@@ -89,10 +99,9 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+
+            controller.ControllerContext = contextStub.Object;
 
             var result = await controller.ManageAddresses() as ViewResult;
 
@@ -122,11 +131,9 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
-
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
+            
             var result = await controller.ManageAddresses() as ViewResult;
 
             Assert.That(result != null);
@@ -162,10 +169,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             await controller.ManageAddresses();
 
@@ -186,10 +191,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             controller.ModelState.AddModelError(nameof(ManageAddressViewModel.City), "Required");
 
@@ -215,10 +218,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
 
@@ -239,10 +240,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
 
@@ -264,10 +263,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             controller.ModelState.AddModelError(nameof(ManageAddressViewModel.City), "Required");
 
@@ -311,10 +308,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(currentMemberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             await controller.CreateAddress(viewModel);
 
@@ -360,10 +355,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(currentMemberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             await controller.CreateAddress(viewModel);
 
@@ -393,10 +386,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbMock.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbMock.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             await controller.CreateAddress(viewModel);
 
@@ -443,10 +434,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             Assert.That(async () => await controller.CreateAddress(viewModel), Throws.Nothing);
         }
@@ -479,10 +468,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             Assert.That(async () => await controller.CreateAddress(viewModel), Throws.Nothing);
         }
@@ -518,10 +505,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             var result = await controller.CreateAddress(viewModel) as ViewResult;
 
@@ -562,10 +547,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             var result = await controller.CreateAddress(viewModel) as ViewResult;
 
@@ -594,10 +577,8 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
 
-            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
 
             var result = await controller.CreateAddress(viewModel) as RedirectToRouteResult;
 

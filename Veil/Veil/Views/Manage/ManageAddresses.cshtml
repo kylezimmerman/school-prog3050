@@ -58,7 +58,7 @@
                     } else {
                         $(this).prop('disabled', false);
 
-                        if ($('option:selected', this) === undefined) {
+                        if ($('option:selected', this)[0] === undefined) {
                             $('option', this).first().prop('selected', true);
                         }
                     }

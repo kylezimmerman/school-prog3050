@@ -1,6 +1,10 @@
 ﻿@using Veil.Extensions
 @model Veil.Models.ManageAddressViewModel
 
+@* Note: You should copy the scripts section of ManageAddresses if you use this partial *@
+
+@Html.ValidationSummary(true)
+
 <div class="row collapse">
     <div class="medium-3 columns">
         @Html.LabelFor(m => m.StreetAddress, new { @class = "prefix" })
