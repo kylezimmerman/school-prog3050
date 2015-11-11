@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Tests.Validation
@@ -27,7 +26,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("(800)555-0199, EXT. 5")]
         public void InputPhone_ValidInput_PassesRegex(string phoneNumber)
         {
-            Assert.That(Regex.IsMatch(phoneNumber, ValidationRegex.INPUT_PHONE), Is.True);
+            Assert.That(phoneNumber, Is.StringMatching(ValidationRegex.INPUT_PHONE));
         }
 
         [TestCase("(800) 555-0199")]
@@ -49,7 +48,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("800-555-0199 ext. 555")]
         public void InputPhone_InvalidInput_FailsRegex(string phoneNumber)
         {
-            Assert.That(Regex.IsMatch(phoneNumber, ValidationRegex.INPUT_PHONE), Is.False);
+            Assert.That(phoneNumber, Is.Not.StringMatching(ValidationRegex.INPUT_PHONE));
         }
 
         [TestCase("800-555-0199")]
@@ -59,7 +58,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("800-555-0199, ext. 5")]
         public void StoredPhone_ValidInput_PassesRegex(string phoneNumber)
         {
-            Assert.That(Regex.IsMatch(phoneNumber, ValidationRegex.STORED_PHONE), Is.True);
+            Assert.That(phoneNumber, Is.StringMatching(ValidationRegex.STORED_PHONE));
         }
 
         [TestCase("(800) 555-0199")]
@@ -92,7 +91,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("800-555-0199 ext. 5")]
         public void StoredPhone_InvalidInput_FailsRegex(string phoneNumber)
         {
-            Assert.That(Regex.IsMatch(phoneNumber, ValidationRegex.STORED_PHONE), Is.False);
+            Assert.That(phoneNumber, Is.Not.StringMatching(ValidationRegex.STORED_PHONE));
         }
 
         [TestCase("0000000000000")]
@@ -101,7 +100,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("0999999999999")]
         public void PhysicalGameProductNewSKU_ValidInput_PassesRegex(string newSKU)
         {
-            Assert.That(Regex.IsMatch(newSKU, ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU), Is.True);
+            Assert.That(newSKU, Is.StringMatching(ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU));
         }
 
         [TestCase("1000000000000")]
@@ -110,7 +109,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("000000000000")]
         public void PhysicalGameProductNewSKU_InvalidInput_FailsRegex(string newSKU)
         {
-            Assert.That(Regex.IsMatch(newSKU, ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU), Is.False);
+            Assert.That(newSKU, Is.Not.StringMatching(ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU));
         }
 
         [TestCase("1000000000000")]
@@ -119,7 +118,7 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("1999999999999")]
         public void PhysicalGameProductUsedSKU_ValidInput_PassesRegex(string usedSKU)
         {
-            Assert.That(Regex.IsMatch(usedSKU, ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU), Is.True);
+            Assert.That(usedSKU, Is.StringMatching(ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU));
         }
 
         [TestCase("0000000000000")]
@@ -128,7 +127,77 @@ namespace Veil.DataModels.Tests.Validation
         [TestCase("100000000000")]
         public void PhysicalGameProductUsedSKU_InvalidInput_FailsRegex(string usedSKU)
         {
-            Assert.That(Regex.IsMatch(usedSKU, ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU), Is.False);
+            Assert.That(usedSKU, Is.Not.StringMatching(ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU));
+        }
+
+        [TestCase("N2L6R2")]
+        [TestCase("n2l6r2")]
+        [TestCase("N2L-6R2")]
+        [TestCase("n2l-6r2")]
+        [TestCase("N2L 6R2")]
+        [TestCase("n2l 6r2")]
+        [TestCase("12345")]
+        [TestCase("12345-6789")]
+        [TestCase("12345 6789")]
+        public void PostalZipCode_ValidInput_PassesRegex(string postalZipCode)
+        {
+            Assert.That(postalZipCode, Is.StringMatching(ValidationRegex.POSTAL_ZIP_CODE));
+        }
+
+        [TestCase("N2L  6R2")]
+        [TestCase("n2l  6r2")]
+        [TestCase("N2l -6r2")]
+        [TestCase("N2L-6D2")]
+        [TestCase("N2L-6F2")]
+        [TestCase("N2L-6I2")]
+        [TestCase("N2L-6O2")]
+        [TestCase("N2L-6Q2")]
+        [TestCase("N2L-6U2")]
+        [TestCase("W2L-6R2")]
+        [TestCase("Z2L-6R2")]
+        [TestCase("123456789")]
+        [TestCase("12345-678")]
+        [TestCase("12345 678")]
+        [TestCase("1234")]
+        public void PostalZipCode_InvalidInput_FailsRegex(string postalZipCode)
+        {
+            Assert.That(postalZipCode, Is.Not.StringMatching(ValidationRegex.POSTAL_ZIP_CODE));
+        }
+
+        
+        [TestCase("N2L 6R2")]
+        [TestCase("12345")]
+        [TestCase("12345-6789")]
+        
+        public void StoredPostalCode_ValidInput_PassesRegex(string postalZipCode)
+        {
+            Assert.That(postalZipCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
+        }
+
+        [TestCase("n2l 6r2")]
+        [TestCase("N2L6R2")]
+        [TestCase("n2l6r2")]
+        [TestCase("N2L-6R2")]
+        [TestCase("n2l-6r2")]
+        [TestCase("N2L  6R2")]
+        [TestCase("n2l  6r2")]
+        [TestCase("N2l -6r2")]
+        [TestCase("N2L-6D2")]
+        [TestCase("N2L-6F2")]
+        [TestCase("N2L-6I2")]
+        [TestCase("N2L-6O2")]
+        [TestCase("N2L-6Q2")]
+        [TestCase("N2L-6U2")]
+        [TestCase("W2L-6R2")]
+        [TestCase("Z2L-6R2")]
+        [TestCase("12345 6789")]
+        [TestCase("123456789")]
+        [TestCase("12345-678")]
+        [TestCase("12345 678")]
+        [TestCase("1234")]
+        public void StoredPostalCode_InvalidInput_FailsRegex(string postalZipCode)
+        {
+            Assert.That(postalZipCode, Is.Not.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
         }
     }
 }

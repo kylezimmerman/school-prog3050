@@ -7,6 +7,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -56,6 +57,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Required]
         [DataType(DataType.PostalCode)]
+        [RegularExpression(ValidationRegex.STORED_POSTAL_CODE)]
         [MaxLength(16)]
         public string PostalCode { get; set; }
 

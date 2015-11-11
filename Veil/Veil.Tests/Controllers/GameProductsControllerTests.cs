@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -45,7 +46,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GameProductsController controller = new GameProductsController(dbStub.Object)
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -55,6 +56,34 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.Model, Is.Not.Null);
             Assert.That(result.Model, Is.InstanceOf<GameProduct>());
+        }
+
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        public async void DeletePhysicalGameProduct_InvalidID(string role)
+        {
+            GameProduct gameSku = new PhysicalGameProduct();
+            gameSku.GameId = Id;
+            gameSku.Id = Id;
+
+            Guid nonMatch = new Guid("44B0752E-998B-477A-AAAD-3ED535BA3559");
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+            gameProductDbSetStub.SetupForInclude();
+
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().IsInRole(role);
+
+            GamesController controller = new GamesController(dbStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            Assert.That(async () => await controller.Delete(nonMatch), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
     }
 }

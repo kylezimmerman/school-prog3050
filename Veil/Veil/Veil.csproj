@@ -218,13 +218,15 @@
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
-    <Compile Include="Extensions\IIdentityExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
+    <Compile Include="Helpers\GuidUserIdGetter.cs" />
+    <Compile Include="Helpers\IGuidUserIdGetter.cs" />
     <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
     <Compile Include="Models\EventListViewModel.cs" />
+    <Compile Include="Models\FriendsListViewModel.cs" />
     <Compile Include="Models\GameListViewModel.cs" />
     <Compile Include="Helpers\CommonErrorResults.cs" />
     <Compile Include="Models\ErrorViewModel.cs" />
@@ -484,7 +486,7 @@
     <Content Include="Views\Games\AdvancedSearch.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Events\_EventListItem.cshtml" />
-	<Content Include="Views\Events\_EventDetailsSidePanel.cshtml" />
+    <Content Include="Views\Events\_EventDetailsSidePanel.cshtml" />
     <Content Include="Views\Events\_EventFormFields.cshtml" />
     <Content Include="Views\GameProducts\_DownloadGameProduct.cshtml" />
     <Content Include="Views\GameProducts\_GameProductPartial.cshtml" />
@@ -499,6 +501,7 @@
     <Content Include="Views\Shared\_AlertPartial.cshtml" />
     <Content Include="Views\Shared\_RatingStarsPartial.cshtml" />
     <Content Include="Views\Tags\Index.cshtml" />
+    <Content Include="Views\Manage\_ManageAddressFormFields.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />

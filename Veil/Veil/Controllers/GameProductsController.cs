@@ -8,7 +8,6 @@ using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
-using Veil.Extensions;
 using Veil.Helpers;
 using Veil.Models;
 
@@ -17,10 +16,12 @@ namespace Veil.Controllers
     public class GameProductsController : BaseController
     {
         private readonly IVeilDataAccess db;
+        private IGuidUserIdGetter idGetter;
 
-        public GameProductsController(IVeilDataAccess veilDataAccess)
+        public GameProductsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Veil.Controllers
                 GameProduct = gameProduct
             };
 
-            Member currentMember = db.Members.Find(User.Identity.GetUserId());
+            Member currentMember = db.Members.Find(idGetter.GetUserId(User.Identity));
 
             if (currentMember != null)
             {
@@ -50,7 +51,8 @@ namespace Veil.Controllers
                 model.UsedIsInCart = currentMember.Cart.Items.
                     Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
 
-                model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
+                model.ProductIsOnWishlist = currentMember.Wishlist.
+                    Any(p => p.Id == gameProduct.Id);
             }
 
             return PartialView("_PhysicalGameProductPartial", model);
@@ -70,7 +72,7 @@ namespace Veil.Controllers
             if (gameProduct == null)
             {
                 //replace this when it is finished
-                throw new HttpException(NotFound, "failed at 358");
+                throw new HttpException(NotFound, "There was an error");
             }
 
             return View(gameProduct);

@@ -10,7 +10,7 @@
     </div>
     <div class="medium-8 large-10 columns">
         @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "expand"}})
-        @Html.ValidationMessageFor(model => model.Name, "", new {@class = ""})
+        @Html.ValidationMessageFor(model => model.Name)
     </div>
 </div>
 
@@ -20,7 +20,7 @@
     </div>
     <div class="medium-8 large-10 columns">
         @Html.EditorFor(model => model.Description, new {htmlAttributes = new {@class = "expand"}})
-        @Html.ValidationMessageFor(model => model.Description, "", new {@class = ""})
+        @Html.ValidationMessageFor(model => model.Description)
     </div>
 </div>
 
@@ -32,7 +32,7 @@
             </div>
             <div class="medium-8 columns">
                 @Html.EditorFor(model => model.Date, new { htmlAttributes = new { @class = "expand" } })
-                @Html.ValidationMessageFor(model => model.Date, "", new { @class = "" })
+                @Html.ValidationMessageFor(model => model.Date)
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
             </div>
             <div class="medium-8 columns">
                 @Html.EditorFor(model => model.Time, new {htmlAttributes = new {@class = "expand"}})
-                @Html.ValidationMessageFor(model => model.Time, "", new {@class = ""})
+                @Html.ValidationMessageFor(model => model.Time)
             </div>
         </div>
     </div>
@@ -54,7 +54,7 @@
             </div>
             <div class="medium-8 columns">
                 @Html.EditorFor(model => model.Duration, new { htmlAttributes = new { @class = "expand" } })
-                @Html.ValidationMessageFor(model => model.Duration, "", new { @class = "" })
+                @Html.ValidationMessageFor(model => model.Duration)
             </div>
         </div>
     </div>

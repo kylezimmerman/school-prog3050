@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Veil.DataAccess.Interfaces;
-using Veil.Extensions;
+using Veil.DataModels.Models;
+using Veil.DataModels.Validation;
+using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
 
@@ -18,13 +23,17 @@ namespace Veil.Controllers
         private readonly VeilSignInManager signInManager;
         private readonly VeilUserManager userManager;
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
+        private static readonly Regex postalCodeRegex = new Regex(ValidationRegex.POSTAL_CODE, RegexOptions.Compiled);
+        private static readonly Regex zipCodeRegex = new Regex(ValidationRegex.ZIP_CODE, RegexOptions.Compiled);
 
-        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess)
+        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         //
@@ -236,14 +245,115 @@ namespace Veil.Controllers
             });
         }
 
+        /// <summary>
+        ///     Displays a view for adding or removing addresses
+        /// </summary>
+        /// <returns>
+        ///     The view.
+        /// </returns>
         public async Task<ActionResult> ManageAddresses()
         {
-            ManageAddressViewModel model = new ManageAddressViewModel
-            {
-                Countries = await db.Countries.Include(c => c.Provinces).ToListAsync()
-            };
+            ManageAddressViewModel model = new ManageAddressViewModel();
+
+            await SetupCountriesAndAddresses(model);
 
             return View(model);
+        }
+
+        /// <summary>
+        ///     Creates a new address for the member
+        /// </summary>
+        /// <param name="model">
+        ///     <see cref="ManageAddressViewModel"/> containing the address details
+        /// </param>
+        /// <returns>
+        ///     Redirects back to ManageAddresses if successful
+        ///     Redisplays the form if the information is invalid or a database error occurs
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateAddress(
+            [Bind(Exclude = nameof(ManageAddressViewModel.Countries) + "," + nameof(ManageAddressViewModel.Addresses))]ManageAddressViewModel model)
+        {
+            if (!ModelState.IsValidField(nameof(model.PostalCode)) && !string.IsNullOrWhiteSpace(model.CountryCode))
+            {
+                // Remove the default validation message to provide a more specific one.
+                ModelState.Remove(nameof(model.PostalCode));
+
+                ModelState.AddModelError(
+                    nameof(model.PostalCode),
+                    model.CountryCode == "CA"
+                        ? "You must provide a valid Canadian postal code in the format A0A 0A0"
+                        : "You must provide a valid Zip Code in the format 12345 or 12345-6789");
+            }
+            else if (model.CountryCode == "CA" && postalCodeRegex.IsMatch(model.PostalCode))
+            {
+                model.PostalCode = model.PostalCode.ToUpperInvariant();
+
+                model.PostalCode = model.PostalCode.Length == 6 
+                    ? model.PostalCode.Insert(3, " ") 
+                    : model.PostalCode.Replace('-', ' ');
+            }
+            else if (model.CountryCode == "US" && zipCodeRegex.IsMatch(model.PostalCode))
+            {
+                model.PostalCode = model.PostalCode.ToUpperInvariant().Replace(' ', '-');
+            }
+
+            if (!ModelState.IsValid)
+            {
+                this.AddAlert(AlertType.Error, "Some address information was invalid.");
+
+                await SetupCountriesAndAddresses(model);
+
+                return View("ManageAddresses", model);
+            }
+
+            MemberAddress newAddress = new MemberAddress
+            {
+                MemberId = GetUserId(),
+                City = model.City,
+                CountryCode = model.CountryCode,
+                StreetAddress = model.StreetAddress,
+                POBoxNumber = model.POBoxNumber,
+                ProvinceCode = model.ProvinceCode,
+                PostalCode = model.PostalCode
+            };
+
+            db.MemberAddresses.Add(newAddress);
+
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Get the exception which states if a foreign key constraint was violated
+                SqlException innermostException = ex.GetBaseException() as SqlException;
+
+                bool errorWasProvinceForeignKeyConstraint = false;
+
+                if (innermostException != null)
+                {
+                    string exMessage = innermostException.Message;
+                    
+                    errorWasProvinceForeignKeyConstraint =
+                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation &&
+                        exMessage.Contains(nameof(Province.ProvinceCode)) &&
+                        exMessage.Contains(nameof(Province.CountryCode));
+                }
+
+                this.AddAlert(AlertType.Error,
+                    errorWasProvinceForeignKeyConstraint
+                        ? "The Province/State you selected isn't in the Country you selected."
+                        : "An unknown error occured while adding the address.");
+
+                await SetupCountriesAndAddresses(model);
+        
+                return View("ManageAddresses", model);
+            }
+
+            this.AddAlert(AlertType.Success, "Successfully add a new address.");
+            return RedirectToAction("ManageAddresses");
         }
 
         public async Task<ActionResult> ManageCreditCards()
@@ -275,7 +385,7 @@ namespace Veil.Controllers
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
             }
-            var result = await userManager.AddLoginAsync(IIdentityExtensions.GetUserId(User.Identity), loginInfo.Login);
+            var result = await userManager.AddLoginAsync(GetUserId(), loginInfo.Login);
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
 
@@ -316,12 +426,39 @@ namespace Veil.Controllers
 
         private Guid GetUserId()
         {
-            return IIdentityExtensions.GetUserId(User.Identity);
+            return idGetter.GetUserId(User.Identity);
+        }
+
+        /// <summary>
+        ///     Sets up the Countries and Addresses properties of the passed <see cref="ManageAddressViewModel"/>
+        /// </summary>
+        /// <param name="model">
+        ///     The model to setup
+        /// </param>
+        /// <returns>
+        ///     A task to await
+        /// </returns>
+        private async Task SetupCountriesAndAddresses(ManageAddressViewModel model)
+        {
+            Guid memberId = GetUserId();
+
+            var memberAddresses = await db.MemberAddresses.
+                Where(ma => ma.MemberId == memberId).
+                Select(ma => 
+                    new
+                    {
+                        ma.Id,
+                        ma.StreetAddress
+                    }).
+                ToListAsync();
+
+            model.Countries = await db.Countries.Include(c => c.Provinces).ToListAsync();
+            model.Addresses = new SelectList(memberAddresses, nameof(MemberAddress.Id), nameof(MemberAddress.StreetAddress));
         }
 
         private bool HasPassword()
         {
-            var user = userManager.FindById(IIdentityExtensions.GetUserId(User.Identity));
+            var user = userManager.FindById(idGetter.GetUserId(User.Identity));
             if (user != null)
             {
                 return user.PasswordHash != null;
@@ -331,7 +468,7 @@ namespace Veil.Controllers
 
         private bool HasPhoneNumber()
         {
-            var user = userManager.FindById(IIdentityExtensions.GetUserId(User.Identity));
+            var user = userManager.FindById(idGetter.GetUserId(User.Identity));
             if (user != null)
             {
                 return user.PhoneNumber != null;
