@@ -144,5 +144,17 @@ namespace Veil.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public async Task<ActionResult> Delete(Friendship friendship)
+        {
+            if (friendship != null)
+            {
+                db.Friendships.Remove(friendship);
+                await db.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }
