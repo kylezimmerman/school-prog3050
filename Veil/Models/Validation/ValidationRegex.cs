@@ -50,7 +50,7 @@ namespace Veil.DataModels.Validation
         /// <summary>
         ///     Pattern which matches Canadian postal codes
         /// </summary>
-        public const string POSTAL_CODE = @"^(?i)(?!.*[DFIOQU])[A-VXY]\d[A-Z](-|\ )?\d[A-Z]\d$";
+        public const string POSTAL_CODE = @"^(?i)(?!.*[DFIOQU])[A-VXY]\d[A-Z](-| )?\d[A-Z]\d$";
 
        /// <summary>
         ///     Pattern which matches American zip codes
