@@ -35,7 +35,7 @@ namespace Veil.Controllers
             var model = new EventListViewModel
             {
                 Events = await db.Events
-                    .Where(e => e.Date > DateTime.Now)
+                    .Where(e => e.Date >= DateTime.Today)
                     .OrderBy(e => e.Date).ToListAsync(),
                 OnlyRegisteredEvents = false
             };
@@ -57,7 +57,7 @@ namespace Veil.Controllers
             var model = new EventListViewModel
             {
                 Events = currentMember.RegisteredEvents
-                    .Where(e => e.Date > DateTime.Now)
+                    .Where(e => e.Date >= DateTime.Today)
                     .OrderBy(e => e.Date),
                 OnlyRegisteredEvents = true
             };
@@ -257,7 +257,7 @@ namespace Veil.Controllers
 
             this.AddAlert(AlertType.Success, $"Successfully created the \"{@event.Name}\" event.");
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", new { id = @event.Id });
         }
 
         /// <summary>

@@ -41,5 +41,25 @@ namespace Veil.DataModels.Validation
         ///     Pattern for New SKUs of Physical Game Products
         /// </summary>
         public const string PHYSICAL_GAME_PRODUCT_NEW_SKU = @"^0\d{12}$";
+
+        /// <summary>
+        ///     Pattern which matches either <see cref="POSTAL_CODE"/> or <see cref="ZIP_CODE"/>
+        /// </summary>
+        public const string POSTAL_ZIP_CODE = "(" + POSTAL_CODE + ")|(" + ZIP_CODE + ")";
+
+        /// <summary>
+        ///     Pattern which matches Canadian postal codes
+        /// </summary>
+        public const string POSTAL_CODE = @"^(?i)(?!.*[DFIOQU])[A-VXY]\d[A-Z](-| )?\d[A-Z]\d$";
+
+       /// <summary>
+        ///     Pattern which matches American zip codes
+        /// </summary>
+        public const string ZIP_CODE = @"^\d{5}(?:(?:-| )\d{4})?$";
+
+        /// <summary>
+        ///     Pattern for persisted postal codes
+        /// </summary>
+        public const string STORED_POSTAL_CODE = @"(?:^(?!.*[DFIOQU])[A-VXY]\d[A-Z] \d[A-Z]\d$)|(?:^\d{5}(?:-\d{4})?$)";
     }
 }

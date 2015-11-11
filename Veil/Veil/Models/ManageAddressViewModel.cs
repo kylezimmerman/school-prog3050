@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
 using Veil.DataModels.Models;
+using Veil.DataModels.Validation;
 
 namespace Veil.Models
 {
@@ -37,6 +38,7 @@ namespace Veil.Models
         [DataType(DataType.PostalCode)]
         [MaxLength(16)]
         [DisplayName("Postal Code")]
+        [RegularExpression(ValidationRegex.POSTAL_ZIP_CODE, ErrorMessage = "Postal codes must be in the case insensitive format A0A 0A0 or A0A-0A0.\nZip codes must be in the format 12345, 12345-6789, or 12345 6789.")]
         public string PostalCode { get; set; }
 
         /// <summary>
