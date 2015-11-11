@@ -3,12 +3,14 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.DataModels.Validation;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -22,6 +24,9 @@ namespace Veil.Controllers
         private readonly VeilUserManager userManager;
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
+
+        private static readonly Regex postalCodeRegex = new Regex(ValidationRegex.POSTAL_CODE, RegexOptions.Compiled);
+        private static readonly Regex zipCodeRegex = new Regex(ValidationRegex.ZIP_CODE, RegexOptions.Compiled);
 
         public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
@@ -268,6 +273,30 @@ namespace Veil.Controllers
         public async Task<ActionResult> CreateAddress(
             [Bind(Exclude = nameof(ManageAddressViewModel.Countries) + "," + nameof(ManageAddressViewModel.Addresses))]ManageAddressViewModel model)
         {
+            if (ModelState.ContainsKey(nameof(model.PostalCode)) && !string.IsNullOrWhiteSpace(model.CountryCode))
+            {
+                // Remove the default validation message to provide a more specific one.
+                ModelState.Remove(nameof(model.PostalCode));
+
+                ModelState.AddModelError(
+                    nameof(model.PostalCode),
+                    model.CountryCode == "CA"
+                        ? "You must provide a valid Canadian postal code in the format A0A 0A0"
+                        : "You must provide a valid Zip Code in the format 12345 or 12345-6789");
+            }
+            else if (model.CountryCode == "CA" && postalCodeRegex.IsMatch(model.PostalCode))
+            {
+                model.PostalCode = model.PostalCode.ToUpperInvariant();
+
+                model.PostalCode = model.PostalCode.Length == 6 
+                    ? model.PostalCode.Insert(3, " ") 
+                    : model.PostalCode.Replace('-', ' ');
+            }
+            else if (model.CountryCode == "US" && zipCodeRegex.IsMatch(model.PostalCode))
+            {
+                model.PostalCode = model.PostalCode.ToUpperInvariant().Replace(' ', '-');
+            }
+
             if (!ModelState.IsValid)
             {
                 this.AddAlert(AlertType.Error, "Some address information was invalid.");

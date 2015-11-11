@@ -9,6 +9,7 @@ using NUnit.Framework;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.DataModels.Validation;
 using Veil.Helpers;
 using Veil.Models;
 
@@ -198,6 +199,58 @@ namespace Veil.Tests.Controllers
             Assert.That(result.Model, Is.EqualTo(viewModel));
         }
 
+        [TestCase("CA")]
+        [TestCase("US")]
+        public async void CreateAddress_InvalidPostalCodeModelStateWithCountryCodeSupplied_ReplacesErrorMessage(string countryCode)
+        {
+            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            {
+                CountryCode = countryCode
+            };
+
+            string postalCodeErrorMessage = "Required";
+
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountriesAndAddresses();
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
+
+            await controller.CreateAddress(viewModel);
+
+            Assert.That(controller.ModelState[nameof(ManageAddressViewModel.PostalCode)].Errors, Has.None.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+        }
+
+        [Test]
+        public async void CreateAddress_InvalidPostalCodeModelStateWithoutCountryCodeSupplied_LeavesErrorMessage()
+        {
+            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+
+            string postalCodeErrorMessage = "Required";
+
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountriesAndAddresses();
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
+
+            await controller.CreateAddress(viewModel);
+
+            Assert.That(controller.ModelState[nameof(ManageAddressViewModel.PostalCode)].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+        }
+
         [Test]
         public async void CreateAddress_InvalidModelState_SetsUpViewModelWithCountries()
         {
@@ -272,6 +325,50 @@ namespace Veil.Tests.Controllers
             Assert.That(newAddress.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
             Assert.That(newAddress.PostalCode, Is.EqualTo(viewModel.PostalCode));
             Assert.That(newAddress.StreetAddress, Is.EqualTo(viewModel.StreetAddress));
+        }
+
+        [TestCase("N2L-6R2", "CA")]
+        [TestCase("n2l-6r2", "CA")]
+        [TestCase("N2L6R2", "CA")]
+        [TestCase("n2l6r2", "CA")]
+        [TestCase("12345 6789", "US")]
+        public async void CreateAddress_ValidModel_ReformatsPostalCodeToMatchStoredPostalCodeRegex(string postalCode, string countryCode)
+        {
+            MemberAddress newAddress = null;
+            Guid currentMemberId = memberId;
+
+            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            {
+                City = "Waterloo",
+                CountryCode = countryCode,
+                ProvinceCode = "ON",
+                PostalCode = postalCode,
+                StreetAddress = "445 Wes Graham Way"
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.Add(It.IsAny<MemberAddress>())).
+                Returns<MemberAddress>(ma => ma).
+                Callback<MemberAddress>(ma => newAddress = ma);
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(currentMemberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.CreateAddress(viewModel);
+
+            Assert.That(newAddress != null);
+            Assert.That(newAddress.PostalCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
         }
 
         [Test]
