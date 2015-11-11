@@ -138,6 +138,7 @@
     <Compile Include="Controllers\GameProductsControllerTests.cs" />
     <Compile Include="Controllers\EventsControllerTests.cs" />
     <Compile Include="Controllers\GamesControllerTests.cs" />
+    <Compile Include="Controllers\WishlistControllerTests.cs" />
     <Compile Include="Models\GameListViewModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\HomeControllerTests.cs" />

@@ -32,7 +32,7 @@ namespace Veil.Tests.Controllers
         [TestCase(2, 0)]
         [TestCase(2, 1)]
         [TestCase(0, 2)]
-        public async void Index_WithEvents_ReturnsMatchingModel(int futureEventCount, int pastEventCount)
+        public async void Index_ReturnsMatchingModel(int futureEventCount, int pastEventCount)
         {
             DateTime futureDate = DateTime.Now.AddDays(1);
             DateTime pastDate = DateTime.Now.AddDays(-1);
