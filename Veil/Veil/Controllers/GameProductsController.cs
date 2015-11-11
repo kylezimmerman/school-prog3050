@@ -51,7 +51,8 @@ namespace Veil.Controllers
                 model.UsedIsInCart = currentMember.Cart.Items.
                     Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
 
-                model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
+                model.ProductIsOnWishlist = currentMember.Wishlist.
+                    Any(p => p.Id == gameProduct.Id);
             }
 
             return PartialView("_PhysicalGameProductPartial", model);

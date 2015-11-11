@@ -4,10 +4,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
-using Veil.DataModels.Models.Identity;
-using Veil.Services;
 using Veil.Helpers;
-using Veil.Extensions;
 using Veil.Models;
 using System.Web;
 using System.Net;
@@ -18,13 +15,11 @@ namespace Veil.Controllers
     public class WishlistController : BaseController
     {
         private readonly IVeilDataAccess db;
-        private readonly VeilUserManager userManager;
         private readonly IGuidUserIdGetter idGetter;
 
-        public WishlistController(IVeilDataAccess veilDataAccess, VeilUserManager userManager, IGuidUserIdGetter idGetter)
+        public WishlistController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
-            this.userManager = userManager;
             this.idGetter = idGetter;
         }
 
@@ -58,7 +53,7 @@ namespace Veil.Controllers
                         return View(wishlistOwner);
                     }
                 }
-                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
+                throw new HttpException(NotFound, "Wishlist");
             }
 
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
@@ -75,15 +70,16 @@ namespace Veil.Controllers
             
             if (wishlistOwner == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
+                throw new HttpException(NotFound, "Wishlist");
             }
 
             if (wishlistOwner.WishListVisibility == WishListVisibility.Private &&
                 wishlistOwner.UserId != currentMember.UserId)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, "Wishlist");
+                throw new HttpException(NotFound, "Wishlist");
             }
-            else if (wishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
+
+            if (wishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
                 (wishlistOwner.UserId != currentMember.UserId &&
                 !wishlistOwner.ConfirmedFriends.Contains(currentMember)))
             {
@@ -120,7 +116,7 @@ namespace Veil.Controllers
             {
                 model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
                 model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
-                model.ProductIsOnWishlist = currentMember.Wishlist.Contains(gameProduct);
+                model.ProductIsOnWishlist = currentMember.Wishlist.Any(p => p.Id == gameProduct.Id);
                 model.MemberIsCurrentUser = currentMember.UserId == wishlistOwnerId;
             }
 
@@ -141,24 +137,25 @@ namespace Veil.Controllers
         public async Task<ActionResult> Add(Guid? itemId)
         {
             Product newItem = await db.Products.FindAsync(itemId);
-            User user = await userManager.FindByIdAsync(idGetter.GetUserId(User.Identity));
-
+            
             if (newItem == null)
             {
-                throw new HttpException((int)HttpStatusCode.NotFound, nameof(Product));
+                throw new HttpException(NotFound, nameof(Product));
             }
 
-            if (user.Member.Wishlist.Contains(newItem))
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            if (currentMember.Wishlist.Contains(newItem))
             {
                 this.AddAlert(AlertType.Info, newItem.Name + " is already on your wishlist.");
-                return RedirectToAction("Index");
+                return View("Index", currentMember);
             }
 
-            user.Member.Wishlist.Add(newItem);
+            currentMember.Wishlist.Add(newItem);
             await db.SaveChangesAsync();
 
             this.AddAlert(AlertType.Success, newItem.Name + " was added to your wishlist.");
-            return RedirectToAction("Index");
+            return View("Index", currentMember);
         }
 
         /// <summary>
@@ -175,25 +172,25 @@ namespace Veil.Controllers
         public async Task<ActionResult> Remove(Guid? itemId)
         {
             Product toRemove = await db.Products.FindAsync(itemId);
-            User user = await userManager.FindByIdAsync(idGetter.GetUserId(User.Identity));
 
             if (toRemove == null)
             {
-                this.AddAlert(AlertType.Error, "Error removing product from wishlist.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, nameof(Product));
             }
 
-            if (!user.Member.Wishlist.Contains(toRemove))
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            if (!currentMember.Wishlist.Contains(toRemove))
             {
                 this.AddAlert(AlertType.Error, toRemove.Name + " is not on your wishlist.");
-                return RedirectToAction("Index");
+                return View("Index", currentMember);
             }
 
-            user.Member.Wishlist.Remove(toRemove);
+            currentMember.Wishlist.Remove(toRemove);
             await db.SaveChangesAsync();
 
             this.AddAlert(AlertType.Success, toRemove.Name + " was removed from your wishlist.");
-            return RedirectToAction("Index");
+            return View("Index", currentMember);
         }
     }
 }
