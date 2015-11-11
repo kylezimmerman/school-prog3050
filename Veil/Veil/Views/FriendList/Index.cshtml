@@ -1,31 +1,85 @@
-﻿<div class="row">
-    <div class="column">
+﻿@using Veil.DataModels.Models
+@model Veil.Models.FriendsListViewModel
+
+<div class="row">
+    <div class="columns">
         <h2>Friends</h2>
 
         <h4>Add a New Friend</h4>
-        <div class="row collapse">
-            <div class="medium-4 small-8 columns">
-                <input type="text" placeholder="Your friend's username" />
+        @using (Html.BeginForm("AddFriendRequest", "FriendList", FormMethod.Post))
+        {
+            <div class="row collapse">
+                <div class="medium-4 small-8 columns">
+                    <input type="text" id="username" name="username" placeholder="Your friend's username"/>
+                </div>
+                <div class="medium-2 small-4 columns">
+                    <button type="submit" class="button postfix">Add Friend</button>
+                </div>
+                <div class="medium-6 columns"></div>
             </div>
-            <div class="medium-2 small-4 columns">
-                <a href="#" class="button postfix">Add Friend</a>
-            </div>
-            <div class="medium-6 columns"></div>
-        </div>
-
-        <h4>Pending Friend Requests</h4>
+        }
+    </div>
+    <div class="medium-6 columns">
+        <h4>Requests Pending Action</h4>
         <table>
-            <tr><td>Splinter</td><td colspan="2">Waiting for response...</td></tr>
-            <tr><td>xXxSepirothxXx</td><td><a href="#">Confirm</a></td><td><a href="#">Deny</a></td></tr>
+        @if (Model.PendingReceivedFriendships != null)
+        {
+            foreach (var request in Model.PendingReceivedFriendships)
+            {
+                <tr>
+                    <td>@request.UserAccount.UserName</td>
+                    <td><a href="#">Approve</a></td>
+                    <td><a href="#">Decline</a></td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td>Lol no one wants to be your friend xD</td>
+            </tr>
+        }
         </table>
-
-        <h4>Your Friends</h4>
-        <p>Click a friend to look at their wishlist.</p>
+    </div>
+    <div class="medium-6 columns">
+        <h4>My Pending Requests</h4>
         <table>
-            <tr><td><a href="#">Donatello</a></td></tr>
-            <tr><td><a href="#">Leonardo</a></td></tr>
-            <tr><td><a href="#">Michelangelo</a></td></tr>
-            <tr><td><a href="#">Raphael</a></td></tr>
+        @if (Model.PendingSentFriendships != null)
+        {
+            foreach (var request in Model.PendingSentFriendships)
+            {
+                <tr>
+                    <td>Get out of your parent's basement and meet people, jesus...</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td>Get out of your parent's basement and meet people, jesus...</td>
+            </tr>
+        }
+        </table>
+    </div>
+    <div class="columns">
+        <h4>Your Friends</h4>
+        <span>Click a friend to look at their wishlist.</span>
+        <table>
+        @if (Model.ConfirmedFriends != null && Model.ConfirmedFriends.Count > 0)
+        {
+            foreach (var friend in Model.ConfirmedFriends)
+            {
+                <tr>
+                    <td>@friend.UserAccount.UserName</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td>Wow, look at all those friends! You are SO popular!</td>
+            </tr>
+        }
         </table>
     </div>
 </div>

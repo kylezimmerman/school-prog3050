@@ -285,12 +285,14 @@ namespace Veil.Controllers
         /// <returns>
         ///     The create game view
         /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public ActionResult Create()
         {
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description");
             return View();
         }
 
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind(Exclude = nameof(Game.Tags))] Game game, List<string> tags)
