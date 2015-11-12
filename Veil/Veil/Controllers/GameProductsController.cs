@@ -121,12 +121,11 @@ namespace Veil.Controllers
         ///     Redirects to the Game Details page if successful
         ///     Redirects to the Game List page if the id does not match an existing Game.
         /// </returns>
-        public async Task<ActionResult> CreatePhysicalSKU(Guid? id)
+        public async Task<ActionResult> CreatePhysicalSKU(Guid id)
         {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
+            if (!await db.Games.AnyAsync(g => g.Id == id))
             {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index", "Games");
+                throw new HttpException(NotFound, "Game");
             }
 
             SetupGameProductSelectLists();
@@ -146,13 +145,12 @@ namespace Veil.Controllers
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreatePhysicalSKU(Guid? id, 
+        public async Task<ActionResult> CreatePhysicalSKU(Guid id, 
             [Bind(Exclude = nameof(PhysicalGameProduct.NewInventory) + "," + nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
         {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
+            if (!await db.Games.AnyAsync(g => g.Id == id))
             {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index", "Games");
+                throw new HttpException(NotFound, "Game");
             }
 
             if (ModelState.IsValid)
@@ -162,7 +160,7 @@ namespace Veil.Controllers
                 gameProduct.InteralUsedSKU = $"1{internalSku}";
                 gameProduct.InternalNewSKU = $"0{internalSku}";
 
-                return await SaveGameProduct(id.Value, gameProduct);
+                return await SaveGameProduct(id, gameProduct);
             }
 
             SetupGameProductSelectLists();
@@ -238,12 +236,11 @@ namespace Veil.Controllers
         ///     A View to create the new downloadable product for if the id is a valid game
         ///     Redirects to the Game List page if the game id was invalid
         /// </returns>
-        public async Task<ActionResult> CreateDownloadSKU(Guid? id)
+        public async Task<ActionResult> CreateDownloadSKU(Guid id)
         {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
+            if (!await db.Games.AnyAsync(g => g.Id == id))
             {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index", "Games");
+                throw new HttpException(NotFound, "Game");
             }
 
             SetupGameProductSelectLists();
@@ -263,17 +260,16 @@ namespace Veil.Controllers
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateDownloadSKU(Guid? id, [Bind] DownloadGameProduct gameProduct)
+        public async Task<ActionResult> CreateDownloadSKU(Guid id, [Bind] DownloadGameProduct gameProduct)
         {
-            if (id == null || !await db.Games.AnyAsync(g => g.Id == id))
+            if (!await db.Games.AnyAsync(g => g.Id == id))
             {
-                this.AddAlert(AlertType.Error, "Please select a game to add a game product to.");
-                return RedirectToAction("Index", "Games");
+                throw new HttpException(NotFound, "Game");
             }
 
             if (ModelState.IsValid)
             {
-                return await SaveGameProduct(id.Value, gameProduct);
+                return await SaveGameProduct(id, gameProduct);
             }
 
             SetupGameProductSelectLists();
