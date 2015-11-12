@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Moq;
@@ -60,7 +58,7 @@ namespace Veil.Tests.Controllers
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeletePhysicalGameProduct_InvalidID(string role)
+        public void DeletePhysicalGameProduct_InvalidID(string role)
         {
             GameProduct gameSku = new PhysicalGameProduct();
             gameSku.GameId = Id;
@@ -78,7 +76,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };

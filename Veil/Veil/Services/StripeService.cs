@@ -71,8 +71,6 @@ namespace Veil.Services
 
             StripeCard card = cardService.Create(member.StripeCustomerId, newCard);
 
-            // TODO: Maybe check AddressLine1Check and CvcCheck and AddressZipCheck
-
             int expiryMonth = int.Parse(card.ExpirationMonth);
             int expiryYear = int.Parse(card.ExpirationYear);
 
