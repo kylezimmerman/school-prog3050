@@ -405,18 +405,14 @@ namespace Veil.Controllers
                 if (ex.StripeError.Code == "card_error")
                 {
                     this.AddAlert(AlertType.Error, ex.Message);
-                    ModelState.AddModelError("StripeIssues", ex.Message);
+                    ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
                 }
                 else
                 {
                     this.AddAlert(AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
                 }
 
-                var viewModel = new ManageCreditCardViewModel();
-
-                await SetupCreditCardsAndCountries(viewModel);
-
-                return View("ManageCreditCards", viewModel);
+                return RedirectToAction("ManageCreditCards");
             }
 
             currentMember.CreditCards.Add(newCard);

@@ -10,18 +10,34 @@ namespace Veil.Models
 {
     public class ManageCreditCardViewModel
     {
-        public CreditCardViewModel CreditCard { get; set; }
+        // ReSharper disable once UnassignedGetOnlyAutoProperty
+        /// <summary>
+        ///     Property only used to generate the view
+        /// </summary>
+        public CreditCardViewModel CreditCard { get; }
 
+        /// <summary>
+        ///     A list of the countries supported
+        /// </summary>
         [BindNever]
         public IList<Country> Countries { get; set; }
 
+        /// <summary>
+        ///     A list of the current Member's Credit Cards
+        /// </summary>
         [BindNever]
         public IEnumerable<SelectListItem> CreditCards { get; set; } 
 
+        /// <summary>
+        ///     A list of the current year and the next 19
+        /// </summary>
         [BindNever]
         [Required]
         public IEnumerable<SelectListItem> Years => new SelectList(Enumerable.Range(DateTime.Today.Year, 20)); 
 
+        /// <summary>
+        ///     The list of months
+        /// </summary>
         [BindNever]
         [Required]
         public IEnumerable<SelectListItem> Months => new List<SelectListItem>

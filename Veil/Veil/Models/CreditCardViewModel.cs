@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Veil.Models
 {
-    public class CreditCardViewModel
+    public abstract class CreditCardViewModel
     {
         /// <summary>
         /// The cardholder's full name

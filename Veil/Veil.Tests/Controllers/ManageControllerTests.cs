@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Net;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
+using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -87,7 +89,7 @@ namespace Veil.Tests.Controllers
 
             return dbStub;
         }
-            
+
         [Test]
         public async void ManageAddresses_WhenCalled_SetsUpViewModel()
         {
@@ -584,6 +586,550 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageAddresses)));
+        }
+
+        [Test]
+        public async void ManageCreditCards_WhenCalled_SetsUpViewModel()
+        {
+            List<Country> countries = GetCountries();
+            List<MemberCreditCard> creditCards = new List<MemberCreditCard>
+            {
+                new MemberCreditCard
+                {
+                    CardholderName = "Jane Shepard",
+                    ExpiryMonth = 4,
+                    ExpiryYear = 2154,
+                    Last4Digits = "4242",
+                    MemberId = memberId
+                },
+                new MemberCreditCard
+                {
+                    CardholderName = "John Shepard",
+                    ExpiryMonth = 4,
+                    ExpiryYear = 2154,
+                    Last4Digits = "1881",
+                    MemberId = memberId
+                }
+            };
+            List<Member> members = new List<Member>
+            {
+                new Member { UserId = memberId, CreditCards = creditCards }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbStub = TestHelpers.GetFakeAsyncDbSet(members.AsQueryable());
+
+            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(countries.AsQueryable());
+            countryDbSetStub.SetupForInclude();
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbStub.Object);
+            dbStub.
+                Setup(db => db.Countries).
+                Returns(countryDbSetStub.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+
+            controller.ControllerContext = contextStub.Object;
+
+            var result = await controller.ManageCreditCards() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<ManageCreditCardViewModel>());
+
+            var model = (ManageCreditCardViewModel)result.Model;
+
+            Assert.That(model.Countries, Is.Not.Empty);
+            Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));
+            Assert.That(model.CreditCards, Is.Not.Empty);
+            Assert.That(model.CreditCards.Count(), Is.EqualTo(creditCards.Count));
+            Assert.That(model.Years, Is.Not.Empty);
+            Assert.That(model.Years.Count(), Is.EqualTo(20));
+            Assert.That(model.Months, Is.Not.Empty);
+            Assert.That(model.Months.Count(), Is.EqualTo(12));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("January") && i.Text.Contains("01")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("February") && i.Text.Contains("02")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("March") && i.Text.Contains("03")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("April") && i.Text.Contains("04")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("May") && i.Text.Contains("05")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("June") && i.Text.Contains("06")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("July") && i.Text.Contains("07")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("August") && i.Text.Contains("08")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("September") && i.Text.Contains("09")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("October") && i.Text.Contains("10")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("November") && i.Text.Contains("11")));
+            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("December") && i.Text.Contains("12")));
+        }
+
+        [Test]
+        public async void ManageCreditCards_WhenCalled_IncludesProvinces()
+        {
+            List<Country> countries = GetCountries();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member>().AsQueryable());
+
+            Mock<DbSet<Country>> countryDbSetMock = TestHelpers.GetFakeAsyncDbSet(countries.AsQueryable());
+            countryDbSetMock.
+                Setup(cdb => cdb.Include(It.IsAny<string>())).
+                Returns(countryDbSetMock.Object).
+                Verifiable();
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+            dbStub.
+                Setup(db => db.Countries).
+                Returns(countryDbSetMock.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.ManageCreditCards();
+
+            Assert.That(
+                () =>
+                    countryDbSetMock.Verify<DbQuery<Country>>(mdb => mdb.Include(It.Is<string>(val => val.Contains(nameof(IVeilDataAccess.Provinces)))),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_InvalidModelState_RedirectsToManageCreditCards()
+        {
+            ManageController controller = CreateManageController();
+            controller.ModelState.AddModelError("stripeCardToken", "Required");
+
+            var result = await controller.CreateCreditCard(null) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
+        }
+
+        [Test]
+        public async void CreateCreditCard_ValidModel_RetrievesMemberMatchingCurrentUserId()
+        {
+            Member member = new Member
+            {
+                UserId = memberId,
+                CreditCards = new List<MemberCreditCard>()
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetMock = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetMock.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member).
+                Verifiable();
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetMock.Object);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Returns<MemberCreditCard>(null);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.CreateCreditCard(stripeCardToken);
+
+            Assert.That(
+                () => 
+                    memberDbSetMock.Verify(mdb => mdb.FindAsync(memberId),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_MemberNotInDb_ReturnsInternalServerError()
+        {
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member>().AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(null);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            var result = await controller.CreateCreditCard(stripeCardToken) as HttpStatusCodeResult;
+
+            Assert.That(result != null);
+            Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+        }
+
+        [Test]
+        public async void CreateCreditCard_MemberInDb_CallsIStripeServiceCreateCreditCardWithMember()
+        {
+            Member member = new Member
+            {
+                UserId = memberId,
+                CreditCards = new List<MemberCreditCard>()
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Returns<MemberCreditCard>(null).
+                Verifiable();
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceMock.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.CreateCreditCard(stripeCardToken);
+
+            Assert.That(
+                () => 
+                    stripeServiceMock.Verify(s => s.CreateCreditCard(member, It.IsAny<string>()),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_MemberInDb_CallsIStripeServiceCreateCreditCardWithPassedToken()
+        {
+            Member member = new Member
+            {
+                UserId = memberId,
+                CreditCards = new List<MemberCreditCard>()
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Returns<MemberCreditCard>(null).
+                Verifiable();
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceMock.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.CreateCreditCard(stripeCardToken);
+
+            Assert.That(
+                () =>
+                    stripeServiceMock.Verify(s => s.CreateCreditCard(It.IsAny<Member>(), stripeCardToken),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public void CreateCreditCard_IStripeServiceThrowsStripeException_HandlesException()
+        {
+            Member member = new Member
+            {
+                UserId = memberId
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            StripeException exception = new StripeException(
+                HttpStatusCode.BadRequest, 
+                new StripeError
+                {
+                    Code = "Any"
+                },
+                "message");
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            Assert.That(async () => await controller.CreateCreditCard(stripeCardToken), Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_IStripeServiceThrowsStripeException_RedirectsToManageCreditCard()
+        {
+            Member member = new Member
+            {
+                UserId = memberId
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            StripeException exception = new StripeException(
+                HttpStatusCode.BadRequest,
+                new StripeError
+                {
+                    Code = "Any"
+                },
+                "message");
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            var result = await controller.CreateCreditCard(stripeCardToken) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
+        }
+
+        [Test]
+        public async void CreateCreditCard_IStripeServiceThrowsStripeExceptionCardError_AddsErrorToModelState()
+        {
+            Member member = new Member
+            {
+                UserId = memberId
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            string stripeErrorMessage = "A card Error Message";
+
+            StripeException exception = new StripeException(
+                HttpStatusCode.BadRequest,
+                new StripeError
+                {
+                    Code = "card_error"
+                },
+                stripeErrorMessage);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.CreateCreditCard(stripeCardToken);
+
+            Assert.That(controller.ModelState[ManageController.STRIPE_ISSUES_MODELSTATE_KEY].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == stripeErrorMessage));
+        }
+
+        [Test]
+        public async void CreateCreditCard_StripeServiceSuccess_AddsReturnedCreditCardToMembersCreditCards()
+        {
+            Member member = new Member
+            {
+                UserId = memberId,
+                CreditCards = new List<MemberCreditCard>()
+            };
+
+            MemberCreditCard creditCard = new MemberCreditCard
+            {
+                Id = new Guid("F406AB6C-CC58-4370-AB49-89D622C51768")
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Returns(creditCard);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.CreateCreditCard(stripeCardToken);
+
+            Assert.That(member.CreditCards, Is.Not.Empty);
+            Assert.That(member.CreditCards, Has.Member(creditCard));
+        }
+
+        [Test]
+        public async void CreateCreditCard_StripeServiceSuccess_CallsSaveChangesAsync()
+        {
+            Member member = new Member
+            {
+                UserId = memberId,
+                CreditCards = new List<MemberCreditCard>()
+            };
+
+            MemberCreditCard creditCard = new MemberCreditCard();
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbMock.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+            dbMock.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1).
+                Verifiable();
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Returns(creditCard);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbMock.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            await controller.CreateCreditCard(stripeCardToken);
+
+            Assert.That(
+                () => 
+                    dbMock.Verify(db => db.SaveChangesAsync(),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_SuccessfulCreate_RedirectsToManageCreditCards()
+        {
+            Member member = new Member
+            {
+                UserId = memberId,
+                CreditCards = new List<MemberCreditCard>()
+            };
+
+            MemberCreditCard creditCard = new MemberCreditCard();
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Returns(creditCard);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            var result = await controller.CreateCreditCard(stripeCardToken) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
         }
     }
 }
