@@ -218,6 +218,7 @@
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
+    <Compile Include="Extensions\HtmlHelperExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\GuidUserIdGetter.cs" />
@@ -502,6 +503,7 @@
     <Content Include="Views\Shared\_RatingStarsPartial.cshtml" />
     <Content Include="Views\Tags\Index.cshtml" />
     <Content Include="Views\Manage\_ManageAddressFormFields.cshtml" />
+    <Content Include="Views\Manage\_ManageCreditCardFormFields.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />

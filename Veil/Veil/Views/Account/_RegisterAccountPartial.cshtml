@@ -1,4 +1,5 @@
-﻿@model Veil.Models.RegisterViewModel
+﻿@using Veil.Controllers
+@model Veil.Models.RegisterViewModel
 
 <div class="row">
     <div class="column">
@@ -11,7 +12,7 @@
     @Html.AntiForgeryToken()
     <hr/>
 
-    @Html.ValidationMessage("registerModel") @* This must be kept in sync with AccountController's REGISTER_MODEL_ERRORS_KEY *@
+    @Html.ValidationMessage(AccountController.REGISTER_MODEL_ERRORS_KEY)
 
     <div class="row">
         <div class="column">
