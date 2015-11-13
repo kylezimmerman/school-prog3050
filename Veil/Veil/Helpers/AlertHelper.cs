@@ -45,5 +45,10 @@ namespace Veil.Helpers
             alerts.Add(new AlertMessage() {Type = type, Message = message});
             controller.TempData["AlertMessages"] = alerts;
         }
+
+        public static void ClearAlerts(this Controller controller)
+        {
+            controller.TempData.Remove("AlertMessages");
+        }
     }
 }

@@ -19,67 +19,66 @@
             </div>
         }
     </div>
-    <div class="medium-6 columns">
+</div>
+
+<div class="row">
+    <div class="medium-9 columns bordered margin-half-em">
         <h4>Requests Pending Action</h4>
-        <table>
-        @if (Model.PendingReceivedFriendships != null)
+        @if (Model.PendingReceivedFriendships.Count > 0)
         {
-            foreach (var request in Model.PendingReceivedFriendships)
+            foreach (var member in Model.PendingReceivedFriendships)
             {
-                <tr>
-                    <td>@request.UserAccount.UserName</td>
-                    <td><a href="#">Approve</a></td>
-                    <td><a href="#">Decline</a></td>
-                </tr>
+                <div class="row">
+                    <div class="medium-6 columns">@member.UserAccount.UserName</div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId }, null)</div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Decline", "Decline", "FriendList", new { memberId = member.UserId }, null)</div>
+                </div>
             }
         }
         else
         {
-            <tr>
-                <td>Lol no one wants to be your friend xD</td>
-            </tr>
+            <div class="row">
+                <div class="columns"><em>You have no requests requiring action.</em></div>
+            </div>
         }
-        </table>
     </div>
-    <div class="medium-6 columns">
+    <div class="medium-9 columns bordered margin-half-em">
         <h4>My Pending Requests</h4>
-        <table>
-        @if (Model.PendingSentFriendships != null)
+        @if (Model.PendingSentFriendships.Count > 0)
         {
-            foreach (var request in Model.PendingSentFriendships)
+            foreach (var member in Model.PendingSentFriendships)
             {
-                <tr>
-                    <td>Get out of your parent's basement and meet people, jesus...</td>
-                </tr>
+                <div class="row">
+                    <div class="small-6 columns">@member.UserAccount.UserName</div>
+                    <div class="small-6 columns">@Html.ActionLink("Cancel", "Delete", "FriendList", new { memberId = member.UserId }, null)</div>
+                </div>
             }
         }
         else
         {
-            <tr>
-                <td>Get out of your parent's basement and meet people, jesus...</td>
-            </tr>
+            <div class="row">
+                <div class="columns"><em>You have no pending requests.</em></div>
+            </div>
         }
-        </table>
     </div>
-    <div class="columns">
-        <h4>Your Friends</h4>
-        <span>Click a friend to look at their wishlist.</span>
-        <table>
-        @if (Model.ConfirmedFriends != null && Model.ConfirmedFriends.Count > 0)
+    <div class="medium-9 end columns bordered margin-half-em">
+        <h4>My Friends</h4>
+        @if (Model.ConfirmedFriends.Count > 0)
         {
             foreach (var friend in Model.ConfirmedFriends)
             {
-                <tr>
-                    <td>@friend.UserAccount.UserName</td>
-                </tr>
+                <div class="row">
+                    <div class="medium-6 columns">@friend.UserAccount.UserName</div>
+                    <div class="small-4 small-offset-4 medium-3 medium-offset-0 columns">@((friend.WishListVisibility == WishListVisibility.Private) ? null : Html.ActionLink("View Wishlist", "Index", "Wishlist", new { wishlistOwnerId = friend.UserId }, null))</div>
+                    <div class="small-4 medium-3 columns">@Html.ActionLink("Remove", "Delete", "FriendList", new { memberId = friend.UserId }, null)</div>
+                </div>
             }
         }
         else
         {
-            <tr>
-                <td>Wow, look at all those friends! You are SO popular!</td>
-            </tr>
+            <div class="row">
+                <div class="columns"><em>You have no friends.</em></div>
+            </div>
         }
-        </table>
     </div>
 </div>

@@ -30,7 +30,12 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> Index()
         {
-            FriendsListViewModel friendsListViewModel = new FriendsListViewModel();
+            FriendsListViewModel friendsListViewModel = new FriendsListViewModel
+            {
+                ConfirmedFriends = new List<Member>(),
+                PendingReceivedFriendships = new List<Member>(),
+                PendingSentFriendships = new List<Member>()
+            };
 
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
 
@@ -45,35 +50,23 @@ namespace Veil.Controllers
 
             friendsListViewModel.ConfirmedFriends = member.ConfirmedFriends.ToList();
 
-            //TODO: change the Member entity's RequestedFriendships and ReceivedFriendships get methods
-
-            //TODO: decide if ViewModel is List<Member>
             var pendingReceivedFriendships = friendships
-                .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
-                .Where(f => f.ReceiverId == idGetter.GetUserId(User.Identity));
+                .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending &&
+                    f.ReceiverId == currentMemberGuid);
             foreach (var friendship in pendingReceivedFriendships)
             {
                 friendsListViewModel.PendingReceivedFriendships
-                    .Add((friendship.Requester == member) ? friendship.Receiver : friendship.Requester);
+                    .Add(friendship.Requester);
             }
 
             var pendingSentFriendships = friendships
-                .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
-                .Where(f => f.RequesterId == idGetter.GetUserId(User.Identity));
+                .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending &&
+                    f.RequesterId == currentMemberGuid);
             foreach (var friendship in pendingSentFriendships)
             {
                 friendsListViewModel.PendingSentFriendships
-                    .Add((friendship.Requester == member) ? friendship.Receiver : friendship.Requester);
+                    .Add(friendship.Receiver);
             }
-            //TODO: or ViewModel is List<Friendship>
-            //friendsListViewModel.PendingReceivedFriendships = friendships
-            //    .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
-            //    .Where(f => f.ReceiverId == idGetter.GetUserId(User.Identity))
-            //    .ToList();
-            //friendsListViewModel.PendingSentFriendships = friendships
-            //    .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending)
-            //    .Where(f => f.RequesterId == idGetter.GetUserId(User.Identity))
-            //    .ToList();
 
             return View(friendsListViewModel);
         }
@@ -92,6 +85,13 @@ namespace Veil.Controllers
                 .Where(m => m.UserAccount.UserName == username)
                 .FirstOrDefaultAsync();
 
+            if (currentUser == targetUser)
+            {
+                this.AddAlert(AlertType.Error, "Are you so lonely that you want to friend yourself?");
+
+                return RedirectToAction("Index");
+            }
+
             if (targetUser == null)
             {
                 this.AddAlert(AlertType.Error, $"No member with the username '{username}' exists.");
@@ -100,17 +100,15 @@ namespace Veil.Controllers
             }
 
             Friendship existingFriendship = await db.Friendships
-                .Where(f => (f.Requester == currentUser && f.Receiver == targetUser) ||
-                            (f.Requester == targetUser && f.Receiver == currentUser))
+                .Where(f => (f.Requester.UserId == currentUser.UserId && f.Receiver.UserId == targetUser.UserId) ||
+                            (f.Requester.UserId == targetUser.UserId && f.Receiver.UserId == currentUser.UserId))
                 .FirstOrDefaultAsync();
 
             if (existingFriendship == null)
             {
                 Friendship friendship = new Friendship()
                 {
-                    Requester = currentUser,
                     RequesterId = currentUser.UserId,
-                    Receiver = targetUser,
                     ReceiverId = targetUser.UserId,
                     RequestStatus = FriendshipRequestStatus.Pending
                 };
@@ -118,18 +116,15 @@ namespace Veil.Controllers
                 db.Friendships.Add(friendship);
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request sent to {username}!");
-
-                return RedirectToAction("Index");
+                this.AddAlert(AlertType.Success, $"Request sent to {targetUser.UserAccount.UserName}!");
             }
-
-            if (existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted)
+            else if (existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted)
             {
-                this.AddAlert(AlertType.Warning, $"Already friends with {username}!");
+                this.AddAlert(AlertType.Info, $"Already friends with {targetUser.UserAccount.UserName}!");
             }
             else if (existingFriendship.Requester == currentUser)
             {
-                this.AddAlert(AlertType.Warning, $"Request already sent to {username}.");
+                this.AddAlert(AlertType.Info, $"Request already sent to {targetUser.UserAccount.UserName}.");
             }
             else if (existingFriendship.Receiver == currentUser)
             {
@@ -138,22 +133,77 @@ namespace Veil.Controllers
                 //db.Friendships.AddOrUpdate(existingFriendship);
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request from {username} approved!");
+                this.AddAlert(AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved!");
             }
             
-            //TODO: what if someone has declined? should they be able to send another? (-Chelsea)
+            return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> Approve(Guid memberId)
+        {
+            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
+
+            Friendship existingFriendship = await db.Friendships
+                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .FirstOrDefaultAsync();
+
+            if (existingFriendship == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            existingFriendship.RequestStatus = FriendshipRequestStatus.Accepted;
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Friend request approved!");
 
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        public async Task<ActionResult> Delete(Friendship friendship)
+        public async Task<ActionResult> Decline(Guid memberId)
         {
-            if (friendship != null)
+            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
+
+            Friendship existingFriendship = await db.Friendships
+                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .FirstOrDefaultAsync();
+
+            if (existingFriendship == null)
             {
-                db.Friendships.Remove(friendship);
-                await db.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
+
+            db.Friendships.Remove(existingFriendship);
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Friend request declined.");
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> Delete(Guid memberId)
+        {
+            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
+
+            Friendship existingFriendship = await db.Friendships
+                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .FirstOrDefaultAsync();
+
+            if (existingFriendship == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            db.Friendships.Remove(existingFriendship);
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success,
+                existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted
+                    ? "Friend removed."
+                    : "Friend request cancelled.");
 
             return RedirectToAction("Index");
         }
