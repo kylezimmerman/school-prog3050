@@ -87,7 +87,7 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, "There was an error");
             }
 
-            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
+            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
 
             if (gameProduct != null)
             {
