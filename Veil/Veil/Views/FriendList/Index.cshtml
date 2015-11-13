@@ -19,61 +19,65 @@
             </div>
         }
     </div>
-    <div class="medium-6 columns">
+</div>
+
+<div class="row">
+    <div class="medium-9 columns bordered margin-half-em">
         <h4>Requests Pending Action</h4>
         @if (Model.PendingReceivedFriendships.Count > 0)
         {
             foreach (var member in Model.PendingReceivedFriendships)
             {
-                <div class="row panel">
+                <div class="row">
                     <div class="medium-6 columns">@member.UserAccount.UserName</div>
                     <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId }, null)</div>
-                    <div class="small-6 medium-3 columns"><a href="#">Decline</a></div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Decline", "Decline", "FriendList", new { memberId = member.UserId }, null)</div>
                 </div>
             }
         }
         else
         {
             <div class="row">
-                <div class="columns">Lol no one wants to be your friend xD</div>
+                <div class="columns"><em>You have no requests requiring action.</em></div>
             </div>
         }
     </div>
-    <div class="medium-6 columns">
+    <div class="medium-9 columns bordered margin-half-em">
         <h4>My Pending Requests</h4>
         @if (Model.PendingSentFriendships.Count > 0)
         {
             foreach (var member in Model.PendingSentFriendships)
             {
                 <div class="row">
-                    <div class="columns">@member.UserAccount.UserName</div>
+                    <div class="small-6 columns">@member.UserAccount.UserName</div>
+                    <div class="small-6 columns">@Html.ActionLink("Cancel", "Cancel", "FriendList", new { memberId = member.UserId }, null)</div>
                 </div>
             }
         }
         else
         {
             <div class="row">
-                <div class="columns">Get out of your parent's basement and meet people, jesus...</div>
+                <div class="columns"><em>You have no pending requests.</em></div>
             </div>
         }
     </div>
-    <div class="columns">
+    <div class="medium-9 end columns bordered margin-half-em">
         <h4>My Friends</h4>
-        <span>Click a friend to look at their wishlist.</span>
         @if (Model.ConfirmedFriends.Count > 0)
         {
             foreach (var friend in Model.ConfirmedFriends)
             {
                 <div class="row">
-                    <div class="small-9 columns">@friend.UserAccount.UserName</div>
-                    <div class="small-3 columns">@Html.ActionLink("Remove", "Delete", "FriendList", new { memberId = friend.UserId }, null)</div>
+                    <div class="medium-6 columns">@friend.UserAccount.UserName</div>
+                    <div class="small-4 small-offset-4 medium-3 medium-offset-0 columns">@((friend.WishListVisibility == WishListVisibility.Private) ? null : Html.ActionLink("View Wishlist", "Index", "Wishlist", new { wishlistOwnerId = friend.UserId }, null))</div>
+                    <div class="small-4 medium-3 columns">@Html.ActionLink("Remove", "Remove", "FriendList", new { memberId = friend.UserId }, null)</div>
                 </div>
             }
         }
         else
         {
             <div class="row">
-                <div class="columns">Wow, look at all those friends! You are SO popular!</div>
+                <div class="columns"><em>You have no friends.</em></div>
             </div>
         }
     </div>

@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Veil.DataModels.Models
 {
@@ -31,5 +32,15 @@ namespace Veil.DataModels.Models
         /// Collection navigation property for the items in the cart
         /// </summary>
         public virtual ICollection<CartItem> Items { get; set; }
+
+        public decimal? TotalCartItemsPrice
+        {
+            get
+            {
+                return
+                    Items.Where(i => i.IsNew).Sum(i => i.Product.NewWebPrice * i.Quantity) +
+                    Items.Where(i => !i.IsNew).Sum(i => i.Product.UsedWebPrice * i.Quantity);
+            }
+        }
     }
 }

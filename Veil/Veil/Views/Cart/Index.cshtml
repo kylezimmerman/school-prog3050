@@ -1,8 +1,8 @@
 ﻿@using Veil.DataModels.Models
-@model Veil.DataModels.Models.Cart
+@model Cart
 
 @{
-    ViewBag.Title = "Shopping Cart";
+    ViewBag.Title = "Your Cart";
 }
 
 <div class="row">
@@ -11,86 +11,95 @@
     </div>
 </div>
 
-<div class="row panel">
-    <div class="small-3 columns">
-        <img src="http://placekitten.com.s3.amazonaws.com/homepage-samples/200/140.jpg" alt="Box Art" />
-    </div>
-    <div class="small-6 columns">
-        <h4>Game Name 1</h4>
-        <p>PS4</p>
-        <p>New</p>
-    </div>
-    <div class="small-3 columns">
-        <div class="row">
-            <div class="small-3 columns">
-                <p>Unit:</p>
-            </div>
-            <div class="small-9 columns">
-                <p>$50.00</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="small-3 columns">
-                <label class="inline">Qty:</label>
-            </div>
-            <div class="small-9 columns">
-                <input type="text" value="1" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="column">
-                <a href="#">Update Quantity</a> |
-                <a href="#">Remove</a>
-            </div>
+@if (!Model.Items.Any())
+{
+    <div class="row">
+        <div class="column">
+            <p>Your cart is empty.</p>
         </div>
     </div>
-</div>
-
-<div class="row">
-    <div class="column">
-        <table>
-            <tr><th>Item Total:</th><td>$50.00</td></tr>
-            <tr><th>Shipping &amp; Handling:</th><td>$5.00</td></tr>
-            <tr><th>Tax:</th><td>$7.15</td></tr>
-            <tr><th>Order Total:</th><td>$62.15</td></tr>
-        </table>
-        @Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout"}, new { @class = "button"})
-    </div>
-</div>
-
-@*
-    @using (Html.BeginForm())
+}
+else
+{
+    foreach (var item in Model.Items.Where(i => i.Product is PhysicalGameProduct))
     {
-        @Html.AntiForgeryToken()
-
-        <div class="form-horizontal">
-            <h4>Cart</h4>
-            <hr />
-
-            @foreach (CartItem item in Model.Items)
-            {
+        var gameProduct = item.Product as PhysicalGameProduct;
+        <div class="row panel" data-equalizer>
+            <div class="small-3 columns" data-equalizer-watch>
+                <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art"/>
+            </div>
+            <div class="small-6 columns" data-equalizer-watch>
+                <h4>@gameProduct.Name</h4>
                 <p>
-                    @Html.DisplayFor(m => item.Product.Name)
-                    @Html.DisplayFor(m => item.Quantity)
-
-                    @(item.IsNew ?
-                        @Html.DisplayFor(m => item.Product.NewWebPrice) :
-                        @Html.DisplayFor(m => item.Product.UsedWebPrice))
-
+                    @gameProduct.Platform.PlatformName
                 </p>
-            }
-
-            <p>
-                Subtotal (@Model.Items.Count items): $20
-            </p>
-
-            <div class="form-group">
-                <div class="col-md-offset-2 col-md-10">
-                    <button type="submit">Update Cart</button>
+                @if (item.IsNew)
+                {
+                    <p>New</p>
+                }
+                else
+                {
+                    <p>Used</p>
+                }
+            </div>
+            <div class="small-3 columns" data-equalizer-watch>
+                <div class="row">
+                    <div class="small-3 columns">
+                        <p>Unit Price:</p>
+                    </div>
+                    <div class="small-9 columns">
+                        @if (item.IsNew)
+                        {
+                            <p>@item.Product.NewWebPrice</p>
+                        }
+                        else
+                        {
+                            <p>@item.Product.UsedWebPrice</p>
+                        }
+                    </div>
                 </div>
+                @using (Html.BeginForm("UpdateQuantity", "Cart", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@item.ProductId" />
+                    <div class="row">
+                        <div class="small-3 columns">
+                            <label for="quantity" class="inline">Quantity:</label>
+                        </div>
+                        <div class="small-9 columns">
+                            <input type="number" name="quantity" id="quantity" value="@item.Quantity"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns medium-6">
+                            <button type="submit" class="small expand">Update Cart</button>
+                        </div>
+                        <div class="columns medium-6">
+                            @Html.ActionLink("Remove Item", "RemoveItem", new { productId = item.ProductId }, new { @class = "button small expand alert" })
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     }
 
-    <button>@Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout"})</button>
-*@
+    <div class="row panel">
+        <div class="column">
+            <table class="right">
+                <tr><th>Item Total:</th><td>@Model.TotalCartItemsPrice</td></tr>
+                <tr>
+                    <th>Shipping &amp; Handling:</th>
+                    @if (Model.TotalCartItemsPrice < 120m)
+                    {
+                        <td>Free</td>
+                    }
+                    else
+                    {
+                        <td>$12.00</td>
+                    }
+                </tr>
+                <tr><td colspan="2">@Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout" }, new { @class = "button expand small success margin-bottom-0" })</td></tr>
+            </table>
+        </div>
+    </div>
+}
