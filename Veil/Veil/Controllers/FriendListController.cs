@@ -139,7 +139,6 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
         public async Task<ActionResult> Approve(Guid memberId)
         {
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
@@ -162,7 +161,28 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
+        public async Task<ActionResult> Decline(Guid memberId)
+        {
+            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
+
+            Friendship existingFriendship = await db.Friendships
+                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .FirstOrDefaultAsync();
+
+            if (existingFriendship == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            db.Friendships.Remove(existingFriendship);
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Friend request declined.");
+
+            return RedirectToAction("Index");
+        }
+
         public async Task<ActionResult> Delete(Guid memberId)
         {
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
@@ -183,7 +203,7 @@ namespace Veil.Controllers
             this.AddAlert(AlertType.Success,
                 existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted
                     ? "Friend removed."
-                    : "Friend request declined.");
+                    : "Friend request cancelled.");
 
             return RedirectToAction("Index");
         }
