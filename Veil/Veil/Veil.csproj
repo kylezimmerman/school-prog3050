@@ -272,6 +272,9 @@
   <ItemGroup>
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="PrivateAppSettings.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="sass\_normalize.scss" />
     <Content Include="sass\_foundation.scss" />
     <Content Include="sass\_foundation.mvc.scss" />
@@ -321,9 +324,6 @@
     <Content Include="sass\foundation\components\_block-grid.scss" />
     <Content Include="sass\foundation\components\_alert-boxes.scss" />
     <Content Include="sass\foundation\components\_accordion.scss" />
-    <Content Include="PrivateAppSettings.config">
-      <SubType>Designer</SubType>
-    </Content>
     <None Include="compilerconfig.json" />
     <Content Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
