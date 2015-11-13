@@ -81,7 +81,6 @@ namespace Veil.Controllers
 
         public async Task<ActionResult> RemoveItem(Guid? productId)
         {
-            // TODO: Actually implement this
             var membersId = idGetter.GetUserId(User.Identity);
             Cart memberCart = await db.Carts.FindAsync(membersId);
 
