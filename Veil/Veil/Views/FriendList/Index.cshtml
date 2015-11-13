@@ -50,7 +50,7 @@
             {
                 <div class="row">
                     <div class="small-6 columns">@member.UserAccount.UserName</div>
-                    <div class="small-6 columns">@Html.ActionLink("Cancel", "Delete", "FriendList", new { memberId = member.UserId }, null)</div>
+                    <div class="small-6 columns">@Html.ActionLink("Cancel", "Cancel", "FriendList", new { memberId = member.UserId }, null)</div>
                 </div>
             }
         }
@@ -70,7 +70,7 @@
                 <div class="row">
                     <div class="medium-6 columns">@friend.UserAccount.UserName</div>
                     <div class="small-4 small-offset-4 medium-3 medium-offset-0 columns">@((friend.WishListVisibility == WishListVisibility.Private) ? null : Html.ActionLink("View Wishlist", "Index", "Wishlist", new { wishlistOwnerId = friend.UserId }, null))</div>
-                    <div class="small-4 medium-3 columns">@Html.ActionLink("Remove", "Delete", "FriendList", new { memberId = friend.UserId }, null)</div>
+                    <div class="small-4 medium-3 columns">@Html.ActionLink("Remove", "Remove", "FriendList", new { memberId = friend.UserId }, null)</div>
                 </div>
             }
         }

@@ -87,7 +87,7 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, "There was an error");
             }
 
-            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
+            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
 
             if (gameProduct != null)
             {
@@ -214,7 +214,6 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
-                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Physical Game Product");
@@ -323,7 +322,6 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
-                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Download Game Product");
