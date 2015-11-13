@@ -285,12 +285,14 @@ namespace Veil.Controllers
         /// <returns>
         ///     The create game view
         /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public ActionResult Create()
         {
             ViewBag.ESRBRatingId = new SelectList(db.ESRBRatings, "RatingId", "Description");
             return View();
         }
 
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind(Exclude = nameof(Game.Tags))] Game game, List<string> tags)
@@ -368,8 +370,7 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                this.AddAlert(AlertType.Error, "Please select a game to delete.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, "some message");
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -389,8 +390,7 @@ namespace Veil.Controllers
         {
             if (id == Guid.Empty)
             {
-                this.AddAlert(AlertType.Error, "You must select a Game to delete.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -403,8 +403,12 @@ namespace Veil.Controllers
             using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
-                {
-                    db.GameProducts.RemoveRange(game.GameSKUs);
+                {     
+                    if (game.GameSKUs.Any())
+                    {
+                        db.GameProducts.RemoveRange(game.GameSKUs);
+                    }
+                    
                     db.Games.Remove(game);
                     await db.SaveChangesAsync();
                     deleteScope.Complete();

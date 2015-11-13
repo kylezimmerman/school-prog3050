@@ -1,10 +1,11 @@
-﻿@using Veil.Extensions
-@using Veil.Helpers
-@using Veil.Models
+﻿@using Veil.Models
 @model ManageCreditCardViewModel
 
 @{
     ViewBag.Title = "Manage Credit Cards";
+    string formId = "addCardForm";
+    string countrySelectId = $"{nameof(Model.CreditCard)}_{nameof(Model.CreditCard.AddressCountry)}";
+    string provinceSelectId = $"{nameof(Model.CreditCard)}_{nameof(Model.CreditCard.AddressState)}";
 }
 
 <div class="row">
@@ -13,126 +14,166 @@
     </div>
 </div>
 
-<div class="row panel">
-    <div class="column">
-        <h4>Your Credit Cards</h4>
+@if (Model.CreditCards != null && Model.CreditCards.Any())
+{
+    <div class="row panel">
+        <div class="column">
+            <h4>Your Credit Cards</h4>
 
-        <div class="row collapse">
-            <div class="small-8 large-4 columns">
-                <select>
-                    <option>************2834</option>
-                    <option>************3129</option>
-                </select>
-            </div>
+            <div class="row collapse">
+                <div class="medium-4 columns">
+                    @Html.DropDownList("creditCardId", Model.CreditCards)
+                </div>
 
-            <div class="small-4 large-8 columns">
-                <button class="postfix alert">Delete Selected Credit Card</button>
+                <div class="medium-4 columns end">
+                    <button class="postfix alert">Delete Selected Credit Card</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
-<div class="row panel">
-    <div class="column">
-        <h4>Billing Information</h4>
 
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Street Address</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" />
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">City</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" />
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Country</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                @Html.DropDownListFor(m => m.Countries, Model.Countries.CountryItems())
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Province/State</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                @Html.DropDownListFor(m => m.creditCard.AddressState, Model.Countries.GetProvinceItems())
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Postal Code</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" />
-            </div>
-        </div>
-
-        <h4>Credit Card Information</h4>
-
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Cardholder's Full Name</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" />
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Card Number</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" />
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Expiry Date</span>
-            </div>
-            <div class="small-4 large-9 columns">
-                <select>
-                    <option>01</option>
-                    <option>02</option>
-                    <option>03</option>
-                    <option>04</option>
-                    <option>05</option>
-                    <option>06</option>
-                    <option>07</option>
-                    <option>08</option>
-                    <option>09</option>
-                    <option>10</option>
-                    <option>11</option>
-                    <option>12</option>
-                </select>
-
-                <select>
-                    <option>2015</option>
-                    <option>2016</option>
-                    <option>2017</option>
-                    <option>2018</option>
-                    <option>2019</option>
-                    <option>2020</option>
-                </select>
-            </div>
-            <div class="small-4 columns"></div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">CVC Number</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" maxlength="3" />
-            </div>
+<noscript>
+    <div class="row panel alert-box alert">
+        <div class="column">
+            You must have JavaScript enabled to add Credit Cards. This is so we never have access to your information. 
         </div>
     </div>
-</div>
+</noscript>
+
+
+@using (Html.BeginForm("CreateCreditCard", "Manage", FormMethod.Post, new { Id = formId, style = "display:none" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row panel">
+        <div class="column">
+            <h4>Billing Information</h4>
+
+            @{ Html.RenderPartial("_ManageCreditCardFormFields", Model); }
+
+            <button type="submit">Add Credit Card</button>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+
+    <script type="text/javascript">
+        // Stripe setup script
+        (function()
+        {
+            Stripe.setPublishableKey('pk_test_p7evtCqVwwsVMpTl4yqb1Ndh');
+
+            function stripeResponseHandler(status, response)
+            {
+                var $form = $('#@formId');
+
+                if (response.error)
+                {
+                    console.log(response);
+                    console.log(response.error);
+
+                    // Show the errors on the form
+                    $form.find('.payment-errors').
+                        text(response.error.message).
+                        removeClass('field-validation-valid').
+                        addClass('field-validation-error');
+
+                    $form.find('button').prop('disabled', false);
+                }
+                else
+                {
+                    // Remove all name attributes before attempting a submit
+                    $form.find(':input:not([type=hidden])').each(function()
+                    {
+                        $(this).removeAttr('name');
+                    });
+
+                    // response contains id and card, which contains additional card details
+                    var token = response.id;
+                    // Insert the token into the form so it gets submitted to the server
+                    $form.append($('<input type="hidden" name="stripeCardToken" />').val(token));
+
+                    // and submit
+                    $form.get(0).submit();
+                }
+            };
+
+            $(function($)
+            {
+                var $form = $('#@formId');
+                
+                // Remove the display: none style from the form.
+                $form.css('display', 'initial');
+
+                // Add back name attributes
+                $form.find(':input:not([type=hidden])').each(function()
+                {
+                    $(this).attr('name', this.id.replace('_', '.'));
+                });
+
+                // Remove the default validation
+                $form.removeData('validator').removeData('unobtrusiveValidation');
+
+                // Reparse the form for validation
+                $.validator.unobtrusive.parse('#@formId');
+
+                $form.submit(function(event)
+                {
+                    var $form = $(this);
+
+                    if ($form.valid())
+                    {
+                        $form.find('.payment-errors').
+                            text('').
+                            removeClass('field-validation-error').
+                            addClass('field-validation-valid');
+
+                        // Disable the submit button to prevent repeated clicks
+                        $form.find('button').prop('disabled', true);
+
+                        Stripe.card.createToken($form, stripeResponseHandler);
+
+                        // Prevent the form from submitting with the default action
+                        return false;
+                    }
+
+                    return false;
+                });
+            });
+        })();
+    </script>
+
+    <script type="text/javascript">
+        // Simple script to disable all the optgroups except for the one for the selected country
+        $(function()
+        {
+            $('#@countrySelectId').change(function()
+                {
+                    var selectedCountryName = $('option:selected', this).text();
+
+                    $('#@provinceSelectId > optgroup').each(function()
+                    {
+                        if (this.label !== selectedCountryName)
+                        {
+                            $(this).prop('disabled', true);
+                        }
+                        else
+                        {
+                            $(this).prop('disabled', false);
+
+                            if ($('option:selected', this)[0] === undefined)
+                            {
+                                $('option', this).first().prop('selected', true);
+                            }
+                        }
+                    });
+                }).
+                trigger('change'); // Manually trigger the initial change
+        });
+    </script>
+}
