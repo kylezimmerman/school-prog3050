@@ -25,12 +25,12 @@ else
     {
         var gameProduct = item.Product as PhysicalGameProduct;
         <div class="row panel" data-equalizer>
-            <div class="small-3 columns" data-equalizer-watch>
+            <div class="small-2 columns" data-equalizer-watch>
                 <img src="@gameProduct.BoxArtImageURL" alt="@gameProduct.PlatformCode Box Art"/>
             </div>
             <div class="small-6 columns" data-equalizer-watch>
                 <h4>@gameProduct.Name</h4>
-                <p>
+                <p class="margin-bottom-0">
                     @gameProduct.Platform.PlatformName
                 </p>
                 @if (item.IsNew)
@@ -42,43 +42,44 @@ else
                     <p>Used</p>
                 }
             </div>
-            <div class="small-3 columns" data-equalizer-watch>
+            <div class="small-4 columns" data-equalizer-watch>
                 <div class="row">
-                    <div class="small-3 columns">
+                    <div class="small-6 columns">
                         <p>Unit Price:</p>
                     </div>
-                    <div class="small-9 columns">
+                    <div class="small-6 columns">
                         @if (item.IsNew)
                         {
-                            <p>@item.Product.NewWebPrice</p>
+                            <p>@item.Product.NewWebPrice.ToString("C")</p>
                         }
                         else
                         {
-                            <p>@item.Product.UsedWebPrice</p>
+                            <p>@item.Product.UsedWebPrice.Value.ToString("C")</p>
                         }
                     </div>
                 </div>
-                @using (Html.BeginForm("UpdateQuantity", "Cart", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="productId" value="@item.ProductId" />
-                    <div class="row">
-                        <div class="small-3 columns">
+                <div class="row">
+                    @using (Html.BeginForm("UpdateQuantity", "Cart", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("productId", item.ProductId)
+                        @Html.Hidden("isNew", item.IsNew)
+                        <div class="column">
                             <label for="quantity" class="inline">Quantity:</label>
                         </div>
-                        <div class="small-9 columns">
+                        <div class="small-6 columns">
                             <input type="number" name="quantity" id="quantity" value="@item.Quantity"/>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="columns medium-6">
-                            <button type="submit" class="small expand">Update Cart</button>
+                        <div class="small-6 columns">
+                            <button type="submit" class="small expand">Update Qty</button>
                         </div>
-                        <div class="columns medium-6">
-                            @Html.ActionLink("Remove Item", "RemoveItem", new { productId = item.ProductId }, new { @class = "button small expand alert" })
-                        </div>
+                    }
+                </div>
+                <div class="row">
+                    <div class="columns medium-6 medium-offset-6 end">
+                        @Html.ActionLink("Remove Item", "RemoveItem", new { productId = item.ProductId }, new { @class = "button small expand alert" })
                     </div>
-                }
+                </div>
             </div>
         </div>
     }
@@ -86,19 +87,19 @@ else
     <div class="row panel">
         <div class="column">
             <table class="right">
-                <tr><th>Item Total:</th><td>@Model.TotalCartItemsPrice</td></tr>
+                <tr><th>Item Total:</th><td>@Model.TotalCartItemsPrice.Value.ToString("C")</td></tr>
                 <tr>
                     <th>Shipping &amp; Handling:</th>
                     @if (Model.TotalCartItemsPrice < 120m)
                     {
-                        <td>Free</td>
+                        <td>$12.00</td>
                     }
                     else
                     {
-                        <td>$12.00</td>
+                        <td>Free</td>
                     }
                 </tr>
-                <tr><td colspan="2">@Html.ActionLink("Checkout", "ShippingInfo", new { Controller = "Checkout" }, new { @class = "button expand small success margin-bottom-0" })</td></tr>
+                <tr><td colspan="2">@Html.ActionLink("Proceed to Checkout", "ShippingInfo", new { Controller = "Checkout" }, new { @class = "button expand small success margin-bottom-0" })</td></tr>
             </table>
         </div>
     </div>
