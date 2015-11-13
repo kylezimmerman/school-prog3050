@@ -403,8 +403,7 @@ namespace Veil.Controllers
             using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
-                {
-                    
+                {     
                     if (game.GameSKUs.Any())
                     {
                         db.GameProducts.RemoveRange(game.GameSKUs);

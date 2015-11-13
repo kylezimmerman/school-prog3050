@@ -2015,6 +2015,7 @@ namespace Veil.Tests.Controllers
 
             Game aGame = new Game();
             aGame.Id = Id;
+            aGame.GameSKUs = new List<GameProduct>();
 
             Guid nonMatch = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");
 
@@ -2038,10 +2039,9 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_CatchesOnSaveDelete(string role)
         {
-            List<GameProduct> emptyList = new List<GameProduct>();
-
             Game aGame = new Game();
             aGame.Id = Id;
+            aGame.GameSKUs = new List<GameProduct>();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
