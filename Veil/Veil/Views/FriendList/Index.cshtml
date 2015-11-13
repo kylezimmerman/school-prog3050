@@ -27,7 +27,7 @@
             {
                 <div class="row panel">
                     <div class="medium-6 columns">@member.UserAccount.UserName</div>
-                    <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId })</div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId }, null)</div>
                     <div class="small-6 medium-3 columns"><a href="#">Decline</a></div>
                 </div>
             }
@@ -66,7 +66,7 @@
             {
                 <div class="row">
                     <div class="small-9 columns">@friend.UserAccount.UserName</div>
-                    <div class="small-3 columns">@Html.ActionLink("Remove", "Delete", "FriendList", new { memberId = friend.UserId })</div>
+                    <div class="small-3 columns">@Html.ActionLink("Remove", "Delete", "FriendList", new { memberId = friend.UserId }, null)</div>
                 </div>
             }
         }
