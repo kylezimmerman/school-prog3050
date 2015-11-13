@@ -19,8 +19,8 @@
 
     @if (User.IsEmployeeOrAdmin())
     {
-        @Html.ActionLink("Edit", "EditDownloadSKU", new { id = Model.Id }, new { @class = "button expand small" })
-        @Html.ActionLink("Delete", "Delete", new { id = Model.Id }, new { @class = "button expand small alert" })
+        @Html.ActionLink("Edit", "EditDownloadSKU", "GameProducts", new { id = Model.Id }, new { @class = "button expand small" })
+        @Html.ActionLink("Delete", "Delete", "GameProducts", new { id = Model.Id }, new { @class = "button expand small alert" })
     }
     else
     {
