@@ -29,7 +29,55 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Index_ReturnsMatchingModel()
+        public async void Index_EmptyCart_ReturnsMatchingModel()
+        {
+            PhysicalGameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 12m,
+                UsedWebPrice = 8m,
+                Platform = new Platform
+                {
+                    PlatformName = "XBAX",
+                }
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>()
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.Index() as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<Cart>());
+
+            var model = (Cart)result.Model;
+
+            Assert.That(model.Items.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async void Index_ItemsInCart_ReturnsMatchingModel()
         {
             PhysicalGameProduct gameProduct = new PhysicalGameProduct()
             {
