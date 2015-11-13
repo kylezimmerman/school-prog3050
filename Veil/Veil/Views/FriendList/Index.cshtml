@@ -25,9 +25,9 @@
         {
             foreach (var member in Model.PendingReceivedFriendships)
             {
-                <div class="row">
+                <div class="row panel">
                     <div class="medium-6 columns">@member.UserAccount.UserName</div>
-                    <div class="small-6 medium-3 columns"><a href="#">Approve</a></div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId })</div>
                     <div class="small-6 medium-3 columns"><a href="#">Decline</a></div>
                 </div>
             }
@@ -58,14 +58,15 @@
         }
     </div>
     <div class="columns">
-        <h4>Your Friends</h4>
+        <h4>My Friends</h4>
         <span>Click a friend to look at their wishlist.</span>
         @if (Model.ConfirmedFriends.Count > 0)
         {
             foreach (var friend in Model.ConfirmedFriends)
             {
                 <div class="row">
-                    <div class="columns">@friend.UserAccount.UserName</div>
+                    <div class="small-9 columns">@friend.UserAccount.UserName</div>
+                    <div class="small-3 columns">@Html.ActionLink("Remove", "Delete", "FriendList", new { memberId = friend.UserId })</div>
                 </div>
             }
         }

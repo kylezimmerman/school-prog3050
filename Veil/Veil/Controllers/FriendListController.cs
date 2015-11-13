@@ -116,18 +116,15 @@ namespace Veil.Controllers
                 db.Friendships.Add(friendship);
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request sent to {username}!");
-
-                return RedirectToAction("Index");
+                this.AddAlert(AlertType.Success, $"Request sent to {targetUser.UserAccount.UserName}!");
             }
-
-            if (existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted)
+            else if (existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted)
             {
-                this.AddAlert(AlertType.Info, $"Already friends with {username}!");
+                this.AddAlert(AlertType.Info, $"Already friends with {targetUser.UserAccount.UserName}!");
             }
             else if (existingFriendship.Requester == currentUser)
             {
-                this.AddAlert(AlertType.Info, $"Request already sent to {username}.");
+                this.AddAlert(AlertType.Info, $"Request already sent to {targetUser.UserAccount.UserName}.");
             }
             else if (existingFriendship.Receiver == currentUser)
             {
@@ -136,9 +133,32 @@ namespace Veil.Controllers
                 //db.Friendships.AddOrUpdate(existingFriendship);
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request from {username} approved!");
+                this.AddAlert(AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved!");
             }
             
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Approve(Guid memberId)
+        {
+            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
+
+            Friendship existingFriendship = await db.Friendships
+                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .FirstOrDefaultAsync();
+
+            if (existingFriendship == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            existingFriendship.RequestStatus = FriendshipRequestStatus.Accepted;
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Friend request approved!");
+
             return RedirectToAction("Index");
         }
 
