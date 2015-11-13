@@ -163,27 +163,33 @@ namespace Veil.Controllers
 
         public async Task<ActionResult> Decline(Guid memberId)
         {
-            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
-
-            Friendship existingFriendship = await db.Friendships
-                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
-                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
-                .FirstOrDefaultAsync();
-
-            if (existingFriendship == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            db.Friendships.Remove(existingFriendship);
-            await db.SaveChangesAsync();
-
             this.AddAlert(AlertType.Success, "Friend request declined.");
 
-            return RedirectToAction("Index");
+            Task<ActionResult> result = Delete(memberId);
+
+            return await result;
         }
 
-        public async Task<ActionResult> Delete(Guid memberId)
+        public async Task<ActionResult> Remove(Guid memberId)
+        {
+            this.AddAlert(AlertType.Success, "Friend removed.");
+
+            Task<ActionResult> result = Delete(memberId);
+
+            return await result;
+        }
+
+        public async Task<ActionResult> Cancel(Guid memberId)
+        {
+            this.AddAlert(AlertType.Success, "Friend request cancelled.");
+
+            Task<ActionResult> result = Delete(memberId);
+
+            return await result;
+        }
+
+        [NonAction]
+        private async Task<ActionResult> Delete(Guid memberId)
         {
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
 
@@ -194,16 +200,14 @@ namespace Veil.Controllers
 
             if (existingFriendship == null)
             {
+                this.ClearAlerts();
+                this.AddAlert(AlertType.Error, "Error processing request. Please try again.");
+
                 return RedirectToAction("Index");
             }
 
             db.Friendships.Remove(existingFriendship);
             await db.SaveChangesAsync();
-
-            this.AddAlert(AlertType.Success,
-                existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted
-                    ? "Friend removed."
-                    : "Friend request cancelled.");
 
             return RedirectToAction("Index");
         }
