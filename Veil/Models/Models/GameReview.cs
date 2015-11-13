@@ -12,5 +12,5 @@ namespace Veil.DataModels.Models
     /// <summary>
     /// A review for a specific GameProduct by a Member
     /// </summary>
-    public class GameReview : Review<GameProduct, Guid> { }
+    public class GameReview : Review<GameProduct> { }
 }
