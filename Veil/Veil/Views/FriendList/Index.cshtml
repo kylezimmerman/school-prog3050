@@ -21,65 +21,59 @@
     </div>
     <div class="medium-6 columns">
         <h4>Requests Pending Action</h4>
-        <table>
-        @if (Model.PendingReceivedFriendships != null)
+        @if (Model.PendingReceivedFriendships.Count > 0)
         {
-            foreach (var request in Model.PendingReceivedFriendships)
+            foreach (var member in Model.PendingReceivedFriendships)
             {
-                <tr>
-                    <td>@request.UserAccount.UserName</td>
-                    <td><a href="#">Approve</a></td>
-                    <td><a href="#">Decline</a></td>
-                </tr>
+                <div class="row">
+                    <div class="medium-6 columns">@member.UserAccount.UserName</div>
+                    <div class="small-6 medium-3 columns"><a href="#">Approve</a></div>
+                    <div class="small-6 medium-3 columns"><a href="#">Decline</a></div>
+                </div>
             }
         }
         else
         {
-            <tr>
-                <td>Lol no one wants to be your friend xD</td>
-            </tr>
+            <div class="row">
+                <div class="columns">Lol no one wants to be your friend xD</div>
+            </div>
         }
-        </table>
     </div>
     <div class="medium-6 columns">
         <h4>My Pending Requests</h4>
-        <table>
-        @if (Model.PendingSentFriendships != null)
+        @if (Model.PendingSentFriendships.Count > 0)
         {
-            foreach (var request in Model.PendingSentFriendships)
+            foreach (var member in Model.PendingSentFriendships)
             {
-                <tr>
-                    <td>Get out of your parent's basement and meet people, jesus...</td>
-                </tr>
+                <div class="row">
+                    <div class="columns">@member.UserAccount.UserName</div>
+                </div>
             }
         }
         else
         {
-            <tr>
-                <td>Get out of your parent's basement and meet people, jesus...</td>
-            </tr>
+            <div class="row">
+                <div class="columns">Get out of your parent's basement and meet people, jesus...</div>
+            </div>
         }
-        </table>
     </div>
     <div class="columns">
         <h4>Your Friends</h4>
         <span>Click a friend to look at their wishlist.</span>
-        <table>
-        @if (Model.ConfirmedFriends != null && Model.ConfirmedFriends.Count > 0)
+        @if (Model.ConfirmedFriends.Count > 0)
         {
             foreach (var friend in Model.ConfirmedFriends)
             {
-                <tr>
-                    <td>@friend.UserAccount.UserName</td>
-                </tr>
+                <div class="row">
+                    <div class="columns">@friend.UserAccount.UserName</div>
+                </div>
             }
         }
         else
         {
-            <tr>
-                <td>Wow, look at all those friends! You are SO popular!</td>
-            </tr>
+            <div class="row">
+                <div class="columns">Wow, look at all those friends! You are SO popular!</div>
+            </div>
         }
-        </table>
     </div>
 </div>
