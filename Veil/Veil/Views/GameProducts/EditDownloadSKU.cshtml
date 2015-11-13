@@ -1,7 +1,7 @@
 ﻿@model Veil.DataModels.Models.DownloadGameProduct
 
 @{
-    ViewBag.Title = "Create Downloadable Game Product";
+    ViewBag.Title = "Edit Download SKU";
 }
 
 @using (Html.BeginForm())
@@ -118,7 +118,7 @@
                     <button type="submit" class="expand">Save Changes</button>
                 </div>
                 <div class="medium-2 column">
-                    @Html.ActionLink("Delete", "Delete", new { id = Model.Id }, new { @class = "button alert expand" })
+                    @Html.ActionLink("Cancel", "Details", "Games", new { id = Model.GameId }, new { @class = "button alert expand" })
                 </div>
             </div>
         </div>

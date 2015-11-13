@@ -27,16 +27,9 @@ namespace Veil.Controllers
         // GET: Cart
         public async Task<ActionResult> Index()
         {
-            // TODO: Remove this and actually implement it
-            //Member currentMember = new Member();
-            //currentMember.Cart = new Cart();
-
-            //return View(currentMember.Cart);
-            return View();
+            return View(await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
         {
             // TODO: Actually implement this
@@ -85,8 +78,6 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemoveItem(Guid? productId)
         {
             // TODO: Actually implement this
@@ -98,8 +89,15 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UpdateQuantity(Guid? productId, int? quantity)
         {
-            // TODO: Actually implement this
-            return RedirectToAction("Index");
+            if (productId == null || quantity == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            Cart currentMemberCart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity));
+
+            this.AddAlert(AlertType.Success, "Quantity set to " + quantity);
+            return View("Index", currentMemberCart);
         }
 
 

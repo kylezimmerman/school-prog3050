@@ -214,7 +214,6 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
-                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Physical Game Product");
@@ -323,7 +322,6 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
-                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Download Game Product");
