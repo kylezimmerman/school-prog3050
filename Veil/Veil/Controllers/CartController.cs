@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -32,7 +34,6 @@ namespace Veil.Controllers
 
         public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
         {
-            // TODO: Actually implement this
             //started
             var membersId = idGetter.GetUserId(User.Identity);
             Cart memberCart = await db.Carts.FindAsync(membersId);
@@ -66,21 +67,46 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
+                SetSessionCartQty();
+
             }
-            catch (Exception)
+            catch (DbUpdateException)
             {
-
-                throw;
+                this.AddAlert(AlertType.Error, "An error occured while adding game to your cart");
             }
 
-
-            // TODO: Update Cart Quantity in Session
+            //do we really want this to redirect the user
             return RedirectToAction("Index");
         }
 
         public async Task<ActionResult> RemoveItem(Guid? productId)
         {
             // TODO: Actually implement this
+            var membersId = idGetter.GetUserId(User.Identity);
+            Cart memberCart = await db.Carts.FindAsync(membersId);
+
+            if (productId == null)
+            {
+                throw new HttpException(NotFound, "OOOOH NO");
+            }
+            if (memberCart == null)
+            {
+                throw new HttpException(NotFound, "Dear god");
+            }
+
+            CartItem cartItem = memberCart.Items.FirstOrDefault(x => x.ProductId == productId);
+
+            try
+            {
+                memberCart.Items.Remove(cartItem);
+                await db.SaveChangesAsync();
+                SetSessionCartQty();
+            }
+            catch (DbUpdateException)
+            {
+                this.AddAlert(AlertType.Error, "An error occured while removing game to your cart. You are stuck with it now");
+            }
+
             // TODO: Update Cart Quantity in Session
             return RedirectToAction("Index");
         }
