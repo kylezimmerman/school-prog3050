@@ -370,8 +370,7 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                this.AddAlert(AlertType.Error, "Please select a game to delete.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, "some message");
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -391,8 +390,7 @@ namespace Veil.Controllers
         {
             if (id == Guid.Empty)
             {
-                this.AddAlert(AlertType.Error, "You must select a Game to delete.");
-                return RedirectToAction("Index");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             Game game = await db.Games.FindAsync(id);
@@ -406,7 +404,12 @@ namespace Veil.Controllers
             {
                 try
                 {
-                    db.GameProducts.RemoveRange(game.GameSKUs);
+                    
+                    if (game.GameSKUs.Any())
+                    {
+                        db.GameProducts.RemoveRange(game.GameSKUs);
+                    }
+                    
                     db.Games.Remove(game);
                     await db.SaveChangesAsync();
                     deleteScope.Complete();

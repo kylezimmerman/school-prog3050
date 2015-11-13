@@ -62,8 +62,7 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                this.AddAlert(AlertType.Error, "Please select a game product to delete.");
-                return RedirectToAction("Index", "Games");
+                throw new HttpException(NotFound, "There was an error");
             }
 
             GameProduct gameProduct = await db.GameProducts.FindAsync(id);
@@ -84,8 +83,7 @@ namespace Veil.Controllers
         {
             if (id == Guid.Empty)
             {
-                this.AddAlert(AlertType.Error, "You must select a Game SKU to delete.");
-                return RedirectToAction("Index", "Games");
+                throw new HttpException(NotFound, "There was an error");
             }
 
             GameProduct gameProduct = await db.GameProducts.FindAsync(id);

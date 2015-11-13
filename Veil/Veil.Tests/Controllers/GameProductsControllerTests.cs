@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,7 +61,7 @@ namespace Veil.Tests.Controllers
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeletePhysicalGameProduct_InvalidID(string role)
+        public async void DeletePhysicalGameProduct_NoMatchingIdInDB(string role)
         {
             GameProduct gameSku = new PhysicalGameProduct();
             gameSku.GameId = Id;
@@ -70,7 +71,6 @@ namespace Veil.Tests.Controllers
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
-            gameProductDbSetStub.SetupForInclude();
 
             gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -78,12 +78,147 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
 
             Assert.That(async () => await controller.Delete(nonMatch), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
+
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        public async void DeletePhysicalGameProduct_NullID(string role)
+        {
+            GameProduct gameSku = new PhysicalGameProduct();
+            gameSku.GameId = Id;
+            gameSku.Id = Id;
+
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().IsInRole(role);
+
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            Assert.That(async () => await controller.Delete(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
+        }
+
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        public async void DeletePhysicalGameProductConfirmed_ValidDelete(string role)
+        {
+            GameProduct gameSku = new PhysicalGameProduct();
+            gameSku.GameId = Id;
+            gameSku.Id = Id;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().IsInRole(role);
+
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.DeleteConfirmed(gameSku.Id) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
+        }
+
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        public async void DeletePhysicalGameProductConfirmed_NoMatchingIdInDB(string role)
+        {
+            GameProduct gameSku = new PhysicalGameProduct();
+            gameSku.GameId = Id;
+            gameSku.Id = Id;
+
+            Guid nonMatch = new Guid("44B0752E-998B-477A-AAAD-3ED535BA3559");
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().IsInRole(role);
+
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            Assert.That(async () => await controller.DeleteConfirmed(nonMatch), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
+        }
+
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        public async void DeletePhysicalGameProductConfirmed_EmptyGuid(string role)
+        {
+            GameProduct gameSku = new PhysicalGameProduct();
+            gameSku.GameId = Id;
+            gameSku.Id = Id;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().IsInRole(role);
+
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            Assert.That(async () => await controller.DeleteConfirmed(Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
+        }
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(VeilRoles.ADMIN_ROLE)]
+        public async void DeletePhysicalGameProductConfirmed_CatchesOnSaveDelete(string role)
+        {
+            GameProduct gameSku = new PhysicalGameProduct();
+            gameSku.GameId = Id;
+            gameSku.Id = Id;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+            dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().IsInRole(role);
+
+            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            var result = await controller.DeleteConfirmed(gameSku.Id) as ViewResult;
+
+            Assert.That(result != null);
+        }
+
+
     }
 }
