@@ -1,0 +1,104 @@
+﻿@using Veil.Controllers
+@using Veil.Extensions
+@using Veil.Models
+@model ManageCreditCardViewModel
+
+@* Note: You should copy the scripts section of ManageCreditCards if you use this partial *@
+
+@Html.ValidationMessage(ManageController.STRIPE_ISSUES_MODELSTATE_KEY, new { @class = "payment-errors" })
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.AddressLine1, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.NamelessEditorFor(m => m.CreditCard.AddressLine1, new { htmlAttributes = new { data_stripe = "address_line1" }})
+        @Html.ValidationMessageFor(m => m.CreditCard.AddressLine1)
+    </div>
+</div>
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.AddressCity, new { @class = "prefix" })
+    </div>
+    <div class="medium-9 columns">
+        @Html.NamelessEditorFor(m => m.CreditCard.AddressCity, new { htmlAttributes = new { data_stripe = "address_city" }})
+        @Html.ValidationMessageFor(m => m.CreditCard.AddressCity)
+    </div>
+</div>
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.AddressCountry, new { @class = "prefix" })
+    </div>
+    <div class="medium-4 columns end">
+        @Html.NamelessDropDownListFor(m => m.CreditCard.AddressCountry, Model.Countries.CountryItems(), new { data_stripe = "address_country" })
+        @Html.ValidationMessageFor(m => m.CreditCard.AddressCountry)
+    </div>
+</div>
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.AddressState, new { @class = "prefix" })
+    </div>
+    <div class="medium-4 columns end">
+        @Html.NamelessDropDownListFor(m => m.CreditCard.AddressState, Model.Countries.GetProvinceItems(), new { data_stripe = "address_state" })
+        @Html.ValidationMessageFor(m => m.CreditCard.AddressState)
+    </div>
+</div>
+<div class="row collapse">
+    <div class="small-6 medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.AddressZip, new { @class = "prefix" })
+    </div>
+    <div class="small-6 medium-2 columns end">
+        @Html.NamelessEditorFor(m => m.CreditCard.AddressZip, new { htmlAttributes = new { data_stripe = "address_zip" }})
+        @Html.ValidationMessageFor(m => m.CreditCard.AddressZip)
+    </div>
+</div>
+
+<h4>Credit Card Information</h4>
+
+<div class="row collapse">
+    <div class="medium-4 columns">
+        @Html.LabelFor(m => m.CreditCard.Name, new { @class = "prefix" })
+    </div>
+    <div class="medium-8 columns">
+        @Html.NamelessEditorFor(m => m.CreditCard.Name, new { htmlAttributes = new { data_stripe = "name" }})
+        @Html.ValidationMessageFor(m => m.CreditCard.Name)
+    </div>
+</div>
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.Number, new { @class = "prefix" })
+    </div>
+    <div class="medium-4 columns end">
+        @Html.NamelessEditorFor(m => m.CreditCard.Number, new { htmlAttributes = new { data_stripe = "number" }})
+        @Html.ValidationMessageFor(m => m.CreditCard.Number)
+    </div>
+</div>
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.ExpirationMonth, new { @class = "prefix" })
+    </div>
+    <div class="medium-4 columns end">
+        @Html.NamelessDropDownListFor(m => m.CreditCard.ExpirationMonth, Model.Months, new { data_stripe = "exp_month" })
+        @Html.ValidationMessageFor(m => m.CreditCard.ExpirationMonth)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.ExpirationYear, new { @class = "prefix" })
+    </div>
+    <div class="medium-4 columns end">
+        @Html.NamelessDropDownListFor(m => m.CreditCard.ExpirationYear, Model.Years, new { data_stripe = "exp_year" })
+        @Html.ValidationMessageFor(m => m.CreditCard.ExpirationYear)
+    </div>
+</div>
+
+<div class="row collapse">
+    <div class="small-6 medium-3 columns">
+        @Html.LabelFor(m => m.CreditCard.Cvc, new { @class = "prefix" })
+    </div>
+    <div class="small-6 medium-2 columns end">
+        @Html.NamelessEditorFor(m => m.CreditCard.Cvc, new { htmlAttributes = new { data_stripe = "cvc" }})
+        @Html.ValidationMessageFor(m => m.CreditCard.Cvc)
+    </div>
+</div>

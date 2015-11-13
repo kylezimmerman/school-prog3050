@@ -1,5 +1,6 @@
 ﻿using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Models;
 
 namespace Veil.Services.Interfaces
 {
@@ -7,6 +8,6 @@ namespace Veil.Services.Interfaces
     {
         string CreateCustomer(User user);
 
-        string CreateCreditCard(Member member, CreditCardViewModel viewModel);
+        MemberCreditCard CreateCreditCard(Member member, string stripeCardToken);
     }
 }

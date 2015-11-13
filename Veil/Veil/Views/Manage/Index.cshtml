@@ -11,7 +11,7 @@
     </div>
 </div>
 
-@* TODO: This was just copy pasted from the Manage/Index view and should be styled*@
+@* TODO: This was just copy pasted from the Manage/Index view and should be styled *@
 <p class="text-success">@Model.StatusMessage</p>
 
 @using (Html.BeginForm("UpdateProfile", "Manage", FormMethod.Post, new { Role = "form" }))
@@ -22,43 +22,43 @@
         <div class="column">
             <h4>Your Profile</h4>
             <div class="row collapse">
-                <div class="small-4 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">First Name</span>
                 </div>
-                <div class="small-8 large-9 columns">
+                <div class="medium-9 columns">
                     <input type="text" value="Joe"/>
                 </div>
             </div>
             <div class="row collapse">
-                <div class="small-4 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Last Name</span>
                 </div>
-                <div class="small-8 large-9 columns">
+                <div class="medium-9 columns">
                     <input type="text" value="Danger"/>
                 </div>
             </div>
             <div class="row collapse">
-                <div class="small-4 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Email</span>
                 </div>
-                <div class="small-8 large-9 columns">
+                <div class="medium-9 columns">
                     <input type="text" value="example@veil.com"/>
                 </div>
             </div>
             <div class="row collapse">
-                <div class="small-4 large-3 columns">
+                <div class="medium-3 columns">
                     @Html.LabelFor(m => m.PhoneNumber, new { @class = "prefix" })
                 </div>
-                <div class="small-8 large-9 columns">
+                <div class="medium-9 columns">
                     @Html.EditorFor(m => m.PhoneNumber)
                     @Html.ValidationMessageFor(m => m.PhoneNumber)
                 </div>
             </div>
             <div class="row collapse">
-                <div class="small-8 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Wishlist Visibility</span>
                 </div>
-                <div class="small-4 large-9 columns">
+                <div class="medium-9 columns">
                     <select>
                         <option>Private</option>
                         <option>Friends Only</option>
@@ -68,30 +68,30 @@
             </div>
 
             <div class="row collapse">
-                <div class="small-8 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Addresses</span>
                 </div>
 
-                <div class="small-4 large-9 columns">
+                <div class="medium-9 columns">
                     @Html.ActionLink("Manage Addresses", "ManageAddresses", null, new { @class = "button postfix" })
                 </div>
             </div>
 
             <div class="row collapse">
-                <div class="small-8 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Credit Cards</span>
                 </div>
 
-                <div class="small-4 large-9 columns">
+                <div class="medium-9 columns">
                     @Html.ActionLink("Manage Credit Cards", "ManageCreditCards", null, new { @class = "button postfix" })
                 </div>
             </div>
 
             <div class="row collapse">
-                <div class="small-8 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Password</span>
                 </div>
-                <div class="small-4 large-9 columns">
+                <div class="medium-9 columns">
                     @if (Model.HasPassword)
                     {
                         @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
@@ -104,19 +104,19 @@
             </div>
 
             <div class="row collapse">
-                <div class="small-8 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">External Logins</span>
                 </div>
-                <div class="small-4 large-9 columns">
+                <div class="medium-9 columns">
                     @Html.ActionLink($"{Model.Logins.Count} [Manage]", "ManageLogins", null, new { @class = "button postfix" })
                 </div>
             </div>
 
             <div class="row collapse">
-                <div class="small-8 large-3 columns">
+                <div class="medium-3 columns">
                     <span class="prefix">Two Factor Auth</span>
                 </div>
-                <div class="small-4 large-9 columns">
+                <div class="medium-9 columns">
                     <p class="postfix">
                         There are no two-factor authentication providers configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
                         for details.
@@ -148,10 +148,10 @@
             @*@if (Model.TwoFactor)
             {
                 <div class="row collapse">
-                    <div class="small-8 large-3 columns">
+                    <div class="medium-3 columns">
                         <span class="prefix">Browser Remembered</span>
                     </div>
-                    <div class="small-4 large-9 columns">
+                    <div class="medium-9 columns">
                         @if (Model.BrowserRemembered)
                         {
                             using (Html.BeginForm("ForgetBrowser", "Manage", FormMethod.Post))

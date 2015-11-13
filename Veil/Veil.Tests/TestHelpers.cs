@@ -5,11 +5,13 @@
  *      Drew Matheson, 2015.11.04: Created
  */
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -17,6 +19,7 @@ using Moq;
 using Moq.Language.Flow;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
+using Veil.Helpers;
 
 namespace Veil.Tests
 {
@@ -36,6 +39,22 @@ namespace Veil.Tests
             Mock<IVeilDataAccess> contextMock = new Mock<IVeilDataAccess>();
 
             return contextMock;
+        }
+
+        public static Mock<ControllerContext> GetSetupControllerContextFakeWithUserIdentitySetup()
+        {
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+
+            return contextStub;;
+        } 
+
+        public static Mock<IGuidUserIdGetter> GetSetupIUserIdGetterFake(Guid returnedId)
+        {
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(returnedId);
+
+            return idGetterStub;
         }
 
         /// <summary>
