@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
@@ -39,6 +40,47 @@ namespace Veil.Controllers
         public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
         {
             // TODO: Actually implement this
+            //started
+            var membersId = idGetter.GetUserId(User.Identity);
+            Cart memberCart = await db.Carts.FindAsync(membersId);
+
+            if (productId == null)
+            {
+                throw new HttpException(NotFound, nameof(Game));
+            }
+
+            GameProduct gameProduct = await db.GameProducts.FindAsync(productId);
+
+            if (gameProduct == null)
+            {
+                throw new HttpException(NotFound, nameof(Game));
+            }
+            if (memberCart == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
+
+            CartItem cartItem = new CartItem()
+            {
+                MemberId = membersId,
+                IsNew = isNew,
+                ProductId = gameProduct.Id,
+                Quantity = 1
+            };
+
+
+            try
+            {
+                memberCart.Items.Add(cartItem);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
             // TODO: Update Cart Quantity in Session
             return RedirectToAction("Index");
         }
@@ -59,6 +101,8 @@ namespace Veil.Controllers
             // TODO: Actually implement this
             return RedirectToAction("Index");
         }
+
+
 
         /// <summary>
         ///     Stores the number of items in the current member's cart in the Session
