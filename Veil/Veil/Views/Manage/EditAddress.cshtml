@@ -21,7 +21,14 @@
 
             @{ Html.RenderPartial("AddressViewModel/_AddressFormFields", Model); }
 
-            <button type="submit">Save Changes</button>
+            <div class="row">
+                <div class="medium-10 column">
+                    <button type="submit" class="expand">Save Changes</button>
+                </div>
+                <div class="medium-2 column">
+                    @Html.ActionLink("Cancel", "ManageAddresses", null, new { @class = "button alert expand" })
+                </div>
+            </div>
         </div>
     </div>
 }
