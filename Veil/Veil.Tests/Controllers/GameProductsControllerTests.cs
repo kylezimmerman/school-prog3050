@@ -267,19 +267,18 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void DeletePhysicalGameProduct_ValidDelete()
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.Name = "gameName";
-
-            GameProduct aGameProduct = new PhysicalGameProduct();
-            aGameProduct.GameId = aGame.Id;
-            aGameProduct.Id = GameSKUId;
-            aGameProduct.PlatformCode = ps4Platform.PlatformCode;
+            GameProduct aGameProduct = new PhysicalGameProduct()
+            {
+                GameId = game.Id,
+                Id = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559"),
+                PlatformCode = ps4Platform.PlatformCode,
+                Game = game,
+                Platform = ps4Platform,
+            };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
             Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { aGameProduct }.AsQueryable());
-            MockPlatforms(dbStub);
-            gameProductDbSetStub.SetupForInclude();
 
             gameProductDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -304,7 +303,6 @@ namespace Veil.Tests.Controllers
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
-            gameProductDbSetStub.SetupForInclude();
 
             gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -409,31 +407,20 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void DeletePhysicalGameProductConfirmed_CatchesOnSaveDelete()
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.Name = "gameName";
-
             GameProduct aGameProduct = new PhysicalGameProduct();
             aGameProduct.GameId = aGame.Id;
             aGameProduct.Id = GameSKUId;
             aGameProduct.PlatformCode = ps4Platform.PlatformCode;
-            aGameProduct.Game = aGame;
+            aGameProduct.Game = game;
             aGameProduct.Platform = ps4Platform;
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
 
-            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
             Mock<DbSet<GameProduct>> gameProductsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { aGameProduct }.AsQueryable());
-            MockPlatforms(dbStub);
-
             gameProductsDbSetStub.SetupForInclude();
-
-            gameDbSetStub.Setup(g => g.FindAsync(aGame.Id)).ReturnsAsync(aGame);
             gameProductsDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
 
             dbStub.Setup(db => db.GameProducts).Returns(gameProductsDbSetStub.Object);
-            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
-
             dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);

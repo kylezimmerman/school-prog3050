@@ -1869,23 +1869,7 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGame_NullId(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
-
-            gameDbSetStub.Setup(g => g.FindAsync(aGame.Id)).ReturnsAsync(aGame);
-            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
-
-            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUser().IsInRole(role);
-
-            GamesController controller = new GamesController(dbStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
-
+            GamesController controller = new GamesController(veilDataAccess: null);
 
             Assert.That(async () => await controller.Delete(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1986,25 +1970,7 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_EmptyGuid(string role)
         {
-            List<GameProduct> emptyList = new List<GameProduct>();
-
-            Game aGame = new Game();
-            aGame.Id = Id;
-            
-
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
-
-            gameDbSetStub.Setup(g => g.FindAsync(aGame.Id)).ReturnsAsync(aGame);
-            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
-
-            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUser().IsInRole(role);
-
-            GamesController controller = new GamesController(dbStub.Object)
-            {
-                ControllerContext = contextStub.Object
-            };
+            GamesController controller = new GamesController(veilDataAccess: null);
 
             Assert.That(async () => await controller.DeleteGameConfirmed(Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
