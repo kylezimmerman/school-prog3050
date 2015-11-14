@@ -139,6 +139,18 @@
     <Compile Include="Migrations\201511090138429_Setup_Event_Id_AddBackCascadeDelete.Designer.cs">
       <DependentUpon>201511090138429_Setup_Event_Id_AddBackCascadeDelete.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511141425302_WebOrder_Address_Changes.cs" />
+    <Compile Include="Migrations\201511141425302_WebOrder_Address_Changes.Designer.cs">
+      <DependentUpon>201511141425302_WebOrder_Address_Changes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511141427109_WebOrder_CreditCard_Changes.cs" />
+    <Compile Include="Migrations\201511141427109_WebOrder_CreditCard_Changes.Designer.cs">
+      <DependentUpon>201511141427109_WebOrder_CreditCard_Changes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511141428243_CartItem_IsNew_InPK.cs" />
+    <Compile Include="Migrations\201511141428243_CartItem_IsNew_InPK.Designer.cs">
+      <DependentUpon>201511141428243_CartItem_IsNew_InPK.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -174,6 +186,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511090138429_Setup_Event_Id_AddBackCascadeDelete.resx">
       <DependentUpon>201511090138429_Setup_Event_Id_AddBackCascadeDelete.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511141425302_WebOrder_Address_Changes.resx">
+      <DependentUpon>201511141425302_WebOrder_Address_Changes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511141427109_WebOrder_CreditCard_Changes.resx">
+      <DependentUpon>201511141427109_WebOrder_CreditCard_Changes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511141428243_CartItem_IsNew_InPK.resx">
+      <DependentUpon>201511141428243_CartItem_IsNew_InPK.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

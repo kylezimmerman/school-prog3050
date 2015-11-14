@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.ModelBinding;
 using System.Web.Mvc;
+using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 
 namespace Veil.Models
 {
-    public class ManageCreditCardViewModel
+    public class BillingInfoViewModel
     {
         // ReSharper disable once UnassignedGetOnlyAutoProperty
         /// <summary>
@@ -32,14 +34,12 @@ namespace Veil.Models
         ///     A list of the current year and the next 19
         /// </summary>
         [BindNever]
-        [Required]
         public IEnumerable<SelectListItem> Years => new SelectList(Enumerable.Range(DateTime.Today.Year, 20)); 
 
         /// <summary>
         ///     The list of months
         /// </summary>
         [BindNever]
-        [Required]
         public IEnumerable<SelectListItem> Months => new List<SelectListItem>
         {
             new SelectListItem {Text = "01 - January", Value = "01" },
@@ -54,6 +54,47 @@ namespace Veil.Models
             new SelectListItem {Text = "10 - October", Value = "10" },
             new SelectListItem {Text = "11 - November", Value = "11" },
             new SelectListItem {Text = "12 - December", Value = "12" }
-        }; 
+        };
+
+        /// <summary>
+        ///     Sets up the CreditCards and Countries properties of the <see cref="BillingInfoViewModel"/>
+        /// </summary>
+        /// <param name="db">
+        ///     The <see cref="IVeilDataAccess"/> to fetch info from
+        /// </param>
+        /// <param name="memberId">
+        ///     The Id of the Member to fetch info about
+        /// </param>
+        /// <returns>
+        ///     A task to await
+        /// </returns>
+        public async Task SetupCreditCardsAndCountries(IVeilDataAccess db, Guid memberId)
+        {
+            const int CREDIT_CARD_NUMBER_LENGTH = 12;
+
+            var memberCreditCards =
+                await db.Members.
+                    Where(m => m.UserId == memberId).
+                    SelectMany(m => m.CreditCards).
+                    Select(cc =>
+                        new
+                        {
+                            cc.Id,
+                            cc.Last4Digits
+                        }).
+                    ToListAsync();
+
+            memberCreditCards = memberCreditCards.
+                Select(cc =>
+                    new
+                    {
+                        cc.Id,
+                        Last4Digits = cc.Last4Digits.PadLeft(CREDIT_CARD_NUMBER_LENGTH, '*')
+                    }).
+                ToList();
+
+            Countries = await db.Countries.Include(c => c.Provinces).ToListAsync();
+            CreditCards = new SelectList(memberCreditCards, nameof(MemberCreditCard.Id), nameof(MemberCreditCard.Last4Digits));
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace Veil.Controllers
         // GET: WebOrders
         public async Task<ActionResult> Index()
         {
-            var webOrders = db.WebOrders.Include(w => w.Member).Include(w => w.MemberCreditCard).Include(w => w.ShippingAddress);
+            var webOrders = db.WebOrders.Include(w => w.Member);
             return View(await webOrders.ToListAsync());
         }
 

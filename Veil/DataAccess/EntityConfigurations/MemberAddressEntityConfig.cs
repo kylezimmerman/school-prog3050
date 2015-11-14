@@ -25,19 +25,14 @@ namespace Veil.DataAccess.EntityConfigurations
 
             /* Foreign keys: 
              *
-             * Province: (ProvinceCode, CountryCode)
-             * Country: CountryCode
+             * Country: Address.CountryCode
+             * Province: (Address.ProvinceCode, Address.CountryCode)
              * Member: MemberId
              */
 
             HasRequired(ma => ma.Province).
                 WithMany().
-                HasForeignKey(
-                    ma => new
-                    {
-                        ma.ProvinceCode,
-                        ma.CountryCode
-                    });
+                HasForeignKey(ma => new { ma.ProvinceCode, ma.CountryCode });
 
             HasRequired(ma => ma.Country).
                 WithMany().
@@ -47,6 +42,12 @@ namespace Veil.DataAccess.EntityConfigurations
                 WithMany(m => m.ShippingAddresses).
                 HasForeignKey(ma => ma.MemberId).
                 WillCascadeOnDelete(true); // TODO: Figure out what this cascade delete actually means
+
+            /* Map Complex Type */
+            Property(wo => wo.Address.StreetAddress).HasColumnName(nameof(Address.StreetAddress));
+            Property(wo => wo.Address.POBoxNumber).HasColumnName(nameof(Address.POBoxNumber));
+            Property(wo => wo.Address.City).HasColumnName(nameof(Address.City));
+            Property(wo => wo.Address.PostalCode).HasColumnName(nameof(Address.PostalCode));
         }
     }
 }

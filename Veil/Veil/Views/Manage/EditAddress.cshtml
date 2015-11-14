@@ -1,8 +1,7 @@
-﻿@using Veil.Models
-@model AddressViewModel
+﻿@model Veil.Models.AddressViewModel
 
 @{
-    ViewBag.Title = "Shipping Information";
+    ViewBag.Title = "Edit Address";
 }
 
 <div class="row">
@@ -11,48 +10,23 @@
     </div>
 </div>
 
-@if (Model.Addresses.Any())
-{
-    using (Html.BeginForm("ExistingShippingInfo", "Checkout", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-
-        <div class="row panel">
-            <div class="column">
-                <h4>Your Addresses</h4>
-
-                @Html.DropDownList("addressId", Model.Addresses, new { aria_label = "Addresses" })
-
-                <button type="submit" class="button right">Ship to This Address</button>
-            </div>
-        </div>
-    }
-}
-
-
-@using (Html.BeginForm("NewShippingInfo", "Checkout", FormMethod.Post))
+@using (Html.BeginForm("EditAddress", "Manage", FormMethod.Post))
 {
     @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
 
     <div class="row panel">
         <div class="column">
-            <h4>New Address</h4>
+            <h4>Edit Address</h4>
 
             @{ Html.RenderPartial("AddressViewModel/_AddressFormFields", Model); }
 
-            <div class="row collapse padding-top-1">
-                <div class="small-7 medium-3 column">
-                    <label for="saveAddress">
-                        @Html.CheckBox("saveAddress")
-                        <strong>Save Address?</strong>
-
-                    </label>                  
+            <div class="row">
+                <div class="medium-10 column">
+                    <button type="submit" class="expand">Save Changes</button>
                 </div>
-            </div>
-
-            <div class="row right padding-top-1">
-                <div class="column">
-                    <button type="submit" class="button">Ship to This Address</button>
+                <div class="medium-2 column">
+                    @Html.ActionLink("Cancel", "ManageAddresses", null, new { @class = "button alert expand" })
                 </div>
             </div>
         </div>

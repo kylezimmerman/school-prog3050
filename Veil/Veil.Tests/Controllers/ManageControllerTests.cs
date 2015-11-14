@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -23,11 +24,13 @@ namespace Veil.Tests.Controllers
     public class ManageControllerTests
     {
         private Guid memberId;
+        private Guid addressId;
 
         [SetUp]
         public void Setup()
         {
             memberId = new Guid("59EF92BE-D71F-49ED-992D-DF15773DAF98");
+            addressId = new Guid("53BE47E4-0C74-4D49-97BB-7246A7880B39");
         }
 
         private ManageController CreateManageController(
@@ -44,17 +47,23 @@ namespace Veil.Tests.Controllers
             {
                 new MemberAddress
                 {
-                    City = "A city",
+                    Address = new Address
+                    {
+                        City = "A city"
+                    },
                     CountryCode = "CA",
                     MemberId = memberId
                 },
                 new MemberAddress
                 {
-                    City = "Waterloo",
+                    Address = new Address
+                    {
+                        City = "Waterloo",
+                        PostalCode = "N2L 6R2",
+                        StreetAddress = "445 Wes Graham Way"
+                    },
                     CountryCode = "CA",
                     ProvinceCode = "ON",
-                    PostalCode = "N2L 6R2",
-                    StreetAddress = "445 Wes Graham Way",
                     MemberId = memberId
                 }
             };
@@ -71,18 +80,27 @@ namespace Veil.Tests.Controllers
 
         private Mock<IVeilDataAccess> SetupVeilDataAccessFakeWithCountriesAndAddresses(List<Country> countries = null, List<MemberAddress> addresses = null)
         {
-            countries = countries ?? new List<Country>();
             addresses = addresses ?? new List<MemberAddress>();
 
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries(countries);
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(addresses.AsQueryable());
-
-            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(countries.AsQueryable());
-            countryDbSetStub.SetupForInclude();
 
             dbStub.
                 Setup(db => db.MemberAddresses).
                 Returns(addressDbSetStub.Object);
+
+            return dbStub;
+        }
+
+        private Mock<IVeilDataAccess> SetupVeilDataAccessFakeWithCountries(List<Country> countries = null)
+        {
+            countries = countries ?? new List<Country>();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(countries.AsQueryable());
+            countryDbSetStub.SetupForInclude();
+
             dbStub.
                 Setup(db => db.Countries).
                 Returns(countryDbSetStub.Object);
@@ -108,9 +126,9 @@ namespace Veil.Tests.Controllers
             var result = await controller.ManageAddresses() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
-            var model = (ManageAddressViewModel) result.Model;
+            var model = (AddressViewModel) result.Model;
 
             Assert.That(model.Countries, Is.Not.Empty);
             Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));
@@ -139,9 +157,9 @@ namespace Veil.Tests.Controllers
             var result = await controller.ManageAddresses() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
-            var model = (ManageAddressViewModel)result.Model;
+            var model = (AddressViewModel)result.Model;
 
             Assert.That(model.Addresses, Is.Not.Empty);
             Assert.That(model.Addresses.Count(), Is.EqualTo(matchingAddresses.Count));
@@ -186,7 +204,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_InvalidModelState_RedisplaysViewWithSameViewModel()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountriesAndAddresses();
 
@@ -196,7 +214,7 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.City), "Required");
+            controller.ModelState.AddModelError(nameof(AddressViewModel.City), "Required");
 
             var result = await controller.CreateAddress(viewModel) as ViewResult;
 
@@ -208,7 +226,7 @@ namespace Veil.Tests.Controllers
         [TestCase("US")]
         public async void CreateAddress_InvalidPostalCodeModelStateWithCountryCodeSupplied_ReplacesErrorMessage(string countryCode)
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            AddressViewModel viewModel = new AddressViewModel
             {
                 CountryCode = countryCode
             };
@@ -223,17 +241,17 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.PostalCode), postalCodeErrorMessage);
 
             await controller.CreateAddress(viewModel);
 
-            Assert.That(controller.ModelState[nameof(ManageAddressViewModel.PostalCode)].Errors, Has.None.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+            Assert.That(controller.ModelState[nameof(AddressViewModel.PostalCode)].Errors, Has.None.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
         }
 
         [Test]
         public async void CreateAddress_InvalidPostalCodeModelStateWithoutCountryCodeSupplied_LeavesErrorMessage()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             string postalCodeErrorMessage = "Required";
 
@@ -245,17 +263,17 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.PostalCode), postalCodeErrorMessage);
 
             await controller.CreateAddress(viewModel);
 
-            Assert.That(controller.ModelState[nameof(ManageAddressViewModel.PostalCode)].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+            Assert.That(controller.ModelState[nameof(AddressViewModel.PostalCode)].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
         }
 
         [Test]
         public async void CreateAddress_InvalidModelState_SetsUpViewModelWithCountries()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             List<Country> countries = GetCountries();
             List<MemberAddress> addresses = GetMemberAddresses();
@@ -268,13 +286,13 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.City), "Required");
+            controller.ModelState.AddModelError(nameof(AddressViewModel.City), "Required");
 
             var result = await controller.CreateAddress(viewModel) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.EqualTo(viewModel));
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
             Assert.That(viewModel.Countries, Is.Not.Empty);
             Assert.That(viewModel.Countries, Has.Count.EqualTo(countries.Count));
             Assert.That(viewModel.Addresses, Is.Not.Empty);
@@ -287,13 +305,14 @@ namespace Veil.Tests.Controllers
             MemberAddress newAddress = null;
             Guid currentMemberId = memberId;
             
-            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            AddressViewModel viewModel = new AddressViewModel
             {
                 City = "Waterloo",
                 CountryCode = "CA",
                 ProvinceCode = "ON",
                 PostalCode = "N2L 6R2",
-                StreetAddress = "445 Wes Graham Way"
+                StreetAddress = "445 Wes Graham Way",
+                POBoxNumber = "123"
             };
             
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
@@ -317,11 +336,12 @@ namespace Veil.Tests.Controllers
 
             Assert.That(newAddress != null);
             Assert.That(newAddress.MemberId, Is.EqualTo(currentMemberId));
-            Assert.That(newAddress.City, Is.EqualTo(viewModel.City));
+            Assert.That(newAddress.Address.City, Is.EqualTo(viewModel.City));
             Assert.That(newAddress.CountryCode, Is.EqualTo(viewModel.CountryCode));
             Assert.That(newAddress.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
-            Assert.That(newAddress.PostalCode, Is.EqualTo(viewModel.PostalCode));
-            Assert.That(newAddress.StreetAddress, Is.EqualTo(viewModel.StreetAddress));
+            Assert.That(newAddress.Address.PostalCode, Is.EqualTo(viewModel.PostalCode));
+            Assert.That(newAddress.Address.StreetAddress, Is.EqualTo(viewModel.StreetAddress));
+            Assert.That(newAddress.Address.POBoxNumber, Is.EqualTo(viewModel.POBoxNumber));
         }
 
         [TestCase("N2L-6R2", "CA")]
@@ -334,7 +354,7 @@ namespace Veil.Tests.Controllers
             MemberAddress newAddress = null;
             Guid currentMemberId = memberId;
 
-            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            AddressViewModel viewModel = new AddressViewModel
             {
                 City = "Waterloo",
                 CountryCode = countryCode,
@@ -363,13 +383,13 @@ namespace Veil.Tests.Controllers
             await controller.CreateAddress(viewModel);
 
             Assert.That(newAddress != null);
-            Assert.That(newAddress.PostalCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
+            Assert.That(newAddress.Address.PostalCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
         }
 
         [Test]
         public async void CreateAddress_ValidModel_CallsSaveChangesAsync()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -403,7 +423,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void CreateAddress_SaveChangesAsyncThrowingProvinceForeignKeyViolationException_HandlesException()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -445,7 +465,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void CreateAddress_SaveChangesAsyncThrowing_HandlesException()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -479,7 +499,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_SaveChangesAsyncThrowing_SetsUpViewModel()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             List<Country> countries = GetCountries();
             List<MemberAddress> addresses = GetMemberAddresses();
@@ -514,7 +534,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.EqualTo(viewModel));
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
             Assert.That(viewModel.Countries, Is.Not.Empty);
             Assert.That(viewModel.Countries, Has.Count.EqualTo(countries.Count));
             Assert.That(viewModel.Addresses, Is.Not.Empty);
@@ -524,7 +544,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_SaveChangesAsyncThrowing_RedisplaysViewWithSameViewModel()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -561,7 +581,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_SuccessfulCreate_RedirectsToManageAddress()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -586,6 +606,481 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageAddresses)));
+        }
+
+        [Test]
+        public void EditAddressGET_IdNotInDb_Throws404Exception()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(null);
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            Assert.That(async () => await controller.EditAddress(addressId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public void EditAddressGET_NullId_Throws404Exception()
+        {
+            ManageController controller = CreateManageController();
+
+            Assert.That(async () => await controller.EditAddress(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void EditAddressGET_IdInDb_SetsUpViewModelWithCountries()
+        {
+            MemberAddress addressToEdit = new MemberAddress { Address = new Address() };
+            List<Country> countries = GetCountries();
+
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries(countries);
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.EditAddress(addressId) as ViewResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
+
+            var model = (AddressViewModel) result.Model;
+
+            Assert.That(model.Countries, Is.Not.Empty);
+            Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));
+        }
+
+        [Test]
+        public async void EditAddressGET_IdInDb_MapsMatchingAddressToViewModel()
+        {
+            MemberAddress addressToEdit = new MemberAddress
+            {
+                Address = new Address
+                {
+                    StreetAddress = "445 Wes Graham Way",
+                    City = "Waterloo",
+                    POBoxNumber = "123",
+                    PostalCode = "N2L 6R2"
+                },
+                Id = addressId,
+                CountryCode = "CA",
+                ProvinceCode = "ON",
+            };
+
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.EditAddress(addressId) as ViewResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
+
+            var model = (AddressViewModel) result.Model;
+
+            Assert.That(model.StreetAddress, Is.EqualTo(addressToEdit.Address.StreetAddress));
+            Assert.That(model.City, Is.EqualTo(addressToEdit.Address.City));
+            Assert.That(model.POBoxNumber, Is.EqualTo(addressToEdit.Address.POBoxNumber));
+            Assert.That(model.PostalCode, Is.EqualTo(addressToEdit.Address.PostalCode));
+            Assert.That(model.Id, Is.EqualTo(addressToEdit.Id));
+            Assert.That(model.CountryCode, Is.EqualTo(addressToEdit.CountryCode));
+            Assert.That(model.ProvinceCode, Is.EqualTo(addressToEdit.ProvinceCode));
+        }
+
+        [Test]
+        public async void EditAddress_InvalidModelState_RedisplaysViewWithSameViewModel()
+        {
+            AddressViewModel viewModel = new AddressViewModel();
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.City), "Required");
+
+            var result = await controller.EditAddress(addressId, viewModel) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.EqualTo(viewModel));
+        }
+
+        [TestCase("CA")]
+        [TestCase("US")]
+        public async void EditAddress_InvalidPostalCodeModelStateWithCountryCodeSupplied_ReplacesErrorMessage(string countryCode)
+        {
+            AddressViewModel viewModel = new AddressViewModel
+            {
+                CountryCode = countryCode
+            };
+
+            string postalCodeErrorMessage = "Required";
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.PostalCode), postalCodeErrorMessage);
+
+            await controller.EditAddress(addressId, viewModel);
+
+            Assert.That(controller.ModelState[nameof(AddressViewModel.PostalCode)].Errors, Has.None.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+        }
+
+        [Test]
+        public async void EditAddress_InvalidPostalCodeModelStateWithoutCountryCodeSupplied_LeavesErrorMessage()
+        {
+            AddressViewModel viewModel = new AddressViewModel();
+            string postalCodeErrorMessage = "Required";
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.PostalCode), postalCodeErrorMessage);
+
+            await controller.EditAddress(addressId, viewModel);
+
+            Assert.That(controller.ModelState[nameof(AddressViewModel.PostalCode)].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+        }
+
+        [Test]
+        public async void EditAddress_InvalidModelState_SetsUpViewModelWithCountries()
+        {
+            AddressViewModel viewModel = new AddressViewModel();
+            List<Country> countries = GetCountries();
+            Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountries(countries);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.City), "Required");
+
+            var result = await controller.EditAddress(addressId, viewModel) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.EqualTo(viewModel));
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
+            Assert.That(viewModel.Countries, Is.Not.Empty);
+            Assert.That(viewModel.Countries, Has.Count.EqualTo(countries.Count));
+        }
+
+        [Test]
+        public void EditAddress_IdNotInDb_Throws404Exception()
+        {
+            AddressViewModel viewModel = new AddressViewModel();
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(null);
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            Assert.That(async () => await controller.EditAddress(addressId, viewModel), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void EditAddress_ValidModel_MapsViewModelToNewModel()
+        {
+            MemberAddress addressToEdit = new MemberAddress { Address = new Address() };
+            AddressViewModel viewModel = new AddressViewModel
+            {
+                City = "Waterloo",
+                CountryCode = "CA",
+                ProvinceCode = "ON",
+                PostalCode = "N2L 6R2",
+                StreetAddress = "445 Wes Graham Way",
+                POBoxNumber = "123"
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            await controller.EditAddress(addressId, viewModel);
+
+            Assert.That(addressToEdit != null);
+            Assert.That(addressToEdit.Address.City, Is.EqualTo(viewModel.City));
+            Assert.That(addressToEdit.CountryCode, Is.EqualTo(viewModel.CountryCode));
+            Assert.That(addressToEdit.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
+            Assert.That(addressToEdit.Address.PostalCode, Is.EqualTo(viewModel.PostalCode));
+            Assert.That(addressToEdit.Address.StreetAddress, Is.EqualTo(viewModel.StreetAddress));
+            Assert.That(addressToEdit.Address.POBoxNumber, Is.EqualTo(viewModel.POBoxNumber));
+        }
+
+        [TestCase("N2L-6R2", "CA")]
+        [TestCase("n2l-6r2", "CA")]
+        [TestCase("N2L6R2", "CA")]
+        [TestCase("n2l6r2", "CA")]
+        [TestCase("12345 6789", "US")]
+        public async void EditAddress_ValidModel_ReformatsPostalCodeToMatchStoredPostalCodeRegex(string postalCode, string countryCode)
+        {
+            MemberAddress addressToEdit = new MemberAddress { Address = new Address() };
+            AddressViewModel viewModel = new AddressViewModel
+            {
+                CountryCode = countryCode,
+                PostalCode = postalCode,
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            await controller.EditAddress(addressId, viewModel);
+
+            Assert.That(addressToEdit.Address.PostalCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
+        }
+
+        [Test]
+        public async void EditAddress_ValidModel_CallsSaveChangesAsync()
+        {
+            MemberAddress addressToEdit = new MemberAddress { Address = new Address() };
+            AddressViewModel viewModel = new AddressViewModel();
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+            dbMock.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbMock.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1).
+                Verifiable();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbMock.Object);
+
+            await controller.EditAddress(addressId, viewModel);
+
+            Assert.That(
+                () =>
+                    dbMock.Verify(db => db.SaveChangesAsync(),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public void EditAddress_SaveChangesAsyncThrowingProvinceForeignKeyViolationException_HandlesException()
+        {
+            MemberAddress addressToEdit = new MemberAddress();
+            AddressViewModel viewModel = new AddressViewModel();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+
+            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Country>().AsQueryable());
+            countryDbSetStub.SetupForInclude();
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbStub.
+                Setup(db => db.Countries).
+                Returns(countryDbSetStub.Object);
+
+            DbUpdateException provinceConstraintException = new DbUpdateException("See inner",
+                SqlExceptionCreator.Create( // This message was copied verbatim from the actual exception being thrown
+                    "The INSERT statement conflicted with the FOREIGN KEY constraint " +
+                    "\"FK_dbo.MemberAddress_dbo.Province_ProvinceCode_CountryCode\". " +
+                    "The conflict occurred in database \"prog3050\", table " +
+                    "\"dbo.Province\".\r\nThe statement has been terminated.",
+                    (int)SqlErrorNumbers.ConstraintViolation));
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ThrowsAsync(provinceConstraintException);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            Assert.That(async () => await controller.EditAddress(addressId, viewModel), Throws.Nothing);
+        }
+
+        [Test]
+        public void EditAddress_SaveChangesAsyncThrowing_HandlesException()
+        {
+            MemberAddress addressToEdit = new MemberAddress();
+            AddressViewModel viewModel = new AddressViewModel();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+
+            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Country>().AsQueryable());
+            countryDbSetStub.SetupForInclude();
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbStub.
+                Setup(db => db.Countries).
+                Returns(countryDbSetStub.Object);
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ThrowsAsync(new DbUpdateException());
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            Assert.That(async () => await controller.EditAddress(addressId, viewModel), Throws.Nothing);
+        }
+
+        [Test]
+        public async void EditAddress_SaveChangesAsyncThrowing_SetsUpViewModel()
+        {
+            MemberAddress addressToEdit = new MemberAddress();
+            AddressViewModel viewModel = new AddressViewModel();
+            List<Country> countries = GetCountries();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+
+            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(countries.AsQueryable());
+            countryDbSetStub.SetupForInclude();
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbStub.
+                Setup(db => db.Countries).
+                Returns(countryDbSetStub.Object);
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ThrowsAsync(new DbUpdateException());
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.EditAddress(addressId, viewModel) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.EqualTo(viewModel));
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
+            Assert.That(viewModel.Countries, Is.Not.Empty);
+            Assert.That(viewModel.Countries, Has.Count.EqualTo(countries.Count));
+        }
+
+        [Test]
+        public async void EditAddress_SaveChangesAsyncThrowing_RedisplaysViewWithSameViewModel()
+        {
+            MemberAddress addressToEdit = new MemberAddress();
+            AddressViewModel viewModel = new AddressViewModel();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+
+            Mock<DbSet<Country>> countryDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Country>().AsQueryable());
+            countryDbSetStub.SetupForInclude();
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbStub.
+                Setup(db => db.Countries).
+                Returns(countryDbSetStub.Object);
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ThrowsAsync(new DbUpdateException());
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.EditAddress(addressId, viewModel) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.EqualTo(viewModel));
+        }
+
+        [Test]
+        public async void EditAddress_SuccessfulSave_RedirectsToManageAddress()
+        {
+            MemberAddress addressToEdit = new MemberAddress();
+            AddressViewModel viewModel = new AddressViewModel();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit);
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.EditAddress(addressId, viewModel) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageAddresses)));
+        }
+
+        [Test]
+        public async void EditAddress_ValidModel_CallsFindAsyncWithPassedId()
+        {
+            MemberAddress addressToEdit = new MemberAddress();
+            AddressViewModel viewModel = new AddressViewModel();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToEdit).
+                Verifiable();
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            await controller.EditAddress(addressId, viewModel);
+
+            Assert.That(
+                () => 
+                    addressDbSetStub.Verify(adb => adb.FindAsync(addressId),
+                    Times.Exactly(1)),
+                Throws.Nothing);
         }
 
         [Test]
@@ -639,9 +1134,9 @@ namespace Veil.Tests.Controllers
             var result = await controller.ManageCreditCards() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<ManageCreditCardViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<BillingInfoViewModel>());
 
-            var model = (ManageCreditCardViewModel)result.Model;
+            var model = (BillingInfoViewModel)result.Model;
 
             Assert.That(model.Countries, Is.Not.Empty);
             Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));

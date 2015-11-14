@@ -76,6 +76,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Cart.cs" />
     <Compile Include="Models\Identity\User.cs" />
     <Compile Include="Models\Identity\GuidIdentityUserClaim.cs" />

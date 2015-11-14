@@ -16,7 +16,6 @@ namespace Veil.DataAccess.EntityConfigurations
         public WebOrderEntityConfig()
         {
             // TODO: StripeChargeId should be case sensitive in the DB
-            // TODO: StripeCardId should be case sensitive in the DB
 
             /* Primary Key:
              *
@@ -30,25 +29,35 @@ namespace Veil.DataAccess.EntityConfigurations
             /* Foreign keys:
              *
              * Member: MemberId
-             * MemberAddress (ShippingAddress property): ShippingAddressId
-             * MemberCreditCard: MemberCreditCardId
+             * Country: Address.CountryCode
+             * Province: (Address.ProvinceCode, Address.CountryCode)
              */
+
+            HasRequired(wo => wo.Province).
+                WithMany().
+                HasForeignKey(wo => new
+                {
+                    wo.ProvinceCode,
+                    wo.CountryCode
+                });
+
+            HasRequired(wo => wo.Country).
+                WithMany().
+                HasForeignKey(wo => wo.CountryCode);
 
             HasRequired(wo => wo.Member).
                 WithMany(m => m.WebOrders).
                 HasForeignKey(wo => wo.MemberId);
 
-            HasRequired(wo => wo.ShippingAddress).
-                WithMany().
-                HasForeignKey(wo => wo.ShippingAddressId);
-
-            HasRequired(wo => wo.MemberCreditCard).
-                WithMany().
-                HasForeignKey(wo => wo.MemberCreditCardId);
-
             HasMany(wo => wo.OrderItems).
                 WithRequired().
                 HasForeignKey(oi => oi.OrderId);
+
+            /* Map Complex Type */
+            Property(wo => wo.Address.StreetAddress).HasColumnName(nameof(Address.StreetAddress));
+            Property(wo => wo.Address.POBoxNumber).HasColumnName(nameof(Address.POBoxNumber));
+            Property(wo => wo.Address.City).HasColumnName(nameof(Address.City));
+            Property(wo => wo.Address.PostalCode).HasColumnName(nameof(Address.PostalCode));
         }
     }
 }

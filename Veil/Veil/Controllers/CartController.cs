@@ -154,7 +154,7 @@ namespace Veil.Controllers
             await db.SaveChangesAsync();
 
             this.AddAlert(AlertType.Success, item.Product.Name + " quantity set to " + quantity);
-            return RedirectToAction("Index");
+            return View("Index", currentMemberCart);
         }
 
         /// <summary>

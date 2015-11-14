@@ -18,18 +18,18 @@ namespace Veil.DataModels.Models
     public class Cart
     {
         /// <summary>
-        /// The Id for the Member whose cart this is
+        ///     The Id for the Member whose cart this is
         /// </summary>
         [Key]
         public Guid MemberId { get; set; }
 
         /// <summary>
-        /// Navigation property for the Member whose cart this is
+        ///     Navigation property for the Member whose cart this is
         /// </summary>
         public virtual Member Member { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the items in the cart
+        ///     Collection navigation property for the items in the cart
         /// </summary>
         public virtual ICollection<CartItem> Items { get; set; }
 
