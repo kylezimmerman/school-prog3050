@@ -91,14 +91,17 @@ namespace Veil.Controllers
 
             if (gameProduct != null)
             {
+                string gameName = gameProduct.Game.Name;
+                string platform = gameProduct.Platform.PlatformName;
                 try
                 {
                     db.GameProducts.Remove(gameProduct);
                     await db.SaveChangesAsync();
+                    this.AddAlert(AlertType.Success, platform + ": " + gameName + " was deleted succesfully");
                 }
                 catch (DbUpdateException)
                 {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + gameProduct.Platform + ": " + gameProduct.Name);
+                    this.AddAlert(AlertType.Error, "There was an error deleting " + platform + ": " + gameName);
                     return View(gameProduct);
                 }
             }

@@ -411,6 +411,7 @@ namespace Veil.Controllers
                     
                     db.Games.Remove(game);
                     await db.SaveChangesAsync();
+                    this.AddAlert(AlertType.Success, game.Name + " deleted succesfully");
                     deleteScope.Complete();
                 }
                 catch (DbUpdateException)

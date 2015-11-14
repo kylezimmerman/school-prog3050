@@ -268,15 +268,21 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeletePhysicalGameProduct_ValidDelete(string role)
         {
-            GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
-            gameSku.Id = Id;
+            Game aGame = new Game();
+            aGame.Id = Id;
+            aGame.Name = "gameName";
+
+            GameProduct aGameProduct = new PhysicalGameProduct();
+            aGameProduct.GameId = aGame.Id;
+            aGameProduct.Id = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");
+            aGameProduct.PlatformCode = ps4Platform.PlatformCode;
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { aGameProduct }.AsQueryable());
+            MockPlatforms(dbStub);
             gameProductDbSetStub.SetupForInclude();
 
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(aGameProduct);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
 
 
@@ -288,7 +294,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.Delete(gameSku.Id) as ViewResult;
+            var result = await controller.Delete(aGameProduct.Id) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.Not.Null);
@@ -354,16 +360,29 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeletePhysicalGameProductConfirmed_ValidDelete(string role)
         {
-            GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
-            gameSku.Id = Id;
+            Game aGame = new Game();
+            aGame.Id = Id;
+            aGame.Name = "gameName";
+
+            GameProduct aGameProduct = new PhysicalGameProduct();
+            aGameProduct.GameId = aGame.Id;
+            aGameProduct.Id = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");
+            aGameProduct.PlatformCode = ps4Platform.PlatformCode;
+            aGameProduct.Game = aGame;
+            aGameProduct.Platform = ps4Platform;
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { aGameProduct }.AsQueryable());
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> {aGame}.AsQueryable());
+
+            MockPlatforms(dbStub);
             gameProductDbSetStub.SetupForInclude();
 
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
+            gameDbSetStub.Setup(g => g.FindAsync(aGame.Id)).ReturnsAsync(aGame);
+
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
@@ -373,7 +392,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.DeleteConfirmed(gameSku.Id) as RedirectToRouteResult;
+            var result = await controller.DeleteConfirmed(aGameProduct.Id) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
@@ -443,6 +462,8 @@ namespace Veil.Tests.Controllers
             aGameProduct.GameId = aGame.Id;
             aGameProduct.Id = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");
             aGameProduct.PlatformCode = ps4Platform.PlatformCode;
+            aGameProduct.Game = aGame;
+            aGameProduct.Platform = ps4Platform;
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
 
