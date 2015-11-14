@@ -216,6 +216,7 @@
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\GameProductsController.cs" />
+    <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
     <Compile Include="Extensions\HtmlHelperExtensions.cs" />
@@ -237,6 +238,7 @@
     <Compile Include="Models\ManageAddressViewModel.cs" />
     <Compile Include="Models\ManageCreditCardViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
+    <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
@@ -504,6 +506,7 @@
     <Content Include="Views\Tags\Index.cshtml" />
     <Content Include="Views\Manage\_ManageAddressFormFields.cshtml" />
     <Content Include="Views\Manage\_ManageCreditCardFormFields.cshtml" />
+    <Content Include="Views\Reviews\CreateReviewForGame.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />

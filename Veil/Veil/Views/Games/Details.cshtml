@@ -107,24 +107,9 @@
     </div>
 }
 
-@* TODO: #53 Member Creates or Edits Rating, optionally including a Review *@
-<div class="row">
-    <div class="small-12 columns">
-        <h3>Ratings and Reviews</h3>
-    </div>
-</div>
-<div class="row panel">
-    <div class="column">
-        <h4>Rate the Game</h4>
-        <input type="radio" name="rating" value="1"><label>1</label>
-        <input type="radio" name="rating" value="2"><label>2</label>
-        <input type="radio" name="rating" value="3"><label>3</label>
-        <input type="radio" name="rating" value="4"><label>4</label>
-        <input type="radio" name="rating" value="5"><label>5</label>
-        <textarea>Write stuff here</textarea>
-        <button class="right" type="submit">Submit Rating</button>
-    </div>
-</div>
+@{
+    Html.RenderAction("CreateReviewForGame", "Reviews", new { game = Model });
+}
 
 @* TODO: Implement or remove extra feature of filtering reviews based on available time *@
 <div class="row">
