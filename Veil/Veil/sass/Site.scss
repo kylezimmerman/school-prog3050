@@ -25,6 +25,10 @@
     padding-bottom: 1rem;
 }
 
+.margin-half-em {
+    margin: 0.5rem;
+}
+
 .margin-bottom-0 {
     margin-bottom: 0;
 }
@@ -216,4 +220,9 @@ strong > label, .checkbox strong > label, .radio strong > label {
 
 label > strong {
     color: $input-prefix-font-color;
+}
+
+label.rating {
+    display: inline-block;
+    padding-right: 1em;
 }

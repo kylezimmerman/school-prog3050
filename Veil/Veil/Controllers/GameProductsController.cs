@@ -87,18 +87,21 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, "There was an error");
             }
 
-            GameProduct gameProduct = await db.GameProducts.FindAsync(id);
+            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
 
             if (gameProduct != null)
             {
+                string gameName = gameProduct.Game.Name;
+                string platform = gameProduct.Platform.PlatformName;
                 try
                 {
                     db.GameProducts.Remove(gameProduct);
                     await db.SaveChangesAsync();
+                    this.AddAlert(AlertType.Success, platform + ": " + gameName + " was deleted succesfully");
                 }
                 catch (DbUpdateException)
                 {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + gameProduct.Platform + ": " + gameProduct.Name);
+                    this.AddAlert(AlertType.Error, "There was an error deleting " + platform + ": " + gameName);
                     return View(gameProduct);
                 }
             }
@@ -214,7 +217,6 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
-                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Physical Game Product");
@@ -323,7 +325,6 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
-                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Download Game Product");

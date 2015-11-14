@@ -403,8 +403,7 @@ namespace Veil.Controllers
             using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
-                {
-                    
+                {     
                     if (game.GameSKUs.Any())
                     {
                         db.GameProducts.RemoveRange(game.GameSKUs);
@@ -412,6 +411,7 @@ namespace Veil.Controllers
                     
                     db.Games.Remove(game);
                     await db.SaveChangesAsync();
+                    this.AddAlert(AlertType.Success, game.Name + " deleted succesfully");
                     deleteScope.Complete();
                 }
                 catch (DbUpdateException)

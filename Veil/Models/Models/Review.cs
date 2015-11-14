@@ -25,8 +25,7 @@ namespace Veil.DataModels.Models
     /// Base class for a product review by a Member
     /// </summary>
     /// <typeparam name="TProduct">The type of the product being reviewed.</typeparam>
-    /// <typeparam name="TKey">The type of the Key for the product being reviewed</typeparam>
-    public abstract class Review<TProduct, TKey> where TProduct : Product
+    public abstract class Review<TProduct> where TProduct : Product
     {
         /// <summary>
         /// The Id of the Member who created this review
@@ -49,6 +48,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The review's text
         /// </summary>
+        [DataType(DataType.MultilineText)]
         [MaxLength(4000)] // Note: SQL Server maximum specifiable size. 
             // MAX (which is used above 4000) allows 2GB of text which I'd rather not allow the user to do
         public string ReviewText { get; set; }
@@ -62,7 +62,7 @@ namespace Veil.DataModels.Models
         /// The <see cref="TKey"/> Id for the <see cref="TProduct"/> this review is for
         /// </summary>
         [Key]
-        public TKey ProductReviewedId { get; set; }
+        public Guid ProductReviewedId { get; set; }
 
         /// <summary>
         /// Navigation property for the <see cref="TProduct"/> this review is for
