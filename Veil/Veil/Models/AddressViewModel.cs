@@ -123,7 +123,7 @@ namespace Veil.Models
                         new
                         {
                             ma.Id,
-                            ma.Address.StreetAddress
+                            StreetAddress = ma.Address.StreetAddress + " (" + ma.Address.PostalCode + ")"
                         }).
                 ToListAsync();
             

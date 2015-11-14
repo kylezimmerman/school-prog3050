@@ -447,7 +447,7 @@ namespace Veil.Controllers
                 return View(model);
             }
 
-            this.AddAlert(AlertType.Success, "Successfully saved the changes to the address.");
+            this.AddAlert(AlertType.Success, "Successfully updated the address.");
             return RedirectToAction("ManageAddresses");
         }
 
