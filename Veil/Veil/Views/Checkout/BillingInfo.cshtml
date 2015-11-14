@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Veil.DataModels.Models.MemberCreditCard>
+﻿@using Veil.Models
+@model BillingInfoViewModel
 
 @{
     ViewBag.Title = "Billing Information";
@@ -10,19 +11,20 @@
     </div>
 </div>
 
-<!-- TODO: Make inputs look nice, current layout is very rough
-Keep consistent with ShippingInfo.cshtml -->
+@using (Html.BeginForm("ShippingInfo", "Checkout", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
 
-<div class="row panel">
-    <div class="column">
-        <h4>Your Credit Cards</h4>
-        <select>
-            <option>************2834</option>
-            <option>************3129</option>
-        </select>
-        @Html.ActionLink("Use This Card", "ConfirmOrder", null, new { @class = "button right" })
+    <div class="row panel">
+        <div class="column">
+            <h4>Your Credit Cards</h4>
+
+            @Html.DropDownList("addressId", Model.CreditCards, new { aria_label = "Addresses" })
+
+            <button type="submit" class="button right">Ship to This Address</button>
+        </div>
     </div>
-</div>
+}
 
 <div class="row panel">
     <div class="column">

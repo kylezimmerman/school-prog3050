@@ -224,6 +224,7 @@
     <Compile Include="Helpers\GuidUserIdGetter.cs" />
     <Compile Include="Helpers\IGuidUserIdGetter.cs" />
     <Compile Include="Helpers\UriExtensions.cs" />
+    <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
     <Compile Include="Models\EventListViewModel.cs" />
@@ -234,9 +235,9 @@
     <Compile Include="Models\EventViewModel.cs" />
     <Compile Include="Models\PhysicalGameProductViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
-    <Compile Include="Models\ManageAddressViewModel.cs" />
-    <Compile Include="Models\ManageCreditCardViewModel.cs" />
+    <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
+    <Compile Include="Models\WebOrderCheckoutDetails.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
@@ -502,7 +503,7 @@
     <Content Include="Views\Shared\_AlertPartial.cshtml" />
     <Content Include="Views\Shared\_RatingStarsPartial.cshtml" />
     <Content Include="Views\Tags\Index.cshtml" />
-    <Content Include="Views\Manage\_ManageAddressFormFields.cshtml" />
+    <Content Include="Views\Shared\AddressViewModel\_AddressFormFields.cshtml" />
     <Content Include="Views\Manage\_ManageCreditCardFormFields.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />

@@ -44,17 +44,23 @@ namespace Veil.Tests.Controllers
             {
                 new MemberAddress
                 {
-                    City = "A city",
+                    Address = new Address
+                    {
+                        City = "A city"
+                    },
                     CountryCode = "CA",
                     MemberId = memberId
                 },
                 new MemberAddress
                 {
-                    City = "Waterloo",
+                    Address = new Address
+                    {
+                        City = "Waterloo",
+                        PostalCode = "N2L 6R2",
+                        StreetAddress = "445 Wes Graham Way"
+                    },
                     CountryCode = "CA",
                     ProvinceCode = "ON",
-                    PostalCode = "N2L 6R2",
-                    StreetAddress = "445 Wes Graham Way",
                     MemberId = memberId
                 }
             };
@@ -108,9 +114,9 @@ namespace Veil.Tests.Controllers
             var result = await controller.ManageAddresses() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
-            var model = (ManageAddressViewModel) result.Model;
+            var model = (AddressViewModel) result.Model;
 
             Assert.That(model.Countries, Is.Not.Empty);
             Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));
@@ -139,9 +145,9 @@ namespace Veil.Tests.Controllers
             var result = await controller.ManageAddresses() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
-            var model = (ManageAddressViewModel)result.Model;
+            var model = (AddressViewModel)result.Model;
 
             Assert.That(model.Addresses, Is.Not.Empty);
             Assert.That(model.Addresses.Count(), Is.EqualTo(matchingAddresses.Count));
@@ -186,7 +192,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_InvalidModelState_RedisplaysViewWithSameViewModel()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = SetupVeilDataAccessFakeWithCountriesAndAddresses();
 
@@ -196,7 +202,7 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.City), "Required");
+            controller.ModelState.AddModelError(nameof(AddressViewModel.City), "Required");
 
             var result = await controller.CreateAddress(viewModel) as ViewResult;
 
@@ -208,7 +214,7 @@ namespace Veil.Tests.Controllers
         [TestCase("US")]
         public async void CreateAddress_InvalidPostalCodeModelStateWithCountryCodeSupplied_ReplacesErrorMessage(string countryCode)
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            AddressViewModel viewModel = new AddressViewModel
             {
                 CountryCode = countryCode
             };
@@ -223,17 +229,17 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.PostalCode), postalCodeErrorMessage);
 
             await controller.CreateAddress(viewModel);
 
-            Assert.That(controller.ModelState[nameof(ManageAddressViewModel.PostalCode)].Errors, Has.None.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+            Assert.That(controller.ModelState[nameof(AddressViewModel.PostalCode)].Errors, Has.None.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
         }
 
         [Test]
         public async void CreateAddress_InvalidPostalCodeModelStateWithoutCountryCodeSupplied_LeavesErrorMessage()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             string postalCodeErrorMessage = "Required";
 
@@ -245,17 +251,17 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.PostalCode), postalCodeErrorMessage);
+            controller.ModelState.AddModelError(nameof(AddressViewModel.PostalCode), postalCodeErrorMessage);
 
             await controller.CreateAddress(viewModel);
 
-            Assert.That(controller.ModelState[nameof(ManageAddressViewModel.PostalCode)].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
+            Assert.That(controller.ModelState[nameof(AddressViewModel.PostalCode)].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == postalCodeErrorMessage));
         }
 
         [Test]
         public async void CreateAddress_InvalidModelState_SetsUpViewModelWithCountries()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             List<Country> countries = GetCountries();
             List<MemberAddress> addresses = GetMemberAddresses();
@@ -268,13 +274,13 @@ namespace Veil.Tests.Controllers
             ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object);
             controller.ControllerContext = contextStub.Object;
 
-            controller.ModelState.AddModelError(nameof(ManageAddressViewModel.City), "Required");
+            controller.ModelState.AddModelError(nameof(AddressViewModel.City), "Required");
 
             var result = await controller.CreateAddress(viewModel) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.EqualTo(viewModel));
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
             Assert.That(viewModel.Countries, Is.Not.Empty);
             Assert.That(viewModel.Countries, Has.Count.EqualTo(countries.Count));
             Assert.That(viewModel.Addresses, Is.Not.Empty);
@@ -287,7 +293,7 @@ namespace Veil.Tests.Controllers
             MemberAddress newAddress = null;
             Guid currentMemberId = memberId;
             
-            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            AddressViewModel viewModel = new AddressViewModel
             {
                 City = "Waterloo",
                 CountryCode = "CA",
@@ -317,11 +323,11 @@ namespace Veil.Tests.Controllers
 
             Assert.That(newAddress != null);
             Assert.That(newAddress.MemberId, Is.EqualTo(currentMemberId));
-            Assert.That(newAddress.City, Is.EqualTo(viewModel.City));
+            Assert.That(newAddress.Address.City, Is.EqualTo(viewModel.City));
             Assert.That(newAddress.CountryCode, Is.EqualTo(viewModel.CountryCode));
             Assert.That(newAddress.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
-            Assert.That(newAddress.PostalCode, Is.EqualTo(viewModel.PostalCode));
-            Assert.That(newAddress.StreetAddress, Is.EqualTo(viewModel.StreetAddress));
+            Assert.That(newAddress.Address.PostalCode, Is.EqualTo(viewModel.PostalCode));
+            Assert.That(newAddress.Address.StreetAddress, Is.EqualTo(viewModel.StreetAddress));
         }
 
         [TestCase("N2L-6R2", "CA")]
@@ -334,7 +340,7 @@ namespace Veil.Tests.Controllers
             MemberAddress newAddress = null;
             Guid currentMemberId = memberId;
 
-            ManageAddressViewModel viewModel = new ManageAddressViewModel
+            AddressViewModel viewModel = new AddressViewModel
             {
                 City = "Waterloo",
                 CountryCode = countryCode,
@@ -363,13 +369,13 @@ namespace Veil.Tests.Controllers
             await controller.CreateAddress(viewModel);
 
             Assert.That(newAddress != null);
-            Assert.That(newAddress.PostalCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
+            Assert.That(newAddress.Address.PostalCode, Is.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
         }
 
         [Test]
         public async void CreateAddress_ValidModel_CallsSaveChangesAsync()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -403,7 +409,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void CreateAddress_SaveChangesAsyncThrowingProvinceForeignKeyViolationException_HandlesException()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -445,7 +451,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void CreateAddress_SaveChangesAsyncThrowing_HandlesException()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -479,7 +485,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_SaveChangesAsyncThrowing_SetsUpViewModel()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             List<Country> countries = GetCountries();
             List<MemberAddress> addresses = GetMemberAddresses();
@@ -514,7 +520,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.EqualTo(viewModel));
-            Assert.That(result.Model, Is.InstanceOf<ManageAddressViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
             Assert.That(viewModel.Countries, Is.Not.Empty);
             Assert.That(viewModel.Countries, Has.Count.EqualTo(countries.Count));
             Assert.That(viewModel.Addresses, Is.Not.Empty);
@@ -524,7 +530,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_SaveChangesAsyncThrowing_RedisplaysViewWithSameViewModel()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -561,7 +567,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void CreateAddress_SuccessfulCreate_RedirectsToManageAddress()
         {
-            ManageAddressViewModel viewModel = new ManageAddressViewModel();
+            AddressViewModel viewModel = new AddressViewModel();
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
@@ -639,9 +645,9 @@ namespace Veil.Tests.Controllers
             var result = await controller.ManageCreditCards() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<ManageCreditCardViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<BillingInfoViewModel>());
 
-            var model = (ManageCreditCardViewModel)result.Model;
+            var model = (BillingInfoViewModel)result.Model;
 
             Assert.That(model.Countries, Is.Not.Empty);
             Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));

@@ -23,7 +23,8 @@ namespace Veil.DataAccess.EntityConfigurations
                 ci => new
                 {
                     ci.MemberId,
-                    ci.ProductId
+                    ci.ProductId,
+                    ci.IsNew
                 });
 
             /* Foreign Keys:

@@ -1,4 +1,4 @@
-﻿@model Veil.Models.ManageAddressViewModel
+﻿@model Veil.Models.AddressViewModel
 
 @{
     ViewBag.Title = "Manage Addresses";
@@ -34,7 +34,7 @@
         <div class="column">
             <h4>New Address</h4>
 
-            @{ Html.RenderPartial("_ManageAddressFormFields", Model); }
+            @{ Html.RenderPartial("AddressViewModel/_AddressFormFields", Model); }
 
             <button type="submit">Add Address</button>
         </div>

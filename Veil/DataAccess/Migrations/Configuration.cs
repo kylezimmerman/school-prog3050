@@ -253,6 +253,43 @@ namespace Veil.DataAccess.Migrations
                 }
             );
 
+            context.Locations.AddOrUpdate(
+                l => l.LocationNumber,
+                new Location
+                {
+                    City = "Waterloo",
+                    CountryCode = "CA",
+                    LocationNumber = 1,
+                    LocationTypeName = "Office",
+                    PhoneNumber = "555-555-1199",
+                    SiteName = "Veil HQ",
+                    PostalCode = "N2L 6R2",
+                    ProvinceCode = "ON",
+                    StreetAddress = "123 Fake Way"
+                }
+            );
+
+            int deptId = 0;
+
+            context.Departments.AddOrUpdate(
+                d => d.Id,
+                new Department
+                {
+                    Id = ++deptId,
+                    Name = "Retail Operations"
+                },
+                new Department
+                {
+                    Id = ++deptId,
+                    Name = "Purchasing"
+                },
+                new Department
+                {
+                    Id = ++deptId,
+                    Name = "Online Operations"
+                }
+            );
+
             context.Platforms.AddOrUpdate(
                 p => p.PlatformCode,
                 new Platform
@@ -324,27 +361,6 @@ namespace Veil.DataAccess.Migrations
                 new Tag { Name = "Roguelike" }
             );
 
-            int deptId = 0;
-
-            context.Departments.AddOrUpdate(
-                d => d.Id,
-                new Department
-                {
-                    Id = ++deptId,
-                    Name = "Retail Operations"
-                },
-                new Department
-                {
-                    Id = ++deptId,
-                    Name = "Purchasing"
-                },
-                new Department
-                {
-                    Id = ++deptId,
-                    Name = "Online Operations"
-                }
-            );
-
             context.Roles.AddOrUpdate(
                 r => r.Id,
                 new GuidIdentityRole
@@ -361,9 +377,10 @@ namespace Veil.DataAccess.Migrations
                 {
                     Id = Guid.ParseExact("475b072e-de7d-e511-80df-001cd8b71da6", "D"),
                     Name = VeilRoles.MEMBER_ROLE
-                });
+                }
+            );
 
-#region Debug Only Seed Values
+    #region Debug Only Seed Values
             /* TODO: Remove this when we are done testing */
             Game halo5 = new Game
             {

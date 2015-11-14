@@ -1,41 +1,138 @@
-﻿using System.Collections.Generic;
+﻿/* CheckoutController.cs
+ * Purpose: Controller for processing order checkout
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.13: Created
+ */ 
+
+using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Helpers;
+using Veil.Models;
 
 namespace Veil.Controllers
 {
     public class CheckoutController : BaseController
     {
-        protected readonly IVeilDataAccess db;
+        private static string OrderCheckoutDetailsKey = "CheckoutController.OrderCheckoutDetails";
 
-        public CheckoutController(IVeilDataAccess veilDataAccess)
+        private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
+
+        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
-        // GET: Checkout/ShippingInfo
         [HttpGet]
         public async Task<ActionResult> ShippingInfo()
         {
-            Member currentMember = new Member();
+            AddressViewModel viewModel = new AddressViewModel();
 
-            IEnumerable<MemberAddress> addresses =
-                db.MemberAddresses.Where(ma => ma.MemberId == currentMember.UserId);
+            await viewModel.SetupAddressesAndCountries(db, GetUserId());
 
-            return View(addresses);
+            return View(viewModel);
         }
 
-        // POST: Checkout/ShippingInfo
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ShippingInfo(MemberAddress address)
+        public async Task<ActionResult> NewShippingInfo(AddressViewModel model, bool saveAddress)
         {
-            // TODO: Create WebOrder for this cart
-            // TODO: Add address to the WebOrder
-            // TODO: Add incomplete WebOrder or CheckoutViewModel to session
+            if (!ModelState.IsValid)
+            {
+                model.UpdatePostalCodeModelError(ModelState);
+
+                this.AddAlert(AlertType.Error, "Some address information was invalid.");
+
+                await model.SetupAddressesAndCountries(db, GetUserId());
+
+                return View("ShippingInfo", model);
+            }
+
+            bool validCountry = await db.Countries.AnyAsync(c => c.CountryCode == model.CountryCode);
+
+            if (!validCountry)
+            {
+                this.AddAlert(AlertType.Error, "The Country you selected isn't valid.");
+            }
+
+            bool validProvince =
+                await db.Provinces.AnyAsync(
+                        p => p.CountryCode == model.CountryCode &&
+                        p.ProvinceCode == model.ProvinceCode);
+
+            if (!validProvince)
+            {
+                this.AddAlert(
+                    AlertType.Error, "The Province/State you selected isn't in the Country you selected.");
+            }
+
+            if (!validCountry || !validProvince)
+            {
+                await model.SetupAddressesAndCountries(db, GetUserId());
+
+                return View("ShippingInfo", model);
+            }
+
+            WebOrderCheckoutDetails orderCheckoutDetails = 
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails ?? new WebOrderCheckoutDetails();
+
+            model.FormatPostalCode();
+
+            if (saveAddress)
+            {
+                MemberAddress newAddress = new MemberAddress
+                {
+                    MemberId = GetUserId(),
+                    Address = model.MapToNewAddress(),
+                    CountryCode = model.CountryCode,
+                    ProvinceCode = model.ProvinceCode
+                };
+
+                db.MemberAddresses.Add(newAddress);
+
+                await db.SaveChangesAsync();
+
+                orderCheckoutDetails.MemberAddressId = newAddress.Id;
+            }
+            else
+            {
+                orderCheckoutDetails.Address = model.MapToNewAddress();
+                orderCheckoutDetails.CountryCode = model.CountryCode;
+                orderCheckoutDetails.ProvinceCode = model.ProvinceCode;
+            }
+
+            Session[OrderCheckoutDetailsKey] = orderCheckoutDetails;
+
+            return RedirectToAction("BillingInfo");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ExistingShippingInfo(Guid addressId)
+        {
+            if (!await db.MemberAddresses.AnyAsync(ma => ma.Id == addressId))
+            {
+                AddressViewModel model = new AddressViewModel();
+                await model.SetupAddressesAndCountries(db, GetUserId());
+
+                this.AddAlert(AlertType.Error, "The address you selected could not be found.");
+
+                return View("ShippingInfo", model);
+            }
+
+            WebOrderCheckoutDetails orderCheckoutDetails =
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails ?? new WebOrderCheckoutDetails();
+
+            orderCheckoutDetails.MemberAddressId = addressId;
+            
+            Session[OrderCheckoutDetailsKey] = orderCheckoutDetails;
 
             return RedirectToAction("BillingInfo");
         }
@@ -44,11 +141,19 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> BillingInfo()
         {
-            Member currentMember = new Member();
+            WebOrderCheckoutDetails incompleteOrder = Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
-            IEnumerable<MemberCreditCard> billingInfos = currentMember.CreditCards;
+            if (incompleteOrder == null)
+            {
+                // TODO: Add Alert
+                return RedirectToAction("ShippingInfo");
+            }
 
-            return View(billingInfos);
+            BillingInfoViewModel viewModel = new BillingInfoViewModel();
+
+            await viewModel.SetupCreditCardsAndCountries(db, GetUserId());
+
+            return View(viewModel);
         }
 
         // POST: Checkout/BillingInfo
@@ -91,7 +196,14 @@ namespace Veil.Controllers
             // TODO: Persist order
             // TODO: Convert cart items to web order item
 
+            Session.Remove(OrderCheckoutDetailsKey);
+
             return RedirectToAction("Index", "Home");
+        }
+
+        private Guid GetUserId()
+        {
+            return idGetter.GetUserId(User.Identity);
         }
     }
 }

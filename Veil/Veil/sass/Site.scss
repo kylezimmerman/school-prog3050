@@ -61,12 +61,14 @@
     cursor: pointer;
   }
 }
+
+// Better align the text with the checkbox
 .radio input[type="radio"],
 .checkbox input[type="checkbox"] {
   float: left;
-  /*margin-left: -20px;*/
   margin-top: 4px;
 }
+
 .radio + .radio,
 .checkbox + .checkbox {
   margin-top: -5px; // Move up sibling radios or checkboxes for tighter spacing
@@ -128,6 +130,7 @@ nav .title-area img {
     color: #ffa400;
 }
 
+/* Transformation for the platform text beside game SKUs */
 .platform-transform {
     text-align: center;
     vertical-align: central;
@@ -170,11 +173,13 @@ strong.label {
     width: 1px;
 }
 
+/* For the Stripe errors on add credit card pages */
 .field-validation-error.payment-errors {
     margin-top:auto;
     padding:1em;
 }
 
+/* Make the validation summary stand out more and be more consistent with field validation errors*/
 .validation-summary-errors {
     @extend .field-validation-error;
     ul {
@@ -196,4 +201,19 @@ strong.label {
         padding-right:0.3em;
         vertical-align:middle;
     }
+}
+
+/* Bold the prefix labels */
+label.prefix {
+    font-weight:700;
+}
+
+/* Override foundation to ensure strong's bolding happens */
+strong > label, .checkbox strong > label, .radio strong > label {
+    font-weight:inherit;
+    color: $input-prefix-font-color;
+}
+
+label > strong {
+    color: $input-prefix-font-color;
 }
