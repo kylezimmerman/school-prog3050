@@ -1,0 +1,55 @@
+﻿@model Veil.Models.AddressViewModel
+
+@{
+    ViewBag.Title = "Edit Address";
+}
+
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
+
+@using (Html.BeginForm("EditAddress", "Manage", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="row panel">
+        <div class="column">
+            <h4>Edit Address</h4>
+
+            @{ Html.RenderPartial("AddressViewModel/_AddressFormFields", Model); }
+
+            <button type="submit">Save Changes</button>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    <script type="text/javascript">
+        // Simple script to disable all the optgroups except for the one for the selected country
+        $(function () {
+
+            $('#@nameof(Model.CountryCode)').change(function () {
+
+                var selectedCountryName = $('option:selected', this).text();
+
+                $('#@nameof(Model.ProvinceCode) > optgroup').each(function () {
+
+                    if (this.label !== selectedCountryName) {
+                        $(this).prop('disabled', true);
+                    } else {
+                        $(this).prop('disabled', false);
+
+                        if ($('option:selected', this)[0] === undefined) {
+                            $('option', this).first().prop('selected', true);
+                        }
+                    }
+                });
+            }).
+            trigger('change'); // Manually trigger the initial change
+        });
+    </script>
+}

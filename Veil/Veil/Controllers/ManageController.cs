@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -332,6 +332,122 @@ namespace Veil.Controllers
             }
 
             this.AddAlert(AlertType.Success, "Successfully add a new address.");
+            return RedirectToAction("ManageAddresses");
+        }
+
+        /// <summary>
+        ///     Allows the member to edit an existing <see cref="MemberAddress"/>
+        /// </summary>
+        /// <param name="addressId">
+        ///     The Id of the <see cref="MemberAddress"/> to be edited
+        /// </param>
+        /// <returns>
+        ///     A view allowing the member to edit the address
+        /// </returns>
+        [HttpGet]
+        public async Task<ActionResult> EditAddress(Guid? addressId)
+        {
+            if (addressId == null)
+            {
+                throw new HttpException(NotFound, "Address");
+            }
+
+            MemberAddress addressToEdit = await db.MemberAddresses.FindAsync(addressId);
+
+            if (addressToEdit == null)
+            {
+                throw new HttpException(NotFound, "Address");
+            }
+
+            AddressViewModel model = new AddressViewModel
+            {
+                Id = addressToEdit.Id,
+                StreetAddress = addressToEdit.Address.StreetAddress,
+                POBoxNumber = addressToEdit.Address.POBoxNumber,
+                City = addressToEdit.Address.City,
+                PostalCode = addressToEdit.Address.PostalCode,
+                ProvinceCode = addressToEdit.ProvinceCode,
+                CountryCode = addressToEdit.CountryCode
+            };
+
+            await model.SetupCountries(db);
+
+            return View(model);
+        }
+
+        /// <summary>
+        ///     Creates a new address for the member
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the address to edit
+        /// </param>
+        /// <param name="model">
+        ///     <see cref="AddressViewModel"/> containing the address details
+        /// </param>
+        /// <returns>
+        ///     Redirects back to ManageAddresses if successful
+        ///     Redisplays the form if the information is invalid or a database error occurs
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditAddress(Guid id, AddressViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.UpdatePostalCodeModelError(ModelState);
+
+                this.AddAlert(AlertType.Error, "Some address information was invalid.");
+
+                await model.SetupCountries(db);
+
+                return View("ManageAddresses", model);
+            }
+
+            MemberAddress editedAddress = await db.MemberAddresses.FindAsync(id);
+
+            if (editedAddress == null)
+            {
+                throw new HttpException(NotFound, "Address");
+            }
+
+            model.FormatPostalCode();
+
+            editedAddress.Address = model.MapToNewAddress();
+            editedAddress.ProvinceCode = model.ProvinceCode;
+            editedAddress.CountryCode = model.CountryCode;
+
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Get the exception which states if a foreign key constraint was violated
+                SqlException innermostException = ex.GetBaseException() as SqlException;
+
+                bool errorWasProvinceForeignKeyConstraint = false;
+
+                if (innermostException != null)
+                {
+                    string exMessage = innermostException.Message;
+
+                    errorWasProvinceForeignKeyConstraint =
+                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation &&
+                        exMessage.Contains(nameof(Province.ProvinceCode)) &&
+                        exMessage.Contains(nameof(Province.CountryCode));
+                }
+
+                this.AddAlert(AlertType.Error,
+                    errorWasProvinceForeignKeyConstraint
+                        ? "The Province/State you selected isn't in the Country you selected."
+                        : "An unknown error occured while adding the address.");
+
+                await model.SetupCountries(db);
+
+                return View(model);
+            }
+
+            this.AddAlert(AlertType.Success, "Successfully saved the changes to the address.");
             return RedirectToAction("ManageAddresses");
         }
 

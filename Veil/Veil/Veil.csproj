@@ -500,6 +500,7 @@
     <Content Include="Views\GameProducts\Delete.cshtml" />
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
+    <Content Include="Views\Manage\EditAddress.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
     <Content Include="Views\Shared\_AlertPartial.cshtml" />

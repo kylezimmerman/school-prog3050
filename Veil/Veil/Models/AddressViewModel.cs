@@ -18,7 +18,6 @@ using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.DataModels.Validation;
-using ModelStateDictionary = System.Web.Mvc.ModelStateDictionary;
 
 namespace Veil.Models
 {
@@ -32,6 +31,14 @@ namespace Veil.Models
 
         private static readonly Regex zipCodeRegex = new Regex(
             ValidationRegex.ZIP_CODE, RegexOptions.Compiled);
+
+        /// <summary>
+        ///     The Id for this address entry.
+        ///     <br/>
+        ///     This is only used for Edit and Delete
+        /// </summary>
+        [BindNever]
+        public virtual Guid Id { get; set; }
 
         /// <summary>
         /// The Address's street address, including apartment number
@@ -119,17 +126,34 @@ namespace Veil.Models
                             ma.Address.StreetAddress
                         }).
                 ToListAsync();
+            
+            await SetupCountries(db);
 
-            Countries = await db.Countries.Include(c => c.Provinces).ToListAsync();
             Addresses = new SelectList(
                 memberAddresses, nameof(MemberAddress.Id), nameof(Address.StreetAddress));
         }
 
         /// <summary>
+        ///     Sets up the Countries properties of the <see cref="AddressViewModel"/>
+        /// </summary>
+        /// <param name="db">
+        ///     The <see cref="IVeilDataAccess"/> to fetch info from
+        /// </param>
+        /// <returns>
+        ///     A task to await
+        /// </returns>
+        public async Task SetupCountries(IVeilDataAccess db)
+        {
+            Countries = await db.Countries.Include(c => c.Provinces).ToListAsync();
+        }
+
+        /// <summary>
         ///     Updates the PostalCode Model error to be more specific if possible
         /// </summary>
-        /// <param name="modelState"></param>
-        public void UpdatePostalCodeModelError(ModelStateDictionary modelState)
+        /// <param name="modelState">
+        ///     The ModelStateDictionary to be modified
+        /// </param>
+        public void UpdatePostalCodeModelError(System.Web.Mvc.ModelStateDictionary modelState)
         {
             if (!modelState.IsValidField(nameof(PostalCode)) &&
                 !string.IsNullOrWhiteSpace(CountryCode))

@@ -10,21 +10,38 @@
     </div>
 </div>
 
-<div class="row panel">
-    <div class="column">
-        <h4>Your Addresses</h4>
+@if (Model.Addresses != null && Model.Addresses.Any())
+{
+    <div class="row panel">
+        <div class="column">
+            <h4>Your Addresses</h4>
 
-        <div class="row collapse">
-            <div class="medium-8 columns">
-                @Html.DropDownList("AddressId", Model.Addresses, new { aria_label = "Addresses"})
+            <div class="row collapse">
+                @using (Html.BeginForm("EditAddress", "Manage", FormMethod.Get))
+                {
+                    <div class="medium-8 columns">
+                        @Html.DropDownList("AddressId", Model.Addresses, new { aria_label = "Addresses" })
+                    </div>
+
+                    <div class="medium-4 columns">
+                        <button type="submit" class="postfix">Edit Address</button>
+                    </div>
+                }
             </div>
-            
-            <div class=" medium-4 columns">
-                <a href="#" class="button postfix alert">Delete Selected Address</a>
+
+            <div class="row collapse">
+                @using (Html.BeginForm("EditAddress", "Manage", FormMethod.Get)) // TODO: Change the action name for this form
+                {
+                    <input type="hidden" id="deleteAddressId" name="addressId" />
+
+                    <div class="medium-4 columns right end">
+                        <button type="submit" class="postfix alert">Delete Address</button>
+                    </div>
+                }
             </div>
         </div>
     </div>
-</div>
+}
 
 @using (Html.BeginForm("CreateAddress", "Manage", FormMethod.Post))
 {
