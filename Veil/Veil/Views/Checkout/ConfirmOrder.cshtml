@@ -1,8 +1,16 @@
-﻿@model Veil.Models.CheckoutViewModel
+﻿@using Veil.Controllers
+@using Veil.Models
+@model Veil.Models.CheckoutViewModel
 
 @{
     ViewBag.Title = "Order Confirmation";
 }
+
+<p>Address Id: @(((WebOrderCheckoutDetails)Session["CheckoutController.OrderCheckoutDetails"]).MemberAddressId)</p>
+
+<p>Card Token: @(((WebOrderCheckoutDetails)Session["CheckoutController.OrderCheckoutDetails"]).StripeCardToken)</p>
+<p>MemberCCId: @(((WebOrderCheckoutDetails)Session["CheckoutController.OrderCheckoutDetails"]).MemberCreditCardId)</p>
+
 
 <div class="row">
     <div class="column">

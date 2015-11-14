@@ -1196,13 +1196,14 @@ namespace Veil.Tests.Controllers
                 Throws.Nothing);
         }
 
-        [Test]
-        public async void CreateCreditCard_InvalidModelState_RedirectsToManageCreditCards()
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public async void CreateCreditCard_InvalidStripeToken_RedirectsToManageCreditCards(string token)
         {
             ManageController controller = CreateManageController();
-            controller.ModelState.AddModelError("stripeCardToken", "Required");
 
-            var result = await controller.CreateCreditCard(null) as RedirectToRouteResult;
+            var result = await controller.CreateCreditCard(token) as RedirectToRouteResult;
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));

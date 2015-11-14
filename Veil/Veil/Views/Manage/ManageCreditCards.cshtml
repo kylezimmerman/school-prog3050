@@ -49,9 +49,7 @@
 
     <div class="row panel">
         <div class="column">
-            <h4>Billing Information</h4>
-
-            @{ Html.RenderPartial("_ManageCreditCardFormFields", Model); }
+            @{ Html.RenderPartial("BillingInfoViewModel/_BillingInfoFormFields", Model); }
 
             <button type="submit">Add Credit Card</button>
         </div>

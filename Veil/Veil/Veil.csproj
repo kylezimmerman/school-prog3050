@@ -507,7 +507,7 @@
     <Content Include="Views\Shared\_RatingStarsPartial.cshtml" />
     <Content Include="Views\Tags\Index.cshtml" />
     <Content Include="Views\Shared\AddressViewModel\_AddressFormFields.cshtml" />
-    <Content Include="Views\Manage\_ManageCreditCardFormFields.cshtml" />
+    <Content Include="Views\Shared\BillingInfoViewModel\_BillingInfoFormFields.cshtml" />
     <Content Include="Views\Reviews\CreateReviewForGame.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />

@@ -3,6 +3,9 @@
 
 @{
     ViewBag.Title = "Billing Information";
+    string formId = "addCardForm";
+    string countrySelectId = $"{nameof(Model.CreditCard)}_{nameof(Model.CreditCard.AddressCountry)}";
+    string provinceSelectId = $"{nameof(Model.CreditCard)}_{nameof(Model.CreditCard.AddressState)}";
 }
 
 <div class="row">
@@ -11,146 +14,166 @@
     </div>
 </div>
 
-@using (Html.BeginForm("ShippingInfo", "Checkout", FormMethod.Post))
+@if (Model.CreditCards != null && Model.CreditCards.Any())
+{
+    using (Html.BeginForm("ExistingBillingInfo", "Checkout", FormMethod.Post))
+     {
+         @Html.AntiForgeryToken()
+
+         <div class="row panel">
+             <div class="column">
+                 <h4>Your Credit Cards</h4>
+
+                 @Html.DropDownList("cardId", Model.CreditCards, new { aria_label = "Credit Cards" })
+                 
+                 <button type="submit" class="button right">Bill This Card</button>
+             </div>
+         </div>
+     }
+}
+
+@using (Html.BeginForm("NewBillingInfo", "Checkout", FormMethod.Post, new { id = formId }))
 {
     @Html.AntiForgeryToken()
 
     <div class="row panel">
         <div class="column">
-            <h4>Your Credit Cards</h4>
+            @{ Html.RenderPartial("BillingInfoViewModel/_BillingInfoFormFields", Model); }
 
-            @Html.DropDownList("addressId", Model.CreditCards, new { aria_label = "Addresses" })
+            <div class="row collapse padding-top-1">
+                <div class="small-7 medium-3 column">
+                    <label for="saveCard">
+                        @Html.CheckBox("saveCard")
+                        <strong>Save Credit Card?</strong>
+                    </label>
+                </div>
+            </div>
 
-            <button type="submit" class="button right">Ship to This Address</button>
+            <div class="row right padding-top-1">
+                <div class="column">
+                    <button type="submit" class="button">Bill This Card</button>
+                </div>
+            </div>
         </div>
     </div>
 }
 
-<div class="row panel">
-    <div class="column">
-        <h4>Billing Information</h4>
+@section scripts
+{
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
 
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Street Address</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text"/>
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">City</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text"/>
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Country</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <select>
-                    <option>Canada</option>
-                    <option>United States</option>
-                </select>
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Province/State</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <select>
-                    <option>Alberta</option>
-                    <option>British Columbia</option>
-                    <option>Manitoba</option>
-                    <option>New Brunswick</option>
-                    <option>Newfoundland &amp; Labrador</option>
-                    <option>Ontario</option>
-                    <option>Prince Edward Island</option>
-                    <option>Quebec</option>
-                    <option>Saskatchewan</option>
-                    <option>Northwest Territories</option>
-                    <option>Nunavut</option>
-                    <option>Yukon</option>
-                </select>
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Postal Code</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text"/>
-            </div>
-        </div>
+    <script type="text/javascript">
+        // Stripe setup script
+        (function()
+        {
+            Stripe.setPublishableKey('pk_test_p7evtCqVwwsVMpTl4yqb1Ndh');
 
-        <h4>Credit Card Information</h4>
+            function stripeResponseHandler(status, response)
+            {
+                var $form = $('#@formId');
 
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Cardholder's Full Name</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text"/>
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Card Number</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text"/>
-            </div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">Expiry Date</span>
-            </div>
-            <div class="small-4 large-9 columns">
-                <div class="row">
-                    <div class="small-6 columns">
-                        <select>
-                            <option>01</option>
-                            <option>02</option>
-                            <option>03</option>
-                            <option>04</option>
-                            <option>05</option>
-                            <option>06</option>
-                            <option>07</option>
-                            <option>08</option>
-                            <option>09</option>
-                            <option>10</option>
-                            <option>11</option>
-                            <option>12</option>
-                        </select>
-                    </div>
-                    <div class="small-6 columns">
-                        <select>
-                            <option>2015</option>
-                            <option>2016</option>
-                            <option>2017</option>
-                            <option>2018</option>
-                            <option>2019</option>
-                            <option>2020</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="small-4 columns"></div>
-        </div>
-        <div class="row collapse">
-            <div class="small-4 large-3 columns">
-                <span class="prefix">CVC Number</span>
-            </div>
-            <div class="small-8 large-9 columns">
-                <input type="text" maxlength="3"/>
-            </div>
-        </div>
+                if (response.error)
+                {
+                    console.log(response);
+                    console.log(response.error);
 
-        @Html.ActionLink("Use This Card", "ConfirmOrder", null , new { @class = "button right" })
+                    // Show the errors on the form
+                    $form.find('.payment-errors').
+                        text(response.error.message).
+                        removeClass('field-validation-valid').
+                        addClass('field-validation-error');
 
-    </div>
-</div>
+                    $form.find('button').prop('disabled', false);
+                }
+                else
+                {
+                    // Remove all name attributes before attempting a submit
+                    $form.find(':input:not([type=hidden])').each(function()
+                    {
+                        $(this).removeAttr('name');
+                    });
+
+                    // response contains id and card, which contains additional card details
+                    var token = response.id;
+                    // Insert the token into the form so it gets submitted to the server
+                    $form.append($('<input type="hidden" name="stripeCardToken" />').val(token));
+
+                    // and submit
+                    $form.get(0).submit();
+                }
+            };
+
+            $(function($)
+            {
+                var $form = $('#@formId');
+
+                // Remove the display: none style from the form.
+                $form.css('display', 'initial');
+
+                // Add back name attributes
+                $form.find(':input:not([type=hidden])').each(function()
+                {
+                    $(this).attr('name', this.id.replace('_', '.'));
+                });
+
+                // Remove the default validation
+                $form.removeData('validator').removeData('unobtrusiveValidation');
+
+                // Reparse the form for validation
+                $.validator.unobtrusive.parse('#@formId');
+
+                $form.submit(function(event)
+                {
+                    var $form = $(this);
+
+                    if ($form.valid())
+                    {
+                        $form.find('.payment-errors').
+                            text('').
+                            removeClass('field-validation-error').
+                            addClass('field-validation-valid');
+
+                        // Disable the submit button to prevent repeated clicks
+                        $form.find('button').prop('disabled', true);
+
+                        Stripe.card.createToken($form, stripeResponseHandler);
+
+                        // Prevent the form from submitting with the default action
+                        return false;
+                    }
+
+                    return false;
+                });
+            });
+        })();
+    </script>
+
+    <script type="text/javascript">
+        // Simple script to disable all the optgroups except for the one for the selected country
+        $(function()
+        {
+            $('#@countrySelectId').change(function()
+                {
+                    var selectedCountryName = $('option:selected', this).text();
+
+                    $('#@provinceSelectId > optgroup').each(function()
+                    {
+                        if (this.label !== selectedCountryName)
+                        {
+                            $(this).prop('disabled', true);
+                        }
+                        else
+                        {
+                            $(this).prop('disabled', false);
+
+                            if ($('option:selected', this)[0] === undefined)
+                            {
+                                $('option', this).first().prop('selected', true);
+                            }
+                        }
+                    });
+                }).
+                trigger('change'); // Manually trigger the initial change
+        });
+    </script>
+}
