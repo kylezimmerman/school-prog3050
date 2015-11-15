@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Security.Principal;
 using System.Web;
@@ -10,6 +11,7 @@ using NUnit.Framework;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
 using Veil.Models;
 
@@ -20,6 +22,7 @@ namespace Veil.Tests.Controllers
     {
         private Guid Id;
         private Guid UserId;
+        private const string CART_QTY_KEY = "Cart.Quantity";
 
         [SetUp]
         public void Setup()
@@ -294,6 +297,404 @@ namespace Veil.Tests.Controllers
 
             Assert.That(model.Items.Count, Is.EqualTo(1));
             Assert.That(model.Items.FirstOrDefault().Quantity, Is.EqualTo(4));
+        }
+
+        [Test]
+        public async void AddItem_ValidAdd()
+        {
+            GameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 79.99m,
+                UsedWebPrice = 44.99m,
+                Platform = new Platform
+                {
+                    PlatformName = "PS4",
+                }
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>(),
+            };
+
+            Member member = new Member()
+            {
+                UserId = UserId,
+                Cart = cart
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> {member}.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> {gameProduct}.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
+            memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
+            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.AddItem(gameProduct.Id, true) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void AddItem_NullId()
+        {
+            CartController controller = new CartController(null, null);
+
+            Assert.That(async () => await controller.AddItem(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void Additem_IdNotInDb()
+        {
+            GameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 79.99m,
+                UsedWebPrice = 44.99m,
+                Platform = new Platform
+                {
+                    PlatformName = "PS4",
+                }
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>(),
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> {gameProduct}.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            Guid nonMatch = new Guid("45B0752E-998B-477A-AAAD-3ED535BA3559");
+
+            Assert.That(async () => await controller.AddItem(nonMatch), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void AddItem_NullCart()
+        {
+            GameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 79.99m,
+                UsedWebPrice = 44.99m,
+                Platform = new Platform
+                {
+                    PlatformName = "PS4",
+                }
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = new Guid("45B0752E-998B-477A-AAAD-3ED535BA3559"),
+                Items = new List<CartItem>(),
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            Assert.That(async () => await controller.AddItem(gameProduct.Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void AddItem_CatchesOnSave()
+        {
+            GameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 79.99m,
+                UsedWebPrice = 44.99m,
+                Platform = new Platform
+                {
+                    PlatformName = "PS4",
+                }
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>(),
+            };
+
+            Member member = new Member()
+            {
+                UserId = UserId,
+                Cart = cart
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
+            memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+            dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.AddItem(gameProduct.Id, true) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void RemoveItem_ValidRemove()
+        {
+            GameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 79.99m,
+                UsedWebPrice = 44.99m,
+                Platform = new Platform
+                {
+                    PlatformName = "PS4",
+                }
+            };
+
+            CartItem cartItem = new CartItem()
+            {
+                ProductId = gameProduct.Id
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>()
+                {
+                    cartItem        
+                }
+            };
+
+            Member member = new Member()
+            {
+                UserId = UserId,
+                Cart = cart
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
+            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.RemoveItem(gameProduct.Id) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void RemoveItem_NullId()
+        {
+            CartController controller = new CartController(null, null);
+
+            Assert.That(async () => await controller.RemoveItem(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void RemoveItem_NullCart()
+        {
+            Cart cart = new Cart
+            {
+                MemberId = new Guid("45B0752E-998B-477A-AAAD-3ED535BA3559"),
+                Items = new List<CartItem>(),
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            Assert.That(async () => await controller.RemoveItem(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void RemoveItem_CatchesOnSave()
+        {
+            GameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                NewWebPrice = 79.99m,
+                UsedWebPrice = 44.99m,
+                Platform = new Platform
+                {
+                    PlatformName = "PS4",
+                }
+            };
+
+            CartItem cartItem = new CartItem()
+            {
+                ProductId = gameProduct.Id
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>()
+                {
+                    cartItem
+                }
+            };
+
+            Member member = new Member()
+            {
+                UserId = UserId,
+                Cart = cart
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+            dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
+            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.RemoveItem(gameProduct.Id) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
         }
     }
 }

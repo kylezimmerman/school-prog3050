@@ -41,15 +41,13 @@ namespace Veil.Controllers
 
         public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
         {
-            //started
-            var membersId = idGetter.GetUserId(User.Identity);
-            Cart memberCart = await db.Carts.FindAsync(membersId);
-
             if (productId == null)
             {
                 throw new HttpException(NotFound, nameof(Game));
             }
 
+            var membersId = idGetter.GetUserId(User.Identity);
+            Cart memberCart = await db.Carts.FindAsync(membersId);
             GameProduct gameProduct = await db.GameProducts.FindAsync(productId);
 
             if (gameProduct == null)
@@ -69,13 +67,11 @@ namespace Veil.Controllers
                 Quantity = 1
             };
 
-
             try
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
                 SetSessionCartQty();
-
             }
             catch (DbUpdateException)
             {
@@ -87,14 +83,13 @@ namespace Veil.Controllers
         }
 
         public async Task<ActionResult> RemoveItem(Guid? productId)
-        {
-            var membersId = idGetter.GetUserId(User.Identity);
-            Cart memberCart = await db.Carts.FindAsync(membersId);
-
+        { 
             if (productId == null)
             {
                 throw new HttpException(NotFound, "OOOOH NO");
             }
+
+            Cart memberCart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity));
             if (memberCart == null)
             {
                 throw new HttpException(NotFound, "Dear god");
@@ -110,7 +105,7 @@ namespace Veil.Controllers
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, "An error occured while removing game to your cart. You are stuck with it now");
+                this.AddAlert(AlertType.Error, "An error occured while removing game to your cart");
             }
 
             // TODO: Update Cart Quantity in Session

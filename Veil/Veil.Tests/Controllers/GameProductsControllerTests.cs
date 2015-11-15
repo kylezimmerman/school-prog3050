@@ -270,7 +270,7 @@ namespace Veil.Tests.Controllers
             GameProduct aGameProduct = new PhysicalGameProduct()
             {
                 GameId = game.Id,
-                Id = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559"),
+                Id = GameSKUId,
                 PlatformCode = ps4Platform.PlatformCode,
                 Game = game,
                 Platform = ps4Platform,
@@ -408,7 +408,7 @@ namespace Veil.Tests.Controllers
         public async void DeletePhysicalGameProductConfirmed_CatchesOnSaveDelete()
         {
             GameProduct aGameProduct = new PhysicalGameProduct();
-            aGameProduct.GameId = aGame.Id;
+            aGameProduct.GameId = game.Id;
             aGameProduct.Id = GameSKUId;
             aGameProduct.PlatformCode = ps4Platform.PlatformCode;
             aGameProduct.Game = game;
