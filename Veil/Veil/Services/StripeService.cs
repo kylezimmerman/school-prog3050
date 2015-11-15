@@ -87,5 +87,23 @@ namespace Veil.Services
 
             return newMemberCard;
         }
+
+        /// <summary>
+        ///     Retrived the last 4 digits for the credit card represented by the <see cref="stripeCardToken"/>
+        /// </summary>
+        /// <param name="stripeCardToken">
+        ///     The token representing the card you want the last 4 digits of
+        /// </param>
+        /// <returns>
+        ///     The last 4 digits of the token's card
+        /// </returns>
+        public string GetLast4ForToken(string stripeCardToken)
+        {
+            StripeTokenService tokenService = new StripeTokenService();
+
+            StripeToken token = tokenService.Get(stripeCardToken);
+
+            return token.StripeCard.Last4;
+        }
     }
 }

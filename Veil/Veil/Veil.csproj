@@ -254,7 +254,7 @@
     <Compile Include="Controllers\FriendListController.cs" />
     <Compile Include="Controllers\GamesController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
-    <Compile Include="Models\CheckoutViewModel.cs" />
+    <Compile Include="Models\ConfirmOrderViewModel.cs" />
     <Compile Include="Controllers\WebOrdersController.cs" />
     <Compile Include="Controllers\WishlistController.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />

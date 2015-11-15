@@ -33,13 +33,13 @@ namespace Veil.DataModels.Models
         /// </summary>
         public virtual ICollection<CartItem> Items { get; set; }
 
-        public decimal? TotalCartItemsPrice
+        public decimal TotalCartItemsPrice
         {
             get
             {
                 return
                     Items.Where(i => i.IsNew).Sum(i => i.Product.NewWebPrice * i.Quantity) +
-                    Items.Where(i => !i.IsNew).Sum(i => i.Product.UsedWebPrice * i.Quantity);
+                    Items.Where(i => !i.IsNew).Sum(i => i.Product.UsedWebPrice * i.Quantity) ?? 0m;
             }
         }
     }
