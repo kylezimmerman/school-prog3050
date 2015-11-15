@@ -7,13 +7,17 @@
 
 using System;
 using System.Data.Entity;
+using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
+using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
@@ -23,11 +27,13 @@ namespace Veil.Controllers
 
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
+        private readonly IStripeService stripeService;
 
-        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
+        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
+            this.stripeService = stripeService;
         }
 
         [HttpGet]
@@ -99,6 +105,8 @@ namespace Veil.Controllers
 
                 await db.SaveChangesAsync();
 
+                this.AddAlert(AlertType.Success, "Successfully add the new address.");
+
                 orderCheckoutDetails.MemberAddressId = newAddress.Id;
             }
             else
@@ -141,12 +149,14 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> BillingInfo()
         {
-            WebOrderCheckoutDetails incompleteOrder = Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
+            WebOrderCheckoutDetails orderCheckoutDetails =
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
-            if (incompleteOrder == null)
+            ActionResult invalidSessionResult = EnsureValidSessionForBillingStep(orderCheckoutDetails);
+
+            if (invalidSessionResult != null)
             {
-                // TODO: Add Alert
-                return RedirectToAction("ShippingInfo");
+                return invalidSessionResult;
             }
 
             BillingInfoViewModel viewModel = new BillingInfoViewModel();
@@ -156,12 +166,110 @@ namespace Veil.Controllers
             return View(viewModel);
         }
 
-        // POST: Checkout/BillingInfo
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> BillingInfo(MemberCreditCard billingInfo)
+        public async Task<ActionResult> NewBillingInfo(string stripeCardToken, bool saveCard)
         {
-            // TODO: Add billing info to the session WebOrder
+            WebOrderCheckoutDetails orderCheckoutDetails =
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
+
+            ActionResult invalidSessionResult = EnsureValidSessionForBillingStep(orderCheckoutDetails);
+
+            if (invalidSessionResult != null)
+            {
+                return invalidSessionResult;
+            }
+
+            Contract.Assume(orderCheckoutDetails != null);
+
+            if (saveCard)
+            {
+                if (string.IsNullOrWhiteSpace(stripeCardToken))
+                {
+                    this.AddAlert(AlertType.Error, "Some credit card information is invalid.");
+
+                    return RedirectToAction("BillingInfo");
+                }
+
+                Member currentMember = await db.Members.FindAsync(GetUserId());
+
+                if (currentMember == null)
+                {
+                    // Note: There should be no way for this to happen.
+                    return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                }
+
+                MemberCreditCard newCard;
+
+                try
+                {
+                    newCard = stripeService.CreateCreditCard(currentMember, stripeCardToken);
+                }
+                catch (StripeException ex)
+                {
+                    // Note: Stripe says their card_error messages are safe to display to the user
+                    if (ex.StripeError.Code == "card_error")
+                    {
+                        this.AddAlert(AlertType.Error, ex.Message);
+                        ModelState.AddModelError(ManageController.STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
+                    }
+                    else
+                    {
+                        this.AddAlert(AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
+                    }
+
+                    return RedirectToAction("BillingInfo");
+                }
+
+                currentMember.CreditCards.Add(newCard);
+
+                await db.SaveChangesAsync();
+
+                this.AddAlert(AlertType.Success, "Successfully added the new Credit Card.");
+
+                orderCheckoutDetails.MemberCreditCardId = newCard.Id;
+            }
+            else
+            {
+                orderCheckoutDetails.StripeCardToken = stripeCardToken;
+            }
+
+            Session[OrderCheckoutDetailsKey] = orderCheckoutDetails;
+
+            return RedirectToAction("ConfirmOrder");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ExistingBillingInfo(Guid cardId)
+        {
+            WebOrderCheckoutDetails orderCheckoutDetails =
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
+
+            ActionResult invalidSessionResult = EnsureValidSessionForBillingStep(orderCheckoutDetails);
+
+            if (invalidSessionResult != null)
+            {
+                return invalidSessionResult;
+            }
+
+            Contract.Assume(orderCheckoutDetails != null);
+
+            Guid memberId = GetUserId();
+
+            if (!await db.Members.Where(m => m.UserId == memberId).AnyAsync(m => m.CreditCards.Any(cc => cc.Id == cardId)))
+            {
+                BillingInfoViewModel model = new BillingInfoViewModel();
+                await model.SetupCreditCardsAndCountries(db, memberId);
+
+                this.AddAlert(AlertType.Error, "The card you selected could not be found.");
+
+                return View("BillingInfo", model);
+            }
+
+            orderCheckoutDetails.MemberCreditCardId = cardId;
+
+            Session[OrderCheckoutDetailsKey] = orderCheckoutDetails;
 
             return RedirectToAction("ConfirmOrder");
         }
@@ -173,6 +281,16 @@ namespace Veil.Controllers
             // TODO: Display items in the order
             // TODO: Display shipping info
             // TODO: Display payment info
+
+            WebOrderCheckoutDetails orderCheckoutDetails =
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
+
+            ActionResult invalidSessionResult = EnsureValidSessionForBillingStep(orderCheckoutDetails);
+
+            if (invalidSessionResult != null)
+            {
+                return invalidSessionResult;
+            }
 
             WebOrder order = new WebOrder();
             Member currentMember = new Member();
@@ -204,6 +322,22 @@ namespace Veil.Controllers
         private Guid GetUserId()
         {
             return idGetter.GetUserId(User.Identity);
+        }
+
+        private ActionResult EnsureValidSessionForBillingStep(WebOrderCheckoutDetails checkoutDetails)
+        {
+            if (checkoutDetails == null || 
+                (checkoutDetails.MemberAddressId == null && checkoutDetails.Address == null))
+            {
+                this.AddAlert(AlertType.Info,
+                    "You must select your shipping information before choosing billing information.");
+
+                return RedirectToAction("ShippingInfo");
+            }
+
+            Contract.Assert(checkoutDetails != null);
+
+            return null;
         }
     }
 }

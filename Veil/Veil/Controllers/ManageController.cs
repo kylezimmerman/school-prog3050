@@ -465,7 +465,7 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
         public async Task<ActionResult> CreateCreditCard(string stripeCardToken)
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(stripeCardToken))
             {
                 this.AddAlert(AlertType.Error, "Some credit card information is invalid.");
 
