@@ -66,7 +66,7 @@ namespace Veil.Models
 
         /// <summary>
         ///     The Id of the MemberCreditCard used for this order.
-        ///     Nulls StripeCardToken when set.
+        ///     Nulls StripeCardToken and Last4Digits when set.
         /// </summary>
         /// <remarks>
         ///     Either this or StripeCardToken should be set.
@@ -79,7 +79,9 @@ namespace Veil.Models
             }
             set
             {
+                Last4Digits = null;
                 stripeCardToken = null;
+
                 memberCreditCardId = value;
             }
         }
@@ -103,5 +105,10 @@ namespace Veil.Models
                 stripeCardToken = value;
             }
         }
+
+        /// <summary>
+        ///     The last 4 digits of the card used to make the <see cref="StripeCardToken"/>
+        /// </summary>
+        public string Last4Digits { get; set; }
     }
 }

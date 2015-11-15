@@ -87,7 +87,7 @@ else
     <div class="row panel">
         <div class="column">
             <table class="right">
-                <tr><th>Item Total:</th><td>@Model.TotalCartItemsPrice.Value.ToString("C")</td></tr>
+                <tr><th>Item Total:</th><td>@Model.TotalCartItemsPrice.ToString("C")</td></tr>
                 <tr>
                     <th>Shipping &amp; Handling:</th>
                     @if (Model.TotalCartItemsPrice < 120m)

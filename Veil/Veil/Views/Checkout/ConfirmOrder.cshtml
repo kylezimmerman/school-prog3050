@@ -1,16 +1,10 @@
-﻿@using Veil.Controllers
+﻿@using Veil.DataModels.Models
 @using Veil.Models
-@model Veil.Models.CheckoutViewModel
+@model Veil.Models.ConfirmOrderViewModel
 
 @{
     ViewBag.Title = "Order Confirmation";
 }
-
-<p>Address Id: @(((WebOrderCheckoutDetails)Session["CheckoutController.OrderCheckoutDetails"]).MemberAddressId)</p>
-
-<p>Card Token: @(((WebOrderCheckoutDetails)Session["CheckoutController.OrderCheckoutDetails"]).StripeCardToken)</p>
-<p>MemberCCId: @(((WebOrderCheckoutDetails)Session["CheckoutController.OrderCheckoutDetails"]).MemberCreditCardId)</p>
-
 
 <div class="row">
     <div class="column">
@@ -22,21 +16,35 @@
     <div class="medium-6 columns">
         <dl>
             <dt>Billing Information</dt>
-            <dd>Joe Danger</dd>
-            <dd>**** **** **** 4242</dd>
-            <dd>02/2015</dd>
-            <dd><a href="#">Modify Billing Information</a></dd>
+            <dd>@Model.FullName</dd>
+            <dd>@Model.CreditCardLast4Digits</dd>
+            <dd>
+                @Html.ActionLink("Change Billing Info", "BillingInfo")
+            </dd>
         </dl>
     </div>
     <div class="medium-6 columns">
         <dl>
             <dt>Shipping Information</dt>
-            <dd>Joe Danger</dd>
-            <dd>823 Example St.</dd>
-            <dd>City, Province A1A 2B2</dd>
-            <dd>Canada</dd>
-            <dd>519-383-2833</dd>
-            <dd><a href="#">Modify Shipping Information</a></dd>
+            <dd>@Model.FullName</dd>
+            <dd>@Model.Address.StreetAddress</dd>
+
+            @if (Model.Address.POBoxNumber != null)
+            {
+                <dd>PO Box: @Model.Address.POBoxNumber</dd>
+            }
+
+            <dd>@Model.Address.City, @Model.ProvinceName @Model.Address.PostalCode</dd>
+            <dd>@Model.CountryName</dd>
+
+            @if (Model.PhoneNumber != null)
+            {
+                <dd>@Model.PhoneNumber</dd>
+            }
+
+            <dd>
+                @Html.ActionLink("Change Shipping Address", "ShippingInfo", new { returnToConfirm = true })
+            </dd>
         </dl>
     </div>
 </div>
@@ -46,14 +54,55 @@
         <dl>
             <dt>Order Details</dt>
             <dd>
-                <table style="width:100%;">
-                    <tr><th>Product ID</th><th>Title</th><th>Format</th><th>New Copy</th><th>Quantity</th><th class="text-right">Unit Price</th><th class="text-right">Total Price</th></tr>
-                    <tr><td>3828432</td><td>Wasteland 2</td><td>Windows</td><td>Yes</td><td>1</td><td class="text-right">$50.00</td><td class="text-right">$50.00</td></tr>
-                    <tr><td colspan="7"><hr /></td></tr>
-                    <tr><td colspan="6">Item Total</td><td class="text-right">$50.00</td></tr>
-                    <tr><td colspan="6">Shipping and Handling</td><td class="text-right">$5.00</td></tr>
-                    <tr><td colspan="6">Tax</td><td class="text-right"><strong>$7.15</strong></td></tr>
-                    <tr><td colspan="6"><strong>Order Total</strong></td><td class="text-right"><strong>$62.15</strong></td></tr>
+                <table style="width: 100%;">
+                    <tr>
+                        <th>Title</th>
+                        <th>Platform</th>
+                        <th>New Copy</th>
+                        <th>Quantity</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Total Price</th>
+                    </tr>
+
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.PlatformName</td>
+                            <td>@item.IsNew</td>
+                            <td>@item.Quantity</td>
+                            <td class="text-right">@( $"{item.ItemPrice:C}" )</td>
+                            <td class="text-right">@( $"{item.ItemTotal:C}")</td>
+                        </tr>
+                    }
+
+                    <tr>
+                        <td colspan="6">
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">Item Total</td>
+                        <td class="text-right">@($"{Model.ItemSubTotal:C}")</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">Shipping and Handling</td>
+                        <td class="text-right">@($"{Model.ShippingCost:C}")</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">Tax</td>
+                        <td class="text-right">
+                            <strong>@($"{Model.TaxAmount:C}")</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <strong>Order Total</strong>
+                        </td>
+                        <td class="text-right">
+                            <strong>@($"{Model.ItemSubTotal + Model.ShippingCost + Model.TaxAmount:C}")</strong>
+                        </td>
+                    </tr>
                 </table>
             </dd>
         </dl>
@@ -61,8 +110,14 @@
 </div>
 <div class="row">
     <div class="column">
-        <button type="submit" class="alert">Cancel</button>
-        <button type="submit" class="right">Confirm Order</button>
+        @Html.ActionLink("Cancel", "Index", new { Controller = "Cart" }, new { @class = "button alert"})
+
+        @using (Html.BeginForm("PlaceOrder", "Cart", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <button type="submit" class="right">Place Order</button>
+        }
     </div>
 </div>
 

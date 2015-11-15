@@ -16,6 +16,7 @@
     using (Html.BeginForm("ExistingShippingInfo", "Checkout", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
+        @Html.Hidden("returnToConfirm", Request.Url.Query.Contains("returnToConfirm"))
 
         <div class="row panel">
             <div class="column">
@@ -33,6 +34,7 @@
 @using (Html.BeginForm("NewShippingInfo", "Checkout", FormMethod.Post))
 {
     @Html.AntiForgeryToken()
+    @Html.Hidden("returnToConfirm", Request.Url.Query.Contains("returnToConfirm"))
 
     <div class="row panel">
         <div class="column">
