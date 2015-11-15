@@ -112,7 +112,7 @@
     <div class="column">
         @Html.ActionLink("Cancel", "Index", new { Controller = "Cart" }, new { @class = "button alert"})
 
-        @using (Html.BeginForm("PlaceOrder", "Cart", FormMethod.Post))
+        @using (Html.BeginForm("PlaceOrder", "Checkout", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
 

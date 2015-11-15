@@ -41,6 +41,7 @@ namespace Veil
             container.RegisterType<VeilUserManager>(new HierarchicalLifetimeManager());
             container.RegisterType<VeilSignInManager>(new HierarchicalLifetimeManager());
             container.RegisterType<IStripeService, StripeService>();
+            container.RegisterType<IShippingCostService, ShippingCostService>();
 
             // Used by VeilUserManager
             container.RegisterType<IIdentityMessageService, EmailService>(new HierarchicalLifetimeManager());

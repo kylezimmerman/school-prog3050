@@ -10,5 +10,9 @@ namespace Veil.Services.Interfaces
         MemberCreditCard CreateCreditCard(Member member, string stripeCardToken);
 
         string GetLast4ForToken(string stripeCardToken);
+
+        string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null);
+
+        bool RefundCharge(string chargeId);
     }
 }

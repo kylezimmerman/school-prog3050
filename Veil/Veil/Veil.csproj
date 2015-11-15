@@ -242,7 +242,9 @@
     <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
     <Compile Include="Models\TagViewModel.cs" />
+    <Compile Include="Services\Interfaces\IShippingCostService.cs" />
     <Compile Include="Services\Interfaces\IStripeService.cs" />
+    <Compile Include="Services\ShippingCostService.cs" />
     <Compile Include="Services\StripeService.cs" />
     <Compile Include="Services\VeilSignInManager.cs" />
     <Compile Include="Services\VeilUserManager.cs" />
