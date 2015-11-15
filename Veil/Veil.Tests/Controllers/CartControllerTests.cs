@@ -22,6 +22,7 @@ namespace Veil.Tests.Controllers
     {
         private Guid Id;
         private Guid UserId;
+        private Guid gameId;
         private const string CART_QTY_KEY = "Cart.Quantity";
 
         [SetUp]
@@ -29,6 +30,7 @@ namespace Veil.Tests.Controllers
         {
             Id = new Guid("45B0752E-998B-466A-AAAD-3ED535BA3559");
             UserId = new Guid("09EABF21-D5AC-4A5D-ADF8-27180E6D889B");
+            gameId = new Guid("EFBCB640-388B-E511-80DF-001CD8B71DA6");
         }
 
         [Test]
@@ -302,6 +304,12 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void AddItem_ValidAdd()
         {
+            Game game = new Game()
+            {
+                Id = gameId,
+                Name = "game"
+            };
+
             GameProduct gameProduct = new PhysicalGameProduct()
             {
                 Id = Id,
@@ -311,7 +319,8 @@ namespace Veil.Tests.Controllers
                 Platform = new Platform
                 {
                     PlatformName = "PS4",
-                }
+                },
+                Game = game
             };
 
             Cart cart = new Cart
@@ -335,6 +344,7 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
             memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+            gameProductDbSetStub.SetupForInclude();
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);

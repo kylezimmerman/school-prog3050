@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Linq;
+using Microsoft.Ajax.Utilities;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Extensions;
 using Veil.Helpers;
+using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
 {
@@ -48,7 +51,10 @@ namespace Veil.Controllers
 
             var membersId = idGetter.GetUserId(User.Identity);
             Cart memberCart = await db.Carts.FindAsync(membersId);
-            GameProduct gameProduct = await db.GameProducts.FindAsync(productId);
+            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == productId);
+            string name = gameProduct.Game.Name;
+            string platform = gameProduct.Platform.PlatformName;
+            Guid gameId = gameProduct.GameId;
 
             if (gameProduct == null)
             {
@@ -71,15 +77,16 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
+                this.AddAlert(AlertType.Success, platform + ": " + name + " was succesfully added to your your cart");
                 SetSessionCartQty();
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, "An error occured while adding game to your cart");
+                this.AddAlert(AlertType.Error, "An error occured while adding "+ platform + ": " + name + " to your cart");
             }
 
             //do we really want this to redirect the user
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
         public async Task<ActionResult> RemoveItem(Guid? productId)
@@ -96,19 +103,22 @@ namespace Veil.Controllers
             }
 
             CartItem cartItem = memberCart.Items.FirstOrDefault(x => x.ProductId == productId);
-
+            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == cartItem.ProductId);
+            string name = gameProduct.Game.Name;
+            string platform = gameProduct.Platform.PlatformName;
+            Guid gameId = gameProduct.GameId;
             try
             {
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
+                this.AddAlert(AlertType.Success, platform + ": " + name + " was succesfully removed for your cart");
                 SetSessionCartQty();
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, "An error occured while removing game to your cart");
+                this.AddAlert(AlertType.Error, "An error occured while removing " + platform + ": " + name + " from your cart");
             }
 
-            // TODO: Update Cart Quantity in Session
             return RedirectToAction("Index");
         }
 
