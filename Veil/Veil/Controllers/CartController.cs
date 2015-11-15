@@ -52,10 +52,7 @@ namespace Veil.Controllers
             var membersId = idGetter.GetUserId(User.Identity);
             Cart memberCart = await db.Carts.FindAsync(membersId);
             GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == productId);
-            string name = gameProduct.Game.Name;
-            string platform = gameProduct.Platform.PlatformName;
-            Guid gameId = gameProduct.GameId;
-
+           
             if (gameProduct == null)
             {
                 throw new HttpException(NotFound, nameof(Game));
@@ -64,7 +61,9 @@ namespace Veil.Controllers
             {
                 throw new HttpException(NotFound, nameof(Member));
             }
-
+            Guid gameId = gameProduct.GameId;
+            string name = gameProduct.Game.Name;
+            string platform = gameProduct.Platform.PlatformName;
             CartItem cartItem = new CartItem()
             {
                 MemberId = membersId,

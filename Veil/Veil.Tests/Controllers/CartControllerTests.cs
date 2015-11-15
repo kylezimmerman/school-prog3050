@@ -368,7 +368,7 @@ namespace Veil.Tests.Controllers
             var result = await controller.AddItem(gameProduct.Id, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
-            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
         }
 
         [Test]
@@ -382,6 +382,12 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void Additem_IdNotInDb()
         {
+            Game game = new Game()
+            {
+                Id = gameId,
+                Name = "game"
+            };
+
             GameProduct gameProduct = new PhysicalGameProduct()
             {
                 Id = Id,
@@ -391,7 +397,9 @@ namespace Veil.Tests.Controllers
                 Platform = new Platform
                 {
                     PlatformName = "PS4",
-                }
+                },
+                Game = game,
+                GameId = game.Id
             };
 
             Cart cart = new Cart
@@ -403,10 +411,11 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
             Mock<DbSet<GameProduct>> gameProductDbSetStub =
-                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> {gameProduct}.AsQueryable());
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
 
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
+            gameProductDbSetStub.SetupForInclude();
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -414,6 +423,9 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> context = new Mock<ControllerContext>();
             context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
             context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
+            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
@@ -431,6 +443,12 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void AddItem_NullCart()
         {
+            Game game = new Game()
+            {
+                Id = gameId,
+                Name = "game"
+            };
+
             GameProduct gameProduct = new PhysicalGameProduct()
             {
                 Id = Id,
@@ -440,7 +458,8 @@ namespace Veil.Tests.Controllers
                 Platform = new Platform
                 {
                     PlatformName = "PS4",
-                }
+                },
+                Game = game
             };
 
             Cart cart = new Cart
@@ -456,6 +475,7 @@ namespace Veil.Tests.Controllers
 
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
+            gameProductDbSetStub.SetupForInclude();
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -478,6 +498,12 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void AddItem_CatchesOnSave()
         {
+            Game game = new Game()
+            {
+                Id = gameId,
+                Name = "game"
+            };
+
             GameProduct gameProduct = new PhysicalGameProduct()
             {
                 Id = Id,
@@ -487,7 +513,8 @@ namespace Veil.Tests.Controllers
                 Platform = new Platform
                 {
                     PlatformName = "PS4",
-                }
+                },
+                Game = game
             };
 
             Cart cart = new Cart
@@ -511,6 +538,7 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
             memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+            gameProductDbSetStub.SetupForInclude();
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -532,12 +560,18 @@ namespace Veil.Tests.Controllers
             var result = await controller.AddItem(gameProduct.Id, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
-            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
         }
 
         [Test]
         public async void RemoveItem_ValidRemove()
         {
+            Game game = new Game()
+            {
+                Id = gameId,
+                Name = "game"
+            };
+
             GameProduct gameProduct = new PhysicalGameProduct()
             {
                 Id = Id,
@@ -547,7 +581,8 @@ namespace Veil.Tests.Controllers
                 Platform = new Platform
                 {
                     PlatformName = "PS4",
-                }
+                },
+                Game = game
             };
 
             CartItem cartItem = new CartItem()
@@ -573,11 +608,16 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
 
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
             memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+            gameProductDbSetStub.SetupForInclude();
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
@@ -643,6 +683,12 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void RemoveItem_CatchesOnSave()
         {
+            Game game = new Game()
+            {
+                Id = gameId,
+                Name = "game"
+            };
+
             GameProduct gameProduct = new PhysicalGameProduct()
             {
                 Id = Id,
@@ -652,7 +698,8 @@ namespace Veil.Tests.Controllers
                 Platform = new Platform
                 {
                     PlatformName = "PS4",
-                }
+                },
+                Game = game
             };
 
             CartItem cartItem = new CartItem()
@@ -678,11 +725,16 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            Mock<DbSet<GameProduct>> gameProductDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
 
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            gameProductDbSetStub.Setup(db => db.FindAsync(gameProduct.Id)).ReturnsAsync(gameProduct);
             memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
+            gameProductDbSetStub.SetupForInclude();
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
             dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
 
