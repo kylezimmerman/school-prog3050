@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 using Stripe;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
@@ -104,6 +105,38 @@ namespace Veil.Services
             StripeToken token = tokenService.Get(stripeCardToken);
 
             return token.StripeCard.Last4;
+        }
+
+        public string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null)
+        {
+            var newCharge = new StripeChargeCreateOptions
+            {
+                Amount = (int)Math.Round(chargeAmount, 2) * 100,
+                //Description = "",
+                Capture = true,
+                Currency = "CAD",
+                CustomerId = customerId,
+                StatementDescriptor = "Veil",
+                Source = new StripeSourceOptions
+                {
+                    TokenId = cardToken
+                }
+            };
+
+            StripeChargeService chargeService = new StripeChargeService();
+
+            StripeCharge charge = chargeService.Create(newCharge);
+
+            return charge.Id;
+        }
+
+        public bool RefundCharge(string chargeId)
+        {
+            StripeRefundService chargeService = new StripeRefundService();
+
+            StripeRefund refund = chargeService.Create(chargeId);
+
+            return refund.Amount > 0;
         }
     }
 }

@@ -8,10 +8,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Transactions;
 using System.Web.Mvc;
 using Stripe;
 using Veil.DataAccess.Interfaces;
@@ -29,12 +31,14 @@ namespace Veil.Controllers
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
         private readonly IStripeService stripeService;
+        private readonly IShippingCostService shippingCostService;
 
-        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService)
+        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService, IShippingCostService shippingCostService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
             this.stripeService = stripeService;
+            this.shippingCostService = shippingCostService;
         }
 
         [HttpGet]
@@ -325,27 +329,8 @@ namespace Veil.Controllers
                     ).
                     SingleOrDefaultAsync();
 
-            /* Setup the cart / cart item information */
-            Cart cart =
-                await db.Members.
-                    Where(m => m.UserId == memberId).
-                    Select(m => m.Cart).
-                    Include(c => c.Items).
-                    Include(c => c.Items.Select(ci => ci.Product)).
-                    SingleOrDefaultAsync();
-
-            List<ConfirmOrderCartItem> cartItems = 
-                cart.Items.
-                    Select(ci => 
-                        new ConfirmOrderCartItem
-                        {
-                            IsNew = ci.IsNew ? "Yes" : "No",
-                            ItemPrice = ci.IsNew ? ci.Product.NewWebPrice : ci.Product.UsedWebPrice.Value,
-                            Name = ci.Product.Name,
-                            PlatformName = ci.Product is PhysicalGameProduct ? ((PhysicalGameProduct)ci.Product).Platform.PlatformName : "",
-                            Quantity = ci.Quantity
-                        }
-                    ).ToList();
+            Cart cart = await GetCartWithLoadedProductsAsync(memberId);
+            var cartItems = GetConfirmOrderCartItems(memberId, cart);
 
             /* Setup the address information */
             Address address;
@@ -379,27 +364,13 @@ namespace Veil.Controllers
             Country country = await db.Countries.FindAsync(countryCode);
 
             /* Setup the credit card information */
-            string last4Digits;
+            string last4Digits = await GetLast4DigitsAsync(orderCheckoutDetails, memberId);
 
-            if (orderCheckoutDetails.MemberCreditCardId != null)
+            if (last4Digits == null)
             {
-                last4Digits = await db.Members.
-                    Where(m => m.UserId == memberId).
-                    SelectMany(m => m.CreditCards).
-                    Where(cc => cc.Id == orderCheckoutDetails.MemberAddressId.Value).
-                    Select(cc => cc.Last4Digits).
-                    SingleOrDefaultAsync();
+                this.AddAlert(AlertType.Error, "The billing information you selected could not be found.");
 
-                if (last4Digits == null)
-                {
-                    this.AddAlert(AlertType.Error, "The billing information you selected could not be found.");
-
-                    return RedirectToAction("BillingInfo");
-                }
-            }
-            else
-            {
-                last4Digits = stripeService.GetLast4ForToken(orderCheckoutDetails.StripeCardToken);
+                return RedirectToAction("BillingInfo");
             }
 
             last4Digits = last4Digits.PadLeft(16, '*').Insert(4, " ").Insert(9, " ").Insert(14, " ");
@@ -417,7 +388,7 @@ namespace Veil.Controllers
                 ItemSubTotal = cartItems.Sum(ci => ci.ItemTotal)
             };
 
-            webOrder.ShippingCost = webOrder.ItemSubTotal < 120m ? 12.00m : 0m;
+            webOrder.ShippingCost = shippingCostService.CalculateShippingCost(webOrder.ItemSubTotal, cart.Items);
             webOrder.TaxAmount = webOrder.ItemSubTotal * (province.ProvincialTaxRate + country.FederalTaxRate);
 
             return View(webOrder);
@@ -428,10 +399,141 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> PlaceOrder()
         {
-            // TODO: Persist order
-            // TODO: Convert cart items to web order item
+            WebOrderCheckoutDetails orderCheckoutDetails =
+                Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
+
+            ActionResult invalidSessionResult = EnsureValidSessionForConfirmStep(orderCheckoutDetails);
+
+            if (invalidSessionResult != null)
+            {
+                return invalidSessionResult;
+            }
+
+            Contract.Assume(orderCheckoutDetails != null);
+
+            Guid memberId = GetUserId();
+
+            Member currentMember = await db.Members.FindAsync(memberId);
+
+            /* Setup the address information */
+            Address address;
+            string provinceCode;
+            string countryCode;
+
+            if (orderCheckoutDetails.MemberAddressId != null)
+            {
+                MemberAddress memberAddress =
+                    await db.MemberAddresses.FindAsync(orderCheckoutDetails.MemberAddressId);
+
+                if (memberAddress == null)
+                {
+                    this.AddAlert(AlertType.Error, "The shipping address you selected could not be found.");
+
+                    return RedirectToAction("ShippingInfo");
+                }
+
+                address = memberAddress.Address;
+                provinceCode = memberAddress.ProvinceCode;
+                countryCode = memberAddress.CountryCode;
+            }
+            else
+            {
+                address = orderCheckoutDetails.Address;
+                provinceCode = orderCheckoutDetails.ProvinceCode;
+                countryCode = orderCheckoutDetails.CountryCode;
+            }
+
+            Province province = await db.Provinces.FindAsync(provinceCode, countryCode);
+            Country country = await db.Countries.FindAsync(countryCode);
+
+            /* Setup the credit card information */
+            string last4Digits = await GetLast4DigitsAsync(orderCheckoutDetails, memberId);
+
+            if (last4Digits == null)
+            {
+                this.AddAlert(AlertType.Error, "The billing information you selected could not be found.");
+
+                return RedirectToAction("BillingInfo");
+            }
+
+            Cart cart = await GetCartWithLoadedProductsAsync(memberId);
+
+            string stripeCardToken;
+
+            if (orderCheckoutDetails.MemberCreditCardId != null)
+            {
+                stripeCardToken = await db.Members.
+                    Where(m => m.UserId == memberId).
+                    SelectMany(m => m.CreditCards).
+                    Where(cc => cc.Id == orderCheckoutDetails.MemberCreditCardId.Value).
+                    Select(cc => cc.StripeCardId).
+                    SingleOrDefaultAsync();
+            }
+            else
+            {
+                stripeCardToken = orderCheckoutDetails.StripeCardToken;
+            }
+
+            WebOrder newOrder = new WebOrder
+            {
+                OrderItems = new List<OrderItem>()
+            };
+
+            foreach (var item in cart.Items)
+            {
+                newOrder.OrderItems.Add(new OrderItem
+                {
+                    IsNew = item.IsNew,
+                    ListPrice = item.IsNew ? item.Product.NewWebPrice : item.Product.UsedWebPrice.Value,
+                    Product = item.Product,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity
+                });
+            }
+
+            decimal cartTotal = cart.TotalCartItemsPrice;
+
+            decimal shippingCost = shippingCostService.CalculateShippingCost(cartTotal, cart.Items);
+            decimal orderTotal = cart.TotalCartItemsPrice *
+                (1 + province.ProvincialTaxRate + country.FederalTaxRate) + shippingCost;
+
+            string stripeChargeId = stripeService.ChargeCard(orderTotal, stripeCardToken, currentMember.StripeCustomerId);
+
+            newOrder.Address = address;
+            newOrder.ProvinceCode = provinceCode;
+            newOrder.CountryCode = countryCode;
+            newOrder.MemberId = memberId;
+            newOrder.CreditCardLast4Digits = last4Digits;
+            newOrder.OrderDate = DateTime.Now;
+            newOrder.OrderStatus = OrderStatus.PendingProcessing;;
+            newOrder.StripeChargeId = stripeChargeId;
+
+            using (TransactionScope newOrderScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                db.WebOrders.Add(newOrder);
+
+                cart.Items = new List<CartItem>();
+
+                try
+                {
+                    await db.SaveChangesAsync();
+
+                    newOrderScope.Complete();
+                }
+                catch (DbUpdateException ex)
+                {
+                    stripeService.RefundCharge(stripeChargeId);
+
+                    this.AddAlert(AlertType.Error,
+                        "An error occured while placing your order. Please try again.");
+
+                    return RedirectToAction("ConfirmOrder");
+                }
+            }
 
             Session.Remove(OrderCheckoutDetailsKey);
+
+            this.AddAlert(AlertType.Success, $"Successfully placed the order for {orderTotal:C}.");
 
             return RedirectToAction("Index", "Home");
         }
@@ -439,6 +541,59 @@ namespace Veil.Controllers
         private Guid GetUserId()
         {
             return idGetter.GetUserId(User.Identity);
+        }
+
+        private async Task<string> GetLast4DigitsAsync(WebOrderCheckoutDetails orderCheckoutDetails, Guid memberId)
+        {
+            string last4Digits;
+
+            if (orderCheckoutDetails.MemberCreditCardId != null)
+            {
+                last4Digits = await db.Members.
+                    Where(m => m.UserId == memberId).
+                    SelectMany(m => m.CreditCards).
+                    Where(cc => cc.Id == orderCheckoutDetails.MemberCreditCardId.Value).
+                    Select(cc => cc.Last4Digits).
+                    SingleOrDefaultAsync();
+            }
+            else
+            {
+                last4Digits = stripeService.GetLast4ForToken(orderCheckoutDetails.StripeCardToken);
+            }
+
+            return last4Digits;
+        }
+
+        private async Task<Cart> GetCartWithLoadedProductsAsync(Guid memberId)
+        {
+            return await db.Members.
+                Where(m => m.UserId == memberId).
+                Select(m => m.Cart).
+                Include(c => c.Items).
+                Include(c => c.Items.Select(ci => ci.Product)).
+                SingleOrDefaultAsync();
+        }
+
+        private List<ConfirmOrderCartItem> GetConfirmOrderCartItems(Guid memberId, Cart cart)
+        {
+            List<ConfirmOrderCartItem> cartItems =
+                cart.Items.
+                    Select(
+                        ci =>
+                            new ConfirmOrderCartItem
+                            {
+                                IsNew = ci.IsNew ? "Yes" : "No",
+                                ItemPrice = ci.IsNew ? ci.Product.NewWebPrice : ci.Product.UsedWebPrice.Value,
+                                Name = ci.Product.Name,
+                                PlatformName =
+                                    ci.Product is PhysicalGameProduct
+                                        ? ((PhysicalGameProduct)ci.Product).Platform.PlatformName
+                                        : "",
+                                Quantity = ci.Quantity
+                            }
+                    ).ToList();
+
+            return cartItems;
         }
 
         private ActionResult EnsureValidSessionForBillingStep(WebOrderCheckoutDetails checkoutDetails)
