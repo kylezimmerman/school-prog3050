@@ -35,6 +35,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// Flag indicating if the product is a new or used product
         /// </summary>
+        [Key]
         [Required]
         public bool IsNew { get; set; }
 

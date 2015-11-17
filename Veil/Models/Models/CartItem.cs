@@ -61,7 +61,10 @@ namespace Veil.DataModels.Models
                 {
                     return false;
                 }
-                return x.MemberId.Equals(y.MemberId) && x.ProductId.Equals(y.ProductId) && x.IsNew == y.IsNew;
+                return x.MemberId.Equals(y.MemberId) &&
+                    x.ProductId.Equals(y.ProductId) &&
+                    x.IsNew == y.IsNew &&
+                    x.Quantity == y.Quantity;
             }
 
             public int GetHashCode(CartItem obj)
@@ -71,6 +74,7 @@ namespace Veil.DataModels.Models
                     var hashCode = obj.MemberId.GetHashCode();
                     hashCode = (hashCode * 397) ^ obj.ProductId.GetHashCode();
                     hashCode = (hashCode * 397) ^ obj.IsNew.GetHashCode();
+                    hashCode = (hashCode * 397) ^ obj.Quantity.GetHashCode();
                     return hashCode;
                 }
             }

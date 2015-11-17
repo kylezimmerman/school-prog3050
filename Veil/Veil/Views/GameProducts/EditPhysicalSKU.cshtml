@@ -9,6 +9,8 @@
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(model => model.GameId)
+    @Html.HiddenFor(model => model.InternalNewSKU)
+    @Html.HiddenFor(model => model.InteralUsedSKU)
 
     <div class="row">
         <div class="medium-10 medium-centered  column">
