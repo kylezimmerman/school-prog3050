@@ -16,13 +16,14 @@ namespace Veil.DataAccess.EntityConfigurations
         {
             /* Primary Key:
              *
-             * OrderId, ProductId
+             * OrderId, ProductId, IsNew
              */
             HasKey(
-                ci => new
+                oi => new
                 {
-                    ci.OrderId,
-                    ci.ProductId
+                    oi.OrderId,
+                    oi.ProductId,
+                    oi.IsNew
                 });
 
             /* Foreign Key:
@@ -31,9 +32,9 @@ namespace Veil.DataAccess.EntityConfigurations
              * WebOrder: OrderId (setup in SetupWebOrderModel as OrderItem doesn't have
              *                    a navigation property to the WebOrder)
              */
-            HasRequired(ci => ci.Product).
+            HasRequired(oi => oi.Product).
                 WithMany().
-                HasForeignKey(ci => ci.ProductId);
+                HasForeignKey(oi => oi.ProductId);
         }
     }
 }
