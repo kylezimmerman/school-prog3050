@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Veil.DataModels.Models;
 
@@ -27,11 +28,13 @@ namespace Veil.Models
 
     public class ConfirmOrderCartItem
     {
+        public Guid ProductId { get; set; }
+
         public string Name { get; set; }
 
         public string PlatformName { get; set; }
 
-        public string IsNew { get; set; }
+        public bool IsNew { get; set; }
 
         public int Quantity { get; set; }
 

@@ -403,9 +403,24 @@ namespace Veil.Controllers
             using (TransactionScope deleteScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
-                {     
+                {
                     if (game.GameSKUs.Any())
                     {
+                        foreach (var gameSKU in game.GameSKUs)
+                        {
+                            // TODO: This is new untested code.
+                            // TODO: We might want a specific message for failing to delete due to existing inventory
+                            db.ProductLocationInventories.RemoveRange(
+                                await db.ProductLocationInventories.Where(
+                                        pli =>
+                                            pli.ProductId == gameSKU.Id &&
+                                            pli.NewOnHand == 0 &&
+                                            pli.UsedOnHand == 0 &&
+                                            pli.NewOnOrder == 0).ToListAsync()
+                            );
+                            // TODO: End new untested code.
+                        }
+
                         db.GameProducts.RemoveRange(game.GameSKUs);
                     }
                     

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Transactions;
 using EfEnumToLookup.LookupGenerator;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -253,20 +254,22 @@ namespace Veil.DataAccess.Migrations
                 }
             );
 
+            Location onlineWarehouse = new Location
+            {
+                City = "Waterloo",
+                CountryCode = "CA",
+                LocationNumber = 1,
+                LocationTypeName = "Office",
+                PhoneNumber = "555-555-1199",
+                SiteName = Location.ONLINE_WAREHOUSE_NAME,
+                PostalCode = "N2L 6R2",
+                ProvinceCode = "ON",
+                StreetAddress = "123 Fake Way"
+            };
+
             context.Locations.AddOrUpdate(
                 l => l.LocationNumber,
-                new Location
-                {
-                    City = "Waterloo",
-                    CountryCode = "CA",
-                    LocationNumber = 1,
-                    LocationTypeName = "Office",
-                    PhoneNumber = "555-555-1199",
-                    SiteName = "Veil HQ",
-                    PostalCode = "N2L 6R2",
-                    ProvinceCode = "ON",
-                    StreetAddress = "123 Fake Way"
-                }
+                onlineWarehouse
             );
 
             int deptId = 0;
@@ -290,6 +293,12 @@ namespace Veil.DataAccess.Migrations
                 }
             );
 
+            Platform ps4 = new Platform
+            {
+                PlatformCode = "PS4",
+                PlatformName = "PlayStation 4"
+            };
+
             context.Platforms.AddOrUpdate(
                 p => p.PlatformCode,
                 new Platform
@@ -297,11 +306,7 @@ namespace Veil.DataAccess.Migrations
                     PlatformCode = "PC",
                     PlatformName = "PC"
                 }, 
-                new Platform
-                {
-                    PlatformCode = "PS4",
-                    PlatformName = "PlayStation 4"
-                }, 
+                ps4, 
                 new Platform
                 {
                     PlatformCode = "XONE",
@@ -324,7 +329,12 @@ namespace Veil.DataAccess.Migrations
                 }
             );
 
-            // The GUIDs for these were taken from SQL Server as it generates sequential ones
+            
+            Company bungie = new Company
+            {
+                Name = "Bungie"
+            };
+
             context.Companies.AddOrUpdate(
                 c => c.Name,
                 new Company { Name = "Activision Blizzard" },
@@ -338,7 +348,7 @@ namespace Veil.DataAccess.Migrations
                 new Company { Name = "Nintendo" },
                 new Company { Name = "Sony Computer Entertainment" },
                 new Company { Name = "Microsoft Studios" },
-                new Company { Name = "Bungie" },
+                bungie,
                 new Company { Name = "Treyarch" }
             );
 
@@ -435,7 +445,108 @@ namespace Veil.DataAccess.Migrations
             vermintide.Tags.Add(simulationTag);
             vermintide.Tags.Add(shooterTag);
             fallout4.Tags.Add(shooterTag);
-#endregion Debug Only Seed Values
+
+            bungie = context.Companies.FirstOrDefault(c => c.Name == bungie.Name);
+            halo5 = context.Games.FirstOrDefault(g => g.Name == halo5.Name);
+            vermintide = context.Games.FirstOrDefault(g => g.Name == vermintide.Name);
+            fallout4 = context.Games.FirstOrDefault(g => g.Name == fallout4.Name);
+
+            PhysicalGameProduct halo5SKU = new PhysicalGameProduct
+            {
+                DeveloperId = bungie.Id,
+                PublisherId = bungie.Id,
+                PlatformCode = ps4.PlatformCode,
+                GameId = halo5.Id,
+                InternalNewSKU = "0000000000001",
+                InteralUsedSKU = "1000000000001",
+                NewWebPrice = 59.99m,
+                ReleaseDate = new DateTime(2015, 11, 01),
+                ProductAvailabilityStatus = AvailabilityStatus.Available,
+                WillBuyBackUsedCopy = true,
+                UsedWebPrice = 50.00m,
+                SKUNameSuffix = "Inventory"
+            };
+
+            PhysicalGameProduct vermintideSKU = new PhysicalGameProduct
+            {
+                DeveloperId = bungie.Id,
+                PublisherId = bungie.Id,
+                PlatformCode = ps4.PlatformCode,
+                GameId = vermintide.Id,
+                InternalNewSKU = "0000000000002",
+                InteralUsedSKU = "1000000000002",
+                NewWebPrice = 59.99m,
+                ReleaseDate = new DateTime(2015, 11, 01),
+                ProductAvailabilityStatus = AvailabilityStatus.Available,
+                WillBuyBackUsedCopy = true,
+                UsedWebPrice = 50.00m,
+                SKUNameSuffix = "Inventory"
+            };
+
+            PhysicalGameProduct fallout4SKU = new PhysicalGameProduct
+            {
+                DeveloperId = bungie.Id,
+                PublisherId = bungie.Id,
+                PlatformCode = ps4.PlatformCode,
+                GameId = fallout4.Id,
+                InternalNewSKU = "0000000000003",
+                InteralUsedSKU = "1000000000003",
+                NewWebPrice = 59.99m,
+                ReleaseDate = new DateTime(2015, 11, 01),
+                ProductAvailabilityStatus = AvailabilityStatus.Available,
+                WillBuyBackUsedCopy = true,
+                UsedWebPrice = 50.00m,
+                SKUNameSuffix = "Inventory"
+            };
+
+            using (TransactionScope scope = new TransactionScope())
+            {
+                context.PhysicalGameProducts.AddOrUpdate(
+                    pgp => pgp.InternalNewSKU,
+                    halo5SKU,
+                    vermintideSKU,
+                    fallout4SKU);
+
+                context.SaveChanges();
+
+                halo5SKU = context.PhysicalGameProducts.First(pgp => pgp.InternalNewSKU == halo5SKU.InternalNewSKU);
+                vermintideSKU = context.PhysicalGameProducts.First(pgp => pgp.InternalNewSKU == vermintideSKU.InternalNewSKU);
+                fallout4SKU = context.PhysicalGameProducts.First(pgp => pgp.InternalNewSKU == fallout4SKU.InternalNewSKU);
+
+                context.ProductLocationInventories.AddOrUpdate(
+                    pli => new
+                    {
+                        pli.LocationId,
+                        pli.ProductId
+                    },
+                    new ProductLocationInventory
+                    {
+                        LocationId = onlineWarehouse.Id,
+                        ProductId = halo5SKU.Id,
+                        NewOnHand = 100,
+                        NewOnOrder = 0,
+                        UsedOnHand = 10
+                    },
+                    new ProductLocationInventory
+                    {
+                        LocationId = onlineWarehouse.Id,
+                        ProductId = vermintideSKU.Id,
+                        NewOnHand = 100,
+                        NewOnOrder = 0,
+                        UsedOnHand = 20
+                    },
+                    new ProductLocationInventory
+                    {
+                        LocationId = onlineWarehouse.Id,
+                        ProductId = fallout4SKU.Id,
+                        NewOnHand = 200,
+                        NewOnOrder = 0,
+                        UsedOnHand = 10
+                    });
+
+                scope.Complete();
+            }
+            #endregion Debug Only Seed Values
 
             /* Note: Uncomment this to regenerate the EnumToLookup script used in AddEnumToLookupMigration
                      After running Update-Database, copy the SQL Script from the exception message

@@ -330,38 +330,17 @@ namespace Veil.Controllers
                     SingleOrDefaultAsync();
 
             Cart cart = await GetCartWithLoadedProductsAsync(memberId);
-            var cartItems = GetConfirmOrderCartItems(memberId, cart);
+            var cartItems = GetConfirmOrderCartItems(cart);
 
             /* Setup the address information */
-            Address address;
-            string provinceCode;
-            string countryCode;
+            MemberAddress memberAddress = await GetMemberAddress(orderCheckoutDetails);
 
-            if (orderCheckoutDetails.MemberAddressId != null)
+            if (memberAddress == null)
             {
-                MemberAddress memberAddress =
-                    await db.MemberAddresses.FindAsync(orderCheckoutDetails.MemberAddressId);
+                this.AddAlert(AlertType.Error, "The shipping address you selected could not be found.");
 
-                if (memberAddress == null)
-                {
-                    this.AddAlert(AlertType.Error, "The shipping address you selected could not be found.");
-
-                    return RedirectToAction("ShippingInfo");
-                }
-
-                address = memberAddress.Address;
-                provinceCode = memberAddress.ProvinceCode;
-                countryCode = memberAddress.CountryCode;
+                return RedirectToAction("ShippingInfo");
             }
-            else
-            {
-                address = orderCheckoutDetails.Address;
-                provinceCode = orderCheckoutDetails.ProvinceCode;
-                countryCode = orderCheckoutDetails.CountryCode;
-            }
-
-            Province province = await db.Provinces.FindAsync(provinceCode, countryCode);
-            Country country = await db.Countries.FindAsync(countryCode);
 
             /* Setup the credit card information */
             string last4Digits = await GetLast4DigitsAsync(orderCheckoutDetails, memberId);
@@ -380,24 +359,24 @@ namespace Veil.Controllers
             {
                 FullName = memberInfo.FullName,
                 PhoneNumber = memberInfo.PhoneNumber,
-                Address = address,
-                ProvinceName = province.Name,
-                CountryName = country.CountryName,
+                Address = memberAddress.Address,
+                ProvinceName = memberAddress.Province.Name,
+                CountryName = memberAddress.Country.CountryName,
                 CreditCardLast4Digits = last4Digits,
                 Items = cartItems,
                 ItemSubTotal = cartItems.Sum(ci => ci.ItemTotal)
             };
 
             webOrder.ShippingCost = shippingCostService.CalculateShippingCost(webOrder.ItemSubTotal, cart.Items);
-            webOrder.TaxAmount = webOrder.ItemSubTotal * (province.ProvincialTaxRate + country.FederalTaxRate);
+            webOrder.TaxAmount = webOrder.ItemSubTotal * 
+                (memberAddress.Province.ProvincialTaxRate + memberAddress.Country.FederalTaxRate);
 
             return View(webOrder);
         }
 
-        // POST: Checkout/PlaceOrder
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> PlaceOrder()
+        public async Task<ActionResult> PlaceOrder(List<CartItem> items)
         {
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
@@ -412,39 +391,24 @@ namespace Veil.Controllers
             Contract.Assume(orderCheckoutDetails != null);
 
             Guid memberId = GetUserId();
+            Cart cart = await GetCartWithLoadedProductsAsync(memberId);
 
-            Member currentMember = await db.Members.FindAsync(memberId);
+            if (!EnsureCartMatchesConfirmedCart(items, memberId, cart))
+            {
+                this.AddAlert(AlertType.Warning, "Your cart changed between confirming it and placing the order.");
+
+                return RedirectToAction("ConfirmOrder");
+            }
 
             /* Setup the address information */
-            Address address;
-            string provinceCode;
-            string countryCode;
+            MemberAddress memberAddress = await GetMemberAddress(orderCheckoutDetails);
 
-            if (orderCheckoutDetails.MemberAddressId != null)
+            if (memberAddress == null)
             {
-                MemberAddress memberAddress =
-                    await db.MemberAddresses.FindAsync(orderCheckoutDetails.MemberAddressId);
+                this.AddAlert(AlertType.Error, "The shipping address you selected could not be found.");
 
-                if (memberAddress == null)
-                {
-                    this.AddAlert(AlertType.Error, "The shipping address you selected could not be found.");
-
-                    return RedirectToAction("ShippingInfo");
-                }
-
-                address = memberAddress.Address;
-                provinceCode = memberAddress.ProvinceCode;
-                countryCode = memberAddress.CountryCode;
+                return RedirectToAction("ShippingInfo");
             }
-            else
-            {
-                address = orderCheckoutDetails.Address;
-                provinceCode = orderCheckoutDetails.ProvinceCode;
-                countryCode = orderCheckoutDetails.CountryCode;
-            }
-
-            Province province = await db.Provinces.FindAsync(provinceCode, countryCode);
-            Country country = await db.Countries.FindAsync(countryCode);
 
             /* Setup the credit card information */
             string last4Digits = await GetLast4DigitsAsync(orderCheckoutDetails, memberId);
@@ -456,62 +420,38 @@ namespace Veil.Controllers
                 return RedirectToAction("BillingInfo");
             }
 
-            Cart cart = await GetCartWithLoadedProductsAsync(memberId);
+            Member currentMember = await db.Members.FindAsync(memberId);
+            string stripeCardToken = await GetStripeCardToken(orderCheckoutDetails, memberId);
 
-            string stripeCardToken;
+            decimal orderTotal = CalculateOrderTotal(cart,
+                memberAddress.Province.ProvincialTaxRate,
+                memberAddress.Country.FederalTaxRate);
 
-            if (orderCheckoutDetails.MemberCreditCardId != null)
-            {
-                stripeCardToken = await db.Members.
-                    Where(m => m.UserId == memberId).
-                    SelectMany(m => m.CreditCards).
-                    Where(cc => cc.Id == orderCheckoutDetails.MemberCreditCardId.Value).
-                    Select(cc => cc.StripeCardId).
-                    SingleOrDefaultAsync();
-            }
-            else
-            {
-                stripeCardToken = orderCheckoutDetails.StripeCardToken;
-            }
+            // TODO: This could throw
+            string stripeChargeId = stripeService.ChargeCard(orderTotal, stripeCardToken, currentMember.StripeCustomerId);
 
             WebOrder newOrder = new WebOrder
             {
-                OrderItems = new List<OrderItem>()
+                OrderItems = new List<OrderItem>(),
+                Address = memberAddress.Address,
+                ProvinceCode = memberAddress.ProvinceCode,
+                CountryCode = memberAddress.CountryCode,
+                MemberId = memberId,
+                CreditCardLast4Digits = last4Digits,
+                OrderDate = DateTime.Now,
+                OrderStatus = OrderStatus.PendingProcessing,
+                StripeChargeId = stripeChargeId
             };
-
-            foreach (var item in cart.Items)
-            {
-                newOrder.OrderItems.Add(new OrderItem
-                {
-                    IsNew = item.IsNew,
-                    ListPrice = item.IsNew ? item.Product.NewWebPrice : item.Product.UsedWebPrice.Value,
-                    Product = item.Product,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity
-                });
-            }
-
-            decimal cartTotal = cart.TotalCartItemsPrice;
-
-            decimal shippingCost = shippingCostService.CalculateShippingCost(cartTotal, cart.Items);
-            decimal orderTotal = cart.TotalCartItemsPrice *
-                (1 + province.ProvincialTaxRate + country.FederalTaxRate) + shippingCost;
-
-            string stripeChargeId = stripeService.ChargeCard(orderTotal, stripeCardToken, currentMember.StripeCustomerId);
-
-            newOrder.Address = address;
-            newOrder.ProvinceCode = provinceCode;
-            newOrder.CountryCode = countryCode;
-            newOrder.MemberId = memberId;
-            newOrder.CreditCardLast4Digits = last4Digits;
-            newOrder.OrderDate = DateTime.Now;
-            newOrder.OrderStatus = OrderStatus.PendingProcessing;;
-            newOrder.StripeChargeId = stripeChargeId;
 
             using (TransactionScope newOrderScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+                // TODO: Handle this throwing due to not enough used copies
+                await DecreaseInventoryAndAddToOrder(cart, newOrder);
+
                 db.WebOrders.Add(newOrder);
 
+                // TODO: This might not clear out the cart, or might clear out items added while this is being processed
+                // Clear out the cart
                 cart.Items = new List<CartItem>();
 
                 try
@@ -533,9 +473,124 @@ namespace Veil.Controllers
 
             Session.Remove(OrderCheckoutDetailsKey);
 
-            this.AddAlert(AlertType.Success, $"Successfully placed the order for {orderTotal:C}.");
+            this.AddAlert(AlertType.Success, $"Successfully placed an order for {orderTotal:C}.");
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private decimal CalculateOrderTotal(Cart cart, decimal provincialTaxRate, decimal federalTaxRate)
+        {
+            decimal cartTotal = cart.TotalCartItemsPrice;
+            decimal shippingCost = shippingCostService.CalculateShippingCost(cartTotal, cart.Items);
+
+            decimal orderTotal = 
+                cart.TotalCartItemsPrice * 
+                (1 + provincialTaxRate + federalTaxRate) +
+                shippingCost;
+
+            return orderTotal;
+        }
+
+        private bool EnsureCartMatchesConfirmedCart(List<CartItem> items, Guid memberId, Cart cart)
+        {
+            items = SortCartItems(items);
+            items.ForEach(i => i.MemberId = memberId);
+
+            return items.SequenceEqual(cart.Items, CartItem.CartItemComparer);
+        }
+
+        private async Task DecreaseInventoryAndAddToOrder(Cart cart, WebOrder newOrder)
+        {
+            foreach (var item in cart.Items)
+            {
+                // TODO: Confirm availability statuses
+
+                ProductLocationInventory inventory = await db.ProductLocationInventories.
+                    Where(
+                        pli => pli.ProductId == item.ProductId &&
+                            pli.Location.SiteName == Location.ONLINE_WAREHOUSE_NAME).
+                    FirstOrDefaultAsync();
+
+                if (item.IsNew)
+                {
+                    AvailabilityStatus itemStatus = item.Product.ProductAvailabilityStatus;
+
+                    if (itemStatus == AvailabilityStatus.Available ||
+                        itemStatus == AvailabilityStatus.PreOrder)
+                    {
+                        inventory.NewOnHand -= item.Quantity;
+                    }
+                    else if ((itemStatus == AvailabilityStatus.DiscontinuedByManufacturer ||
+                            itemStatus == AvailabilityStatus.NotForSale) &&
+                        item.Quantity > inventory.NewOnHand)
+                    {
+                        // TODO: Something better
+                        throw new InvalidOperationException("Not enough copies of a discontinued game to guarentee we will be able to fulfill your order.");
+                    }
+                }
+                else
+                {
+                    if (inventory.UsedOnHand < item.Quantity)
+                    {
+                        // TODO: Something better
+                        throw new InvalidOperationException("Not enough used copies to guarentee we will be able to fulfill your order.");
+                    }
+
+                    inventory.UsedOnHand -= item.Quantity;
+                }
+
+                newOrder.OrderItems.Add(
+                    new OrderItem
+                    {
+                        IsNew = item.IsNew,
+                        ListPrice = item.IsNew ? item.Product.NewWebPrice : item.Product.UsedWebPrice.Value,
+                        Product = item.Product,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity
+                    });
+            }
+        }
+
+        private async Task<MemberAddress> GetMemberAddress(WebOrderCheckoutDetails orderCheckoutDetails)
+        {
+            if (orderCheckoutDetails.MemberAddressId != null)
+            {
+                return await db.MemberAddresses.
+                    Include(ma => ma.Province).
+                    Include(ma => ma.Country).
+                    SingleOrDefaultAsync(ma => ma.Id == orderCheckoutDetails.MemberAddressId);
+            }
+
+            MemberAddress memberAddress = new MemberAddress
+            {
+                Address = orderCheckoutDetails.Address,
+                ProvinceCode = orderCheckoutDetails.ProvinceCode,
+                CountryCode = orderCheckoutDetails.CountryCode
+            };
+
+            memberAddress.Province = await db.Provinces.
+                Include(p => p.Country).
+                FirstOrDefaultAsync(
+                    p => p.ProvinceCode == memberAddress.ProvinceCode &&
+                        p.CountryCode == memberAddress.CountryCode);
+            memberAddress.Country = memberAddress.Province.Country;
+
+            return memberAddress;
+        }
+
+        private async Task<string> GetStripeCardToken(WebOrderCheckoutDetails orderCheckoutDetails, Guid memberId)
+        {
+            if (orderCheckoutDetails.MemberCreditCardId != null)
+            {
+                return await db.Members.
+                    Where(m => m.UserId == memberId).
+                    SelectMany(m => m.CreditCards).
+                    Where(cc => cc.Id == orderCheckoutDetails.MemberCreditCardId.Value).
+                    Select(cc => cc.StripeCardId).
+                    SingleOrDefaultAsync();
+            }
+
+            return orderCheckoutDetails.StripeCardToken;
         }
 
         private Guid GetUserId()
@@ -558,6 +613,8 @@ namespace Veil.Controllers
             }
             else
             {
+                // TODO: This can throw
+                // TODO: This should probably throw if we fail due to backend issues and inform the user of it
                 last4Digits = stripeService.GetLast4ForToken(orderCheckoutDetails.StripeCardToken);
             }
 
@@ -566,15 +623,25 @@ namespace Veil.Controllers
 
         private async Task<Cart> GetCartWithLoadedProductsAsync(Guid memberId)
         {
-            return await db.Members.
-                Where(m => m.UserId == memberId).
-                Select(m => m.Cart).
+            Cart cart = await db.Carts.
+                Where(m => m.MemberId == memberId).
                 Include(c => c.Items).
                 Include(c => c.Items.Select(ci => ci.Product)).
                 SingleOrDefaultAsync();
+
+            cart.Items = SortCartItems(cart.Items);
+
+            return cart;
         }
 
-        private List<ConfirmOrderCartItem> GetConfirmOrderCartItems(Guid memberId, Cart cart)
+        private List<CartItem> SortCartItems(IEnumerable<CartItem> cartItems)
+        {
+            return cartItems.
+                OrderByDescending(ci => ci.ProductId).
+                ToList();
+        } 
+
+        private List<ConfirmOrderCartItem> GetConfirmOrderCartItems(Cart cart)
         {
             List<ConfirmOrderCartItem> cartItems =
                 cart.Items.
@@ -582,7 +649,8 @@ namespace Veil.Controllers
                         ci =>
                             new ConfirmOrderCartItem
                             {
-                                IsNew = ci.IsNew ? "Yes" : "No",
+                                ProductId = ci.ProductId,
+                                IsNew = ci.IsNew,
                                 ItemPrice = ci.IsNew ? ci.Product.NewWebPrice : ci.Product.UsedWebPrice.Value,
                                 Name = ci.Product.Name,
                                 PlatformName =

@@ -84,6 +84,21 @@ namespace Veil.Tests.Controllers
             return stub;
         }
 
+        private void StubLocationWithOnlineWarehouse(Mock<IVeilDataAccess> dbFake)
+        {
+            Mock<DbSet<Location>> locationDbSetStub = TestHelpers.GetLocationDbSetWithOnlineWarehouse();
+
+            dbFake.Setup(db => db.Locations).Returns(locationDbSetStub.Object);
+        }
+
+        private void StubEmptyProductLocationInventories(Mock<IVeilDataAccess> dbFake)
+        {
+            Mock<DbSet<ProductLocationInventory>> productInventoryStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory>().AsQueryable());
+
+            dbFake.Setup(db => db.ProductLocationInventories).Returns(productInventoryStub.Object);
+        }
+
         [Test]
         public void CreatePhysicalSKU_GET_InvalidGameId_Throws404()
         {
@@ -197,12 +212,14 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void CreatePhysicalSKU_POST_SaveChangesCalledOnce()
+        public async void CreatePhysicalSKU_POST_SaveChangesCalledTwice()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             dbStub.Setup(db => db.SaveChangesAsync()).ReturnsAsync(1).Verifiable();
             MockGames(dbStub);
             MockEmptyGameProducts(dbStub);
+            StubLocationWithOnlineWarehouse(dbStub);
+            StubEmptyProductLocationInventories(dbStub);
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
 
@@ -210,7 +227,7 @@ namespace Veil.Tests.Controllers
 
             await controller.CreatePhysicalSKU(game.Id, gameProduct);
 
-            Assert.That(() => dbStub.Verify(db => db.SaveChangesAsync(), Times.Once), Throws.Nothing);
+            Assert.That(() => dbStub.Verify(db => db.SaveChangesAsync(), Times.Exactly(2)), Throws.Nothing);
         }
 
         [Test]
@@ -236,6 +253,8 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             MockGames(dbStub);
             MockEmptyGameProducts(dbStub);
+            StubLocationWithOnlineWarehouse(dbStub);
+            StubEmptyProductLocationInventories(dbStub);
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
 
@@ -350,6 +369,8 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> {aGame}.AsQueryable());
 
             MockPlatforms(dbStub);
+            StubLocationWithOnlineWarehouse(dbStub);
+            StubEmptyProductLocationInventories(dbStub);
             gameProductDbSetStub.SetupForInclude();
 
             gameProductDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
@@ -420,8 +441,12 @@ namespace Veil.Tests.Controllers
             gameProductsDbSetStub.SetupForInclude();
             gameProductsDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
 
+            StubLocationWithOnlineWarehouse(dbStub);
+            StubEmptyProductLocationInventories(dbStub);
+
             dbStub.Setup(db => db.GameProducts).Returns(gameProductsDbSetStub.Object);
             dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
+
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
 

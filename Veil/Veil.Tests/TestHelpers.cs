@@ -19,6 +19,7 @@ using Moq;
 using Moq.Language.Flow;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
+using Veil.DataModels.Models;
 using Veil.Helpers;
 
 namespace Veil.Tests
@@ -56,6 +57,19 @@ namespace Veil.Tests
 
             return idGetterStub;
         }
+
+        public static Mock<DbSet<Location>> GetLocationDbSetWithOnlineWarehouse()
+        {
+            Location onlineWarehouse = new Location
+            {
+                SiteName = Location.ONLINE_WAREHOUSE_NAME
+            };
+
+            Mock<DbSet<Location>> locationDbSetStub =
+                GetFakeAsyncDbSet(new List<Location> { onlineWarehouse }.AsQueryable());
+
+            return locationDbSetStub;
+        } 
 
         /// <summary>
         ///     Generic method for getting a <see cref="Mock"/> of <see cref="DbSet{TEntity}"/> of type <see cref="T"/> which supports async methods

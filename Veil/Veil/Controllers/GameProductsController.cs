@@ -95,7 +95,20 @@ namespace Veil.Controllers
                 string platform = gameProduct.Platform.PlatformName;
                 try
                 {
+                    // TODO: This is new untested code.
+                    // TODO: We might want a specific message for failing to delete due to existing inventory
+                    db.ProductLocationInventories.RemoveRange(
+                        await db.ProductLocationInventories.Where(
+                                pli =>
+                                    pli.ProductId == id &&
+                                    pli.NewOnHand == 0 &&
+                                    pli.UsedOnHand == 0 &&
+                                    pli.NewOnOrder == 0).ToListAsync()
+                    );
+                    // TODO: End new untested code.
+
                     db.GameProducts.Remove(gameProduct);
+                    
                     await db.SaveChangesAsync();
                     this.AddAlert(AlertType.Success, platform + ": " + gameName + " was deleted succesfully");
                 }
@@ -107,7 +120,7 @@ namespace Veil.Controllers
             }
             else
             {
-                // TODO: Actually give this a message. Cmon!
+                // TODO: Actually give this a message. Cmon Sean!
                 throw new HttpException(NotFound, "some message");
             }
 
@@ -354,11 +367,30 @@ namespace Veil.Controllers
         /// <returns>Redirects to the details page for the game.</returns>
         private async Task<ActionResult> SaveGameProduct(Guid gameId, GameProduct gameProduct)
         {
-            gameProduct.Id = Guid.NewGuid();
             gameProduct.Game = await db.Games.FindAsync(gameId);
             db.GameProducts.Add(gameProduct);
 
             await db.SaveChangesAsync();
+
+            // TODO: This is new, untested code
+            if (gameProduct is PhysicalGameProduct)
+            {
+                ProductLocationInventory onlineInventory = new ProductLocationInventory
+                {
+                    ProductId = gameProduct.Id,
+                    LocationId = await db.Locations.
+                        Where(l => l.SiteName == Location.ONLINE_WAREHOUSE_NAME).
+                        Select(l => l.Id).
+                        FirstOrDefaultAsync(),
+                    NewOnHand = 0,
+                    UsedOnHand = 0,
+                    NewOnOrder = 0
+                };
+
+                db.ProductLocationInventories.Add(onlineInventory);
+
+                await db.SaveChangesAsync();
+            } // TODO: End new untested code
 
             this.AddAlert(AlertType.Success, "Successfully added a new SKU.");
 

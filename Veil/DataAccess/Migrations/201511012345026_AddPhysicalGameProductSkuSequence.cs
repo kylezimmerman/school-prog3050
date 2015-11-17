@@ -9,7 +9,7 @@ namespace Veil.DataAccess.Migrations
             Sql($"CREATE SEQUENCE {VeilDataContext.SCHEMA_NAME}.{VeilDataContext.PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME} " +
                 "AS bigint " +
                 "INCREMENT BY 1 " +
-                "MINVALUE 1 " +
+                "MINVALUE 100 " +
                 "MAXVALUE 999999999999 " +
                 "NO CYCLE " +
                 "CACHE 20");

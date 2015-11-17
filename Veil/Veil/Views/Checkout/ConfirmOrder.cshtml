@@ -16,8 +16,8 @@
     <div class="medium-6 columns">
         <dl>
             <dt>Billing Information</dt>
-            <dd>@Model.FullName</dd>
-            <dd>@Model.CreditCardLast4Digits</dd>
+            <dd>@Html.DisplayFor(m => m.FullName)</dd>
+            <dd>@Html.DisplayFor(m => m.CreditCardLast4Digits)</dd>
             <dd>
                 @Html.ActionLink("Change Billing Info", "BillingInfo")
             </dd>
@@ -26,20 +26,20 @@
     <div class="medium-6 columns">
         <dl>
             <dt>Shipping Information</dt>
-            <dd>@Model.FullName</dd>
-            <dd>@Model.Address.StreetAddress</dd>
+            <dd>@Html.DisplayFor(m => m.FullName)</dd>
+            <dd>@Html.DisplayFor(m => m.Address.StreetAddress)</dd>
 
             @if (Model.Address.POBoxNumber != null)
             {
-                <dd>PO Box: @Model.Address.POBoxNumber</dd>
+                <dd>PO Box: @Html.DisplayFor(m => m.Address.POBoxNumber)</dd>
             }
 
-            <dd>@Model.Address.City, @Model.ProvinceName @Model.Address.PostalCode</dd>
-            <dd>@Model.CountryName</dd>
+            <dd>@Html.DisplayFor(m => m.Address.City), @Html.DisplayFor(m => m.ProvinceName) @Html.DisplayFor(m => m.Address.PostalCode)</dd>
+            <dd>@Html.DisplayFor(m => m.CountryName)</dd>
 
             @if (Model.PhoneNumber != null)
             {
-                <dd>@Model.PhoneNumber</dd>
+                <dd>@Html.DisplayFor(m => m.PhoneNumber)</dd>
             }
 
             <dd>
@@ -49,82 +49,89 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="column">
-        <dl>
-            <dt>Order Details</dt>
-            <dd>
-                <table style="width: 100%;">
-                    <tr>
-                        <th>Title</th>
-                        <th>Platform</th>
-                        <th>New Copy</th>
-                        <th>Quantity</th>
-                        <th class="text-right">Unit Price</th>
-                        <th class="text-right">Total Price</th>
-                    </tr>
+@using (Html.BeginForm("PlaceOrder", "Checkout", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
 
-                    @foreach (var item in Model.Items)
-                    {
+    <div class="row">
+        <div class="column">
+            <dl>
+                <dt>Order Details</dt>
+                <dd>
+                    <table style="width: 100%;">
                         <tr>
-                            <td>@item.Name</td>
-                            <td>@item.PlatformName</td>
-                            <td>@item.IsNew</td>
-                            <td>@item.Quantity</td>
-                            <td class="text-right">@( $"{item.ItemPrice:C}" )</td>
-                            <td class="text-right">@( $"{item.ItemTotal:C}")</td>
+                            <th>Title</th>
+                            <th>Platform</th>
+                            <th>New/Used</th>
+                            <th>Quantity</th>
+                            <th class="text-right">Unit Price</th>
+                            <th class="text-right">Total Price</th>
                         </tr>
-                    }
 
-                    <tr>
-                        <td colspan="6">
-                            <hr/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">Item Total</td>
-                        <td class="text-right">@($"{Model.ItemSubTotal:C}")</td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">Shipping and Handling</td>
-                        <td class="text-right">@($"{Model.ShippingCost:C}")</td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">Tax</td>
-                        <td class="text-right">
-                            <strong>@($"{Model.TaxAmount:C}")</strong>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">
-                            <strong>Order Total</strong>
-                        </td>
-                        <td class="text-right">
-                            <strong>@($"{Model.ItemSubTotal + Model.ShippingCost + Model.TaxAmount:C}")</strong>
-                        </td>
-                    </tr>
-                </table>
-            </dd>
-        </dl>
+                        @{
+                            int itemNum = 0;
+                        }
+
+                        @foreach (var item in Model.Items)
+                        {
+                            string hiddenPrefix = $"items[{itemNum++}].";
+
+                            @Html.Hidden($"{hiddenPrefix}{nameof(CartItem.ProductId)}", item.ProductId)
+                            @Html.Hidden($"{hiddenPrefix}{nameof(CartItem.IsNew)}", item.IsNew)
+                            @Html.Hidden($"{hiddenPrefix}{nameof(CartItem.Quantity)}", item.Quantity)
+
+                            <tr>
+                                <td>@Html.DisplayFor(m => item.Name)</td>
+                                <td>@Html.DisplayFor(m => item.PlatformName)</td>
+                                <td>
+                                    @Html.Display(item.IsNew ? "New" : "Used")
+                                    @(item.IsNew ? "New" : "Used")
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(m => item.Quantity)
+                                </td>
+                                <td class="text-right">@($"{item.ItemPrice:C}")</td>
+                                <td class="text-right">@($"{item.ItemTotal:C}")</td>
+                            </tr>
+                        }
+
+                        <tr>
+                            <td colspan="6">
+                                <hr/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">Item Total</td>
+                            <td class="text-right">@($"{Model.ItemSubTotal:C}")</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">Shipping and Handling</td>
+                            <td class="text-right">@($"{Model.ShippingCost:C}")</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">Tax</td>
+                            <td class="text-right">
+                                <strong>@($"{Model.TaxAmount:C}")</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <strong>Order Total</strong>
+                            </td>
+                            <td class="text-right">
+                                <strong>@($"{Model.ItemSubTotal + Model.ShippingCost + Model.TaxAmount:C}")</strong>
+                            </td>
+                        </tr>
+                    </table>
+                </dd>
+            </dl>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="column">
-        @Html.ActionLink("Cancel", "Index", new { Controller = "Cart" }, new { @class = "button alert"})
-
-        @using (Html.BeginForm("PlaceOrder", "Checkout", FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="column">
+            @Html.ActionLink("Cancel", "Index", new { Controller = "Cart" }, new { @class = "button alert"})
 
             <button type="submit" class="right">Place Order</button>
-        }
+        </div>
     </div>
-</div>
-
-@*
-    <p>
-        @Html.ActionLink("Place Your Order", "ConfirmOrder", new { /* id = Model.PrimaryKey */ }) |
-        @Html.ActionLink("Change Shipping Address", "ShippingInfo")
-        @Html.ActionLink("Change Billing Info", "BillingInfo")
-    </p>
-*@
+}

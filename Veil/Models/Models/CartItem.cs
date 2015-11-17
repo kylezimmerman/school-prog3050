@@ -6,6 +6,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -43,5 +44,40 @@ namespace Veil.DataModels.Models
         ///     Quantity of the product for this CartItem
         /// </summary>
         public int Quantity { get; set; }
+
+        private sealed class CartItemEqualityComparer : IEqualityComparer<CartItem>
+        {
+            public bool Equals(CartItem x, CartItem y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+                if (ReferenceEquals(x, null))
+                {
+                    return false;
+                }
+                if (ReferenceEquals(y, null))
+                {
+                    return false;
+                }
+                return x.MemberId.Equals(y.MemberId) && x.ProductId.Equals(y.ProductId) && x.IsNew == y.IsNew;
+            }
+
+            public int GetHashCode(CartItem obj)
+            {
+                unchecked
+                {
+                    var hashCode = obj.MemberId.GetHashCode();
+                    hashCode = (hashCode * 397) ^ obj.ProductId.GetHashCode();
+                    hashCode = (hashCode * 397) ^ obj.IsNew.GetHashCode();
+                    return hashCode;
+                }
+            }
+        }
+
+        private static readonly IEqualityComparer<CartItem> CartItemComparerInstance = new CartItemEqualityComparer();
+
+        public static IEqualityComparer<CartItem> CartItemComparer => CartItemComparerInstance;
     }
 }
