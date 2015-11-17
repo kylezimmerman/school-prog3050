@@ -29,6 +29,10 @@ namespace Veil.Controllers
             db = dataAccess;
         }
 
+        /// <summary>
+        /// Displays the Index page for Veil.
+        /// </summary>
+        /// <returns>The Index view with the processed HomePageViewModel.</returns>
         public async Task<ActionResult> Index()
         {
             List<Game> comingSoon =
@@ -58,6 +62,10 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Displays the About page for Veil.
+        /// </summary>
+        /// <returns>The About view for the Home controller.</returns>
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
@@ -65,6 +73,10 @@ namespace Veil.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Displays the Contact page for Veil.
+        /// </summary>
+        /// <returns>The Contact view for the Home controller.</returns>
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
