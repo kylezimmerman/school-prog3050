@@ -15,9 +15,11 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web.Mvc;
+using System.Web.Routing;
 using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Exceptions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services.Interfaces;
@@ -378,6 +380,21 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> PlaceOrder(List<CartItem> items)
         {
+            // Steps:
+            // Confirm session is in a valid state to place the order
+            // Confirm the cart matches the one the user placed an order for
+            // Get the shipping info
+            // Get the last 4 digits of the card for the order record
+            // Get the stripe card token to be charged
+            // Calculate the order total including taxes and shipping
+            // Charge the stripe token
+            // Create a new order with the address information, last 4 digits, charge token, memberId, order date, and order status
+            // Decrease inventory levels and add the item to the web order
+            // Clear the cart
+            // Saves changes
+            // If any exceptions occur, refund the charge
+            // Clear out the session item for the order
+
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
@@ -445,8 +462,18 @@ namespace Veil.Controllers
 
             using (TransactionScope newOrderScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // TODO: Handle this throwing due to not enough used copies
-                await DecreaseInventoryAndAddToOrder(cart, newOrder);
+                try
+                {
+                    await DecreaseInventoryAndAddToOrder(cart, newOrder);
+                }
+                catch (NotEnoughInventoryException ex)
+                {
+                    this.AddAlert(AlertType.Error, ex.Message);
+
+                    stripeService.RefundCharge(stripeChargeId);
+
+                    return RedirectToAction("ConfirmOrder");
+                }
 
                 db.WebOrders.Add(newOrder);
 
@@ -472,8 +499,12 @@ namespace Veil.Controllers
             }
 
             Session.Remove(OrderCheckoutDetailsKey);
+            Session[CartController.CART_QTY_SESSION_KEY] = null;
 
-            this.AddAlert(AlertType.Success, $"Successfully placed an order for {orderTotal:C}.");
+            
+
+            string orderDetailLink = HtmlHelper.GenerateLink(ControllerContext.RequestContext, System.Web.Routing.RouteTable.Routes, "View Order", null, "Details", "WebOrders", new RouteValueDictionary(new { id = newOrder.Id }), null);
+            this.AddAlert(AlertType.Success, $"Successfully placed an order for {orderTotal:C}. ", orderDetailLink);
 
             return RedirectToAction("Index", "Home");
         }
@@ -524,16 +555,14 @@ namespace Veil.Controllers
                             itemStatus == AvailabilityStatus.NotForSale) &&
                         item.Quantity > inventory.NewOnHand)
                     {
-                        // TODO: Something better
-                        throw new InvalidOperationException("Not enough copies of a discontinued game to guarentee we will be able to fulfill your order.");
+                        throw new NotEnoughInventoryException($"Not enough copies of {item.Product.Name} which has been discontinued to guarantee we will be able to fulfill your order.");
                     }
                 }
                 else
                 {
                     if (inventory.UsedOnHand < item.Quantity)
                     {
-                        // TODO: Something better
-                        throw new InvalidOperationException("Not enough used copies to guarentee we will be able to fulfill your order.");
+                        throw new NotEnoughInventoryException($"Not enough used copies of {item.Product.Name} to guarantee we will be able to fulfill your order.");
                     }
 
                     inventory.UsedOnHand -= item.Quantity;

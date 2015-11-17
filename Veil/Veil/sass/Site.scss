@@ -226,3 +226,25 @@ label.rating {
     display: inline-block;
     padding-right: 1em;
 }
+
+div.alert-box {
+    &.success > a {
+        color: $alert-font-color;
+    }
+
+    &.alert > a {
+        color: $alert-font-color;
+    }
+
+    &.info > a {
+        color:$alert-font-color-alt
+    }
+
+    &.warning > a {
+        color:$alert-font-color;
+    }
+
+    > a {
+        text-decoration: underline;
+    }
+}

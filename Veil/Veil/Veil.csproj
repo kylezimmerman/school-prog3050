@@ -218,6 +218,7 @@
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
+    <Compile Include="Exceptions\NotEnoughInventoryException.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
     <Compile Include="Extensions\HtmlHelperExtensions.cs" />
     <Compile Include="Extensions\IPrincipleExtensions.cs" />
