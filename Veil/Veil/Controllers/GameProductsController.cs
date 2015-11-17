@@ -230,10 +230,11 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
+                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Physical Game Product");
-                return RedirectToAction("Details", "Games", new {id = gameProduct.GameId });
+                return RedirectToAction("Details", "Games", new { id = gameProduct.GameId });
             }
 
             SetupGameProductSelectLists();
@@ -338,6 +339,7 @@ namespace Veil.Controllers
 
             if (ModelState.IsValid)
             {
+                db.MarkAsModified(gameProduct);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully edited the Download Game Product");
