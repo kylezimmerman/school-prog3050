@@ -145,7 +145,12 @@ namespace Veil.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (quantity.Value < 1)
+            if (quantity.Value == 0)
+            {
+                return RedirectToAction("RemoveItem", new { productId = productId, isNew = isNew });
+            }
+
+            if (quantity.Value < 0)
             {
                 this.AddAlert(AlertType.Error,
                     "Your cart cannot contain less than 1 of a product. Consider removing the item from your cart instead.");
@@ -160,13 +165,26 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(CartItem));
             }
 
-            int usedInventory = item.Product.UsedInventory;
-
-            if (usedInventory < quantity.Value)
+            if (isNew.Value)
             {
-                quantity = usedInventory;
-                this.AddAlert(AlertType.Warning,
-                    $"We do not have enough used copies of {item.Product.Name} to fulfill your order. There are {quantity} available for purchase.");
+                int newInventory = item.Product.NewInventory;
+
+                if (newInventory < quantity.Value)
+                {
+                    this.AddAlert(AlertType.Info,
+                        $"We currently have {newInventory} new copies of {item.Product.Name}. Your order may take longer to process than usual.");
+                }
+            }
+            else
+            {
+                int usedInventory = item.Product.UsedInventory;
+
+                if (usedInventory < quantity.Value)
+                {
+                    quantity = usedInventory;
+                    this.AddAlert(AlertType.Warning,
+                        $"We currently have {usedInventory} used copies of {item.Product.Name}. Your cart has been set to the maximum deliverable quantity.");
+                }
             }
 
             item.Quantity = quantity.Value;

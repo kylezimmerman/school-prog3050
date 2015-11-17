@@ -20,6 +20,7 @@ namespace Veil.Controllers
     public class HomeController : BaseController
     {
         private const int NEW_RELEASE_COUNT = 6; // Note: This should always be a multiple of three
+        private const int COMING_SOON_COUNT = 2; // Note: This should always be a multiple of two
 
         private readonly IVeilDataAccess db;
 
@@ -28,6 +29,10 @@ namespace Veil.Controllers
             db = dataAccess;
         }
 
+        /// <summary>
+        /// Displays the Index page for Veil.
+        /// </summary>
+        /// <returns>The Index view with the processed HomePageViewModel.</returns>
         public async Task<ActionResult> Index()
         {
             List<Game> comingSoon =
@@ -36,7 +41,7 @@ namespace Veil.Controllers
                         g => g.GameSKUs.Any() &&
                             g.GameSKUs.Min(gp => gp.ReleaseDate) > DateTime.Now).
                     OrderBy(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
-                    Take(2).
+                    Take(COMING_SOON_COUNT).
                     ToListAsync();
 
             List<Game> newReleases =
@@ -57,6 +62,10 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Displays the About page for Veil.
+        /// </summary>
+        /// <returns>The About view for the Home controller.</returns>
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
@@ -64,6 +73,10 @@ namespace Veil.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Displays the Contact page for Veil.
+        /// </summary>
+        /// <returns>The Contact view for the Home controller.</returns>
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
