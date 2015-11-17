@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -7,7 +8,6 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using System.Web;
-using System.Net;
 using Veil.DataModels;
 
 namespace Veil.Controllers
@@ -26,26 +26,26 @@ namespace Veil.Controllers
         // GET: Wishlist
         /// <summary>
         ///     Displays the wishlist of the user indicated
-        ///     If no ID is given the current user's wishlist is shown
+        ///     If no Username is given the current user's wishlist is shown
         /// </summary>
-        /// <param name="wishlistOwnerId">
-        ///     The ID of the owner of the wishlist to be displayed. Set to current user if null.
+        /// <param name="username">
+        ///     The Username of the owner of the wishlist to be displayed. Set to current user if null.
         /// </param>
         /// <returns>
         ///     Index view for the Wishlist matching wishlistOwnerId
         ///     Index view for the current member's Wishlist if wishlistOwnerId is null
         ///     404 Not Found view if the id does not match a Member
         /// </returns>
-        public async Task<ActionResult> Index(Guid? wishlistOwnerId)
+        public async Task<ActionResult> Index(string username)
         {
             Member wishlistOwner;
 
             if (!User.Identity.IsAuthenticated)
             {
-                if (wishlistOwnerId != null)
+                if (username != null)
                 {
                     // Even anonymous users can see public wishlists
-                    wishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+                    wishlistOwner = await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
 
                     if (wishlistOwner != null &&
                         wishlistOwner.WishListVisibility == WishListVisibility.Public)
@@ -58,14 +58,14 @@ namespace Veil.Controllers
 
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
-            if (wishlistOwnerId == null)
+            if (username == null)
             {
                 // If a wishlistOwnerId was not given, the user is viewing their own wishlist
                 wishlistOwner = currentMember;
             }
             else
             {
-                wishlistOwner = await db.Members.FindAsync(wishlistOwnerId);
+                wishlistOwner = await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
             }
             
             if (wishlistOwner == null)

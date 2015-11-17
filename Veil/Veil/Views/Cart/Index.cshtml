@@ -77,7 +77,13 @@ else
                 </div>
                 <div class="row">
                     <div class="columns medium-6 medium-offset-6 end">
-                        @Html.ActionLink("Remove Item", "RemoveItem", new { productId = item.ProductId }, new { @class = "button small expand alert" })
+                        @using (Html.BeginForm("RemoveItem", "Cart", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("productId", item.ProductId)
+                            @Html.Hidden("isNew", item.IsNew)
+                            <button type="submit" class="small expand alert">Remove Item</button>
+                        }
                     </div>
                 </div>
             </div>

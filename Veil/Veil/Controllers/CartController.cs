@@ -5,12 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Linq;
-using Microsoft.Ajax.Utilities;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
-using Veil.Extensions;
 using Veil.Helpers;
 using Member = Veil.DataModels.Models.Member;
 
@@ -22,7 +19,7 @@ namespace Veil.Controllers
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
-        public const string CART_QTY_KEY = "Cart.Quantity";
+        public const string CART_QTY_SESSION_KEY = "Session.Cart.Quantity";
         
         public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
@@ -42,33 +39,32 @@ namespace Veil.Controllers
             return View(await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)));
         }
 
-        public async Task<ActionResult> AddItem(Guid? productId, bool isNew = true)
+        public async Task<ActionResult> AddItem(Guid? productId, bool? isNew)
         {
-            if (productId == null)
+            if (productId == null || isNew == null)
             {
-                throw new HttpException(NotFound, nameof(Game));
+                throw new HttpException(NotFound, nameof(Product));
             }
 
             var membersId = idGetter.GetUserId(User.Identity);
             Cart memberCart = await db.Carts.FindAsync(membersId);
             GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == productId);
-            string name = gameProduct.Game.Name;
-            string platform = gameProduct.Platform.PlatformName;
-            Guid gameId = gameProduct.GameId;
-
+           
             if (gameProduct == null)
             {
-                throw new HttpException(NotFound, nameof(Game));
+                throw new HttpException(NotFound, nameof(Product));
             }
             if (memberCart == null)
             {
-                throw new HttpException(NotFound, nameof(Member));
+                throw new HttpException(NotFound, nameof(Cart));
             }
-
+            Guid gameId = gameProduct.GameId;
+            string name = gameProduct.Game.Name;
+            string platform = gameProduct.Platform.PlatformName;
             CartItem cartItem = new CartItem()
             {
                 MemberId = membersId,
-                IsNew = isNew,
+                IsNew = isNew.Value,
                 ProductId = gameProduct.Id,
                 Quantity = 1
             };
@@ -77,46 +73,48 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, platform + ": " + name + " was succesfully added to your your cart");
+                this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully added to your your cart.");
                 SetSessionCartQty();
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, "An error occured while adding "+ platform + ": " + name + " to your cart");
+                this.AddAlert(AlertType.Error, $"An error occured while adding {platform}: {name} to your cart");
             }
 
             //do we really want this to redirect the user
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
-        public async Task<ActionResult> RemoveItem(Guid? productId)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RemoveItem(Guid? productId, bool? isNew)
         { 
-            if (productId == null)
+            if (productId == null || isNew == null)
             {
-                throw new HttpException(NotFound, "OOOOH NO");
+                throw new HttpException(NotFound, nameof(Product));
             }
 
             Cart memberCart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity));
             if (memberCart == null)
             {
-                throw new HttpException(NotFound, "Dear god");
+                throw new HttpException(NotFound, nameof(Cart));
             }
 
-            CartItem cartItem = memberCart.Items.FirstOrDefault(x => x.ProductId == productId);
+            CartItem cartItem = memberCart.Items.FirstOrDefault(x => x.ProductId == productId && x.IsNew == isNew);
             GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == cartItem.ProductId);
             string name = gameProduct.Game.Name;
             string platform = gameProduct.Platform.PlatformName;
-            Guid gameId = gameProduct.GameId;
+            
             try
             {
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, platform + ": " + name + " was succesfully removed for your cart");
+                this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully removed for your cart");
                 SetSessionCartQty();
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, "An error occured while removing " + platform + ": " + name + " from your cart");
+                this.AddAlert(AlertType.Error, $"An error occured while removing {platform}: {name} from your cart");
             }
 
             return RedirectToAction("Index");
@@ -147,6 +145,13 @@ namespace Veil.Controllers
                 return RedirectToAction("Index");
             }
 
+            if (quantity.Value < 1)
+            {
+                this.AddAlert(AlertType.Error,
+                    "Your cart cannot contain less than 1 of a product. Consider removing the item from your cart instead.");
+                return RedirectToAction("Index");
+            }
+
             Cart currentMemberCart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity));
             CartItem item = currentMemberCart.Items.FirstOrDefault(i => i.ProductId == productId && i.IsNew == isNew);
 
@@ -155,10 +160,19 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(CartItem));
             }
 
+            int usedInventory = item.Product.UsedInventory;
+
+            if (usedInventory < quantity.Value)
+            {
+                quantity = usedInventory;
+                this.AddAlert(AlertType.Warning,
+                    $"We do not have enough used copies of {item.Product.Name} to fulfill your order. There are {quantity} available for purchase.");
+            }
+
             item.Quantity = quantity.Value;
             await db.SaveChangesAsync();
 
-            this.AddAlert(AlertType.Success, item.Product.Name + " quantity set to " + quantity);
+            this.AddAlert(AlertType.Success, $"{item.Product.Name} quantity set to {quantity}.");
             return View("Index", currentMemberCart);
         }
 
@@ -171,7 +185,7 @@ namespace Veil.Controllers
             Guid currentUserId = idGetter.GetUserId(User.Identity);
             Member currentMember = db.Members.Find(currentUserId);
 
-            Session[CART_QTY_KEY] = currentMember.Cart.Items.Count;
+            Session[CART_QTY_SESSION_KEY] = currentMember.Cart.Items.Count;
         }
     }
 }

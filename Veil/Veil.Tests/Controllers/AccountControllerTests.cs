@@ -349,7 +349,7 @@ namespace Veil.Tests.Controllers
             Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
 
             AccountController controller = new AccountController(userManagerStub.Object, signInManagerMock.Object, stripeService: null)
             {
@@ -418,7 +418,7 @@ namespace Veil.Tests.Controllers
                 Returns(false);
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
 
             AccountController controller = new AccountController(userManagerStub.Object, signInManagerStub.Object, stripeService: null)
             {
@@ -481,7 +481,7 @@ namespace Veil.Tests.Controllers
                 Returns(true);
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
 
             AccountController controller = new AccountController(userManagerStub.Object, signInManagerStub.Object, stripeService: null)
             {
@@ -680,7 +680,7 @@ namespace Veil.Tests.Controllers
             Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
 
             AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
             {
@@ -750,7 +750,7 @@ namespace Veil.Tests.Controllers
             Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_KEY] = It.IsAny<int>());
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
 
             AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
             {

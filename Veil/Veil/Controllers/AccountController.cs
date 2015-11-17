@@ -141,7 +141,7 @@ namespace Veil.Controllers
             if (result == SignInStatus.Success && await userManager.IsInRoleAsync(user.Id, VeilRoles.MEMBER_ROLE))
             {
                 // Set the Cart Quantity in the Session for use in the NavBar
-                Session[CartController.CART_QTY_KEY] = user.Member.Cart.Items.Count;
+                Session[CartController.CART_QTY_SESSION_KEY] = user.Member.Cart.Items.Count;
             }
 
             switch (result)

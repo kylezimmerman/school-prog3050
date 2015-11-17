@@ -29,11 +29,21 @@
         }
         else if (Model.CurrentMemberIsRegistered)
         {
-            @Html.ActionLink("Unregister", "Unregister", new { id = Model.Event.Id }, new { @class = "button expand alert" })
+            using (Html.BeginForm("Unregister", "Events", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Hidden("id", Model.Event.Id)
+                <button type="submit" class="expand alert">Unregister</button>
+            }
         }
         else
         {
-            @Html.ActionLink("Register", "Register", new { id = Model.Event.Id }, new { @class = "button expand" })
+            using (Html.BeginForm("Register", "Events", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Hidden("id", Model.Event.Id)
+                <button type="submit" class="expand">Register</button>
+            }
         }
     </div>
 </div>

@@ -146,6 +146,8 @@ namespace Veil.Controllers
         ///     404 Not Found view if the id does not match an Event
         /// </returns>
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(Guid? id)
         {
             if (id == null)
@@ -173,7 +175,7 @@ namespace Veil.Controllers
                 CurrentMemberIsRegistered = currentEvent.RegisteredMembers.Contains(currentMember)
             };
 
-            this.AddAlert(AlertType.Success, $"You have been registered to attend {currentEvent.Name}");
+            this.AddAlert(AlertType.Success, $"You have been registered to attend {currentEvent.Name}.");
 
             return View("Details", model);
         }
@@ -189,6 +191,8 @@ namespace Veil.Controllers
         ///     404 Not Found view if the id does not match an Event
         /// </returns>
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Unregister(Guid? id)
         {
             if(id == null)
@@ -216,7 +220,7 @@ namespace Veil.Controllers
                 CurrentMemberIsRegistered = currentEvent.RegisteredMembers.Contains(currentMember)
             };
 
-            this.AddAlert(AlertType.Info, $"You are no longer attending {currentEvent.Name}");
+            this.AddAlert(AlertType.Info, $"You are no longer attending {currentEvent.Name}.");
 
             return View("Details", model);
         }
