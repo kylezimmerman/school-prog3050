@@ -11,9 +11,7 @@ using NUnit.Framework;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
-using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
-using Veil.Models;
 
 namespace Veil.Tests.Controllers
 {
@@ -22,32 +20,19 @@ namespace Veil.Tests.Controllers
     {
         private Guid Id;
         private Guid UserId;
-        private Guid gameId;
-        private const string CART_QTY_KEY = "Cart.Quantity";
+        private Guid GameId;
 
         [SetUp]
         public void Setup()
         {
             Id = new Guid("45B0752E-998B-466A-AAAD-3ED535BA3559");
             UserId = new Guid("09EABF21-D5AC-4A5D-ADF8-27180E6D889B");
-            gameId = new Guid("EFBCB640-388B-E511-80DF-001CD8B71DA6");
+            GameId = new Guid("EFBCB640-388B-E511-80DF-001CD8B71DA6");
         }
 
         [Test]
         public async void Index_EmptyCart_ReturnsMatchingModel()
         {
-            PhysicalGameProduct gameProduct = new PhysicalGameProduct()
-            {
-                Id = Id,
-                BoxArtImageURL = "boxart",
-                NewWebPrice = 12m,
-                UsedWebPrice = 8m,
-                Platform = new Platform
-                {
-                    PlatformName = "XBAX",
-                }
-            };
-
             Cart cart = new Cart
             {
                 MemberId = UserId,
@@ -388,7 +373,7 @@ namespace Veil.Tests.Controllers
         {
             Game game = new Game()
             {
-                Id = gameId,
+                Id = GameId,
                 Name = "game"
             };
 
@@ -454,19 +439,19 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void AddItem_NullId()
+        public void AddItem_NullId()
         {
             CartController controller = new CartController(null, null);
 
-            Assert.That(async () => await controller.AddItem(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.AddItem(null, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
-        public async void Additem_IdNotInDb()
+        public void Additem_IdNotInDb()
         {
             Game game = new Game()
             {
-                Id = gameId,
+                Id = GameId,
                 Name = "game"
             };
 
@@ -519,15 +504,15 @@ namespace Veil.Tests.Controllers
 
             Guid nonMatch = new Guid("45B0752E-998B-477A-AAAD-3ED535BA3559");
 
-            Assert.That(async () => await controller.AddItem(nonMatch), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.AddItem(nonMatch, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
-        public async void AddItem_NullCart()
+        public void AddItem_NullCart()
         {
             Game game = new Game()
             {
-                Id = gameId,
+                Id = GameId,
                 Name = "game"
             };
 
@@ -574,7 +559,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            Assert.That(async () => await controller.AddItem(gameProduct.Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.AddItem(gameProduct.Id, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
@@ -582,7 +567,7 @@ namespace Veil.Tests.Controllers
         {
             Game game = new Game()
             {
-                Id = gameId,
+                Id = GameId,
                 Name = "game"
             };
 
@@ -650,7 +635,7 @@ namespace Veil.Tests.Controllers
         {
             Game game = new Game()
             {
-                Id = gameId,
+                Id = GameId,
                 Name = "game"
             };
 
@@ -669,7 +654,8 @@ namespace Veil.Tests.Controllers
 
             CartItem cartItem = new CartItem()
             {
-                ProductId = gameProduct.Id
+                ProductId = gameProduct.Id,
+                IsNew = true
             };
 
             Cart cart = new Cart
@@ -717,22 +703,22 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.RemoveItem(gameProduct.Id) as RedirectToRouteResult;
+            var result = await controller.RemoveItem(gameProduct.Id, cartItem.IsNew) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
         }
 
         [Test]
-        public async void RemoveItem_NullId()
+        public void RemoveItem_NullId()
         {
             CartController controller = new CartController(null, null);
 
-            Assert.That(async () => await controller.RemoveItem(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.RemoveItem(null, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
-        public async void RemoveItem_NullCart()
+        public void RemoveItem_NullCart()
         {
             Cart cart = new Cart
             {
@@ -759,7 +745,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            Assert.That(async () => await controller.RemoveItem(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.RemoveItem(Id, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
@@ -767,7 +753,7 @@ namespace Veil.Tests.Controllers
         {
             Game game = new Game()
             {
-                Id = gameId,
+                Id = GameId,
                 Name = "game"
             };
 
@@ -835,7 +821,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.RemoveItem(gameProduct.Id) as RedirectToRouteResult;
+            var result = await controller.RemoveItem(gameProduct.Id, cartItem.IsNew) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));

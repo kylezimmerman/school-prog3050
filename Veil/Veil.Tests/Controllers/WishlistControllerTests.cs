@@ -33,6 +33,10 @@ namespace Veil.Tests.Controllers
         {
             Member member = new Member
             {
+                UserAccount = new DataModels.Models.Identity.User
+                {
+                    UserName = "TestUser"
+                },
                 WishListVisibility = WishListVisibility.Private
             };
 
@@ -50,7 +54,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            Assert.That(async () => await controller.Index(UserId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.Index(member.UserAccount.UserName), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
@@ -58,6 +62,10 @@ namespace Veil.Tests.Controllers
         {
             Member member = new Member
             {
+                UserAccount = new DataModels.Models.Identity.User
+                {
+                    UserName = "TestUser"
+                },
                 UserId = UserId,
                 WishListVisibility = WishListVisibility.Public,
                 Wishlist = new List<Product>()
@@ -77,7 +85,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.Index(member.UserId) as ViewResult;
+            var result = await controller.Index(member.UserAccount.UserName) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<Member>());
@@ -124,10 +132,14 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Index_WishlistOwnerIdNotFound_Throws404Exception()
+        public void Index_WishlistOwnerNotFound_Throws404Exception()
         {
             Member member = new Member
             {
+                UserAccount = new DataModels.Models.Identity.User
+                {
+                    UserName = "TestUser"
+                },
                 WishListVisibility = WishListVisibility.Private
             };
 
@@ -150,14 +162,18 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            Assert.That(async () => await controller.Index(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.Index("NotTestUser"), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
-        public async void Index_WishlistOwnerIdFound_Public_ReturnsMatchingModel()
+        public async void Index_WishlistOwnerFound_Public_ReturnsMatchingModel()
         {
             Member wishlistOwner = new Member
             {
+                UserAccount = new DataModels.Models.Identity.User
+                {
+                    UserName = "TestUser"
+                },
                 UserId = Id,
                 WishListVisibility = WishListVisibility.Public
             };
@@ -192,7 +208,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.Index(wishlistOwner.UserId) as ViewResult;
+            var result = await controller.Index(wishlistOwner.UserAccount.UserName) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<Member>());
@@ -203,10 +219,14 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Index_WishlistOwnerIdFound_Private_Throws404Exception()
+        public void Index_WishlistOwnerFound_Private_Throws404Exception()
         {
             Member wishlistOwner = new Member
             {
+                UserAccount = new DataModels.Models.Identity.User
+                {
+                    UserName = "TestUser"
+                },
                 UserId = Id,
                 WishListVisibility = WishListVisibility.Private
             };
@@ -241,22 +261,22 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            Assert.That(async () => await controller.Index(wishlistOwner.UserId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.Index(wishlistOwner.UserAccount.UserName), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
-        public async void Index_WishlistOwnerIdFound_FriendsOnly_NotFriends_Throws404Exception()
+        public async void Index_WishlistOwnerFound_FriendsOnly_NotFriends_Throws404Exception()
         {
             Member wishlistOwner = new Member
             {
+                UserAccount = new DataModels.Models.Identity.User
+                {
+                    UserName = "TestUser"
+                },
                 UserId = Id,
                 WishListVisibility = WishListVisibility.FriendsOnly,
                 RequestedFriendships = new List<Friendship>(),
                 ReceivedFriendships = new List<Friendship>(),
-                UserAccount = new DataModels.Models.Identity.User()
-                {
-                    UserName = "WishlistOwnerName"
-                }
             };
 
             Member currentMember = new Member
@@ -289,7 +309,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.Index(wishlistOwner.UserId) as RedirectToRouteResult;
+            var result = await controller.Index(wishlistOwner.UserAccount.UserName) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["controller"], Is.EqualTo("FriendList"));
