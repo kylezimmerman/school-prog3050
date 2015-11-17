@@ -20,6 +20,7 @@ namespace Veil.Controllers
     public class HomeController : BaseController
     {
         private const int NEW_RELEASE_COUNT = 6; // Note: This should always be a multiple of three
+        private const int COMING_SOON_COUNT = 2; // Note: This should always be a multiple of two
 
         private readonly IVeilDataAccess db;
 
@@ -36,7 +37,7 @@ namespace Veil.Controllers
                         g => g.GameSKUs.Any() &&
                             g.GameSKUs.Min(gp => gp.ReleaseDate) > DateTime.Now).
                     OrderBy(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
-                    Take(2).
+                    Take(COMING_SOON_COUNT).
                     ToListAsync();
 
             List<Game> newReleases =
