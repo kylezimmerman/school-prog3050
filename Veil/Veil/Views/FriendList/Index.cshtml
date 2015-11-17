@@ -1,9 +1,13 @@
 ﻿@using Veil.DataModels.Models
 @model Veil.Models.FriendsListViewModel
 
+@{
+    ViewBag.Title = "Friends List";
+}
+
 <div class="row">
     <div class="columns">
-        <h2>Friends</h2>
+        <h2>@ViewBag.Title</h2>
 
         <h4>Add a New Friend</h4>
         @using (Html.BeginForm("AddFriendRequest", "FriendList", FormMethod.Post))
@@ -30,8 +34,8 @@
             {
                 <div class="row">
                     <div class="medium-6 columns">@member.UserAccount.UserName</div>
-                    <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId }, null)</div>
-                    <div class="small-6 medium-3 columns">@Html.ActionLink("Decline", "Decline", "FriendList", new { memberId = member.UserId }, null)</div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Approve", "Approve", "FriendList", new { memberId = member.UserId }, new {@class = "button tiny success expand" })</div>
+                    <div class="small-6 medium-3 columns">@Html.ActionLink("Decline", "Decline", "FriendList", new { memberId = member.UserId }, new { @class = "button tiny alert expand" })</div>
                 </div>
             }
         }
@@ -49,8 +53,8 @@
             foreach (var member in Model.PendingSentFriendships)
             {
                 <div class="row">
-                    <div class="small-6 columns">@member.UserAccount.UserName</div>
-                    <div class="small-6 columns">@Html.ActionLink("Cancel", "Cancel", "FriendList", new { memberId = member.UserId }, null)</div>
+                    <div class="small-9 columns">@member.UserAccount.UserName</div>
+                    <div class="small-3 columns">@Html.ActionLink("Cancel", "Cancel", "FriendList", new { memberId = member.UserId }, new { @class = "button tiny alert expand" })</div>
                 </div>
             }
         }
@@ -69,8 +73,10 @@
             {
                 <div class="row">
                     <div class="medium-6 columns">@friend.UserAccount.UserName</div>
-                    <div class="small-4 small-offset-4 medium-3 medium-offset-0 columns">@((friend.WishListVisibility == WishListVisibility.Private) ? null : Html.ActionLink("View Wishlist", "Index", "Wishlist", new { username = friend.UserAccount.UserName }, null))</div>
-                    <div class="small-4 medium-3 columns">@Html.ActionLink("Remove", "Remove", "FriendList", new { memberId = friend.UserId }, null)</div>
+                    <div class="small-4 small-offset-4 medium-3 medium-offset-0 columns">@((friend.WishListVisibility == WishListVisibility.Private) 
+                            ? new HtmlString("<a class=\"button tiny info expand disabled\">Private</a>")
+                            : Html.ActionLink("View Wishlist", "Index", "Wishlist", new { username = friend.UserAccount.UserName }, new { @class = "button tiny info expand expand" }))</div>
+                    <div class="small-4 medium-3 columns">@Html.ActionLink("Remove", "Remove", "FriendList", new { memberId = friend.UserId }, new { @class = "button tiny alert expand" })</div>
                 </div>
             }
         }
