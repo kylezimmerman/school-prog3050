@@ -159,7 +159,6 @@ namespace Veil.Tests.Controllers
         }
 
         [TestCase(null)]
-        [TestCase(0)]
         [TestCase(-1)]
         public async void UpdateQuantity_InvalidQuantity_RedirectsToIndex(int? quantity)
         {
@@ -169,6 +168,17 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void UpdateQuantity_0Quantity_RemovesFromCart()
+        {
+            CartController controller = new CartController(veilDataAccess: null, idGetter: null);
+
+            var result = await controller.UpdateQuantity(Id, true, 0) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("RemoveItem"));
         }
 
         [Test]
@@ -294,6 +304,78 @@ namespace Veil.Tests.Controllers
 
             Assert.That(model.Items.Count, Is.EqualTo(1));
             Assert.That(model.Items.FirstOrDefault().Quantity, Is.EqualTo(4));
+        }
+
+        [Test]
+        public async void UpdateQuantity_ItemIsInCart_NotEnoughNewInventory_ReturnsUpdatedModel()
+        {
+            PhysicalGameProduct gameProduct = new PhysicalGameProduct()
+            {
+                Id = Id,
+                BoxArtImageURL = "boxart",
+                SKUNameSuffix = "GameProductName",
+                Game = new Game
+                {
+                    Name = "GameName"
+                },
+                NewWebPrice = 12m,
+                UsedWebPrice = 8m,
+                Platform = new Platform
+                {
+                    PlatformName = "XBAX",
+                },
+                LocationInventories = new List<ProductLocationInventory>
+                {
+                    new ProductLocationInventory
+                    {
+                        NewOnHand = 5,
+                        UsedOnHand = 2
+                    }
+                }
+            };
+
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>
+                {
+                    new CartItem
+                    {
+                        Product = gameProduct,
+                        ProductId = gameProduct.Id,
+                        IsNew = true,
+                        MemberId = UserId,
+                        Quantity = 1
+                    }
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+            cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
+            dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.UpdateQuantity(gameProduct.Id, true, 8) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<Cart>());
+
+            var model = (Cart)result.Model;
+
+            Assert.That(model.Items.Count, Is.EqualTo(1));
+            Assert.That(model.Items.FirstOrDefault().Quantity, Is.EqualTo(8));
         }
 
         [Test]
