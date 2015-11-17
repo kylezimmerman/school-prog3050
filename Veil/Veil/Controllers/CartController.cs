@@ -9,6 +9,8 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Helpers;
+using Veil.Models;
+using Veil.Services.Interfaces;
 using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
@@ -18,13 +20,15 @@ namespace Veil.Controllers
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
+        private readonly IShippingCostService shippingCostService;
 
         public const string CART_QTY_SESSION_KEY = "Session.Cart.Quantity";
         
-        public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
+        public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IShippingCostService shippingCostService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
+            this.shippingCostService = shippingCostService;
         }
 
         // GET: Cart
@@ -36,7 +40,15 @@ namespace Veil.Controllers
         /// </returns>
         public async Task<ActionResult> Index()
         {
-            return View(await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)));
+            CartViewModel model = new CartViewModel
+            {
+                Cart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)),
+            };
+
+            model.ShippingCost = shippingCostService.CalculateShippingCost(model.Cart.TotalCartItemsPrice,
+                model.Cart.Items);
+
+            return View(model);
         }
 
         public async Task<ActionResult> AddItem(Guid? productId, bool? isNew)
@@ -81,7 +93,7 @@ namespace Veil.Controllers
                 this.AddAlert(AlertType.Error, $"An error occured while adding {platform}: {name} to your cart");
             }
 
-            //do we really want this to redirect the user
+            //TODO: do we really want this to redirect the user
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
@@ -191,7 +203,16 @@ namespace Veil.Controllers
             await db.SaveChangesAsync();
 
             this.AddAlert(AlertType.Success, $"{item.Product.Name} quantity set to {quantity}.");
-            return View("Index", currentMemberCart);
+
+            CartViewModel model = new CartViewModel
+            {
+                Cart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)),
+            };
+
+            model.ShippingCost = shippingCostService.CalculateShippingCost(model.Cart.TotalCartItemsPrice,
+                model.Cart.Items);
+
+            return View("Index", model);
         }
 
         /// <summary>

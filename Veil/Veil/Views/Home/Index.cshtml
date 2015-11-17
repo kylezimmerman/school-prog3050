@@ -14,8 +14,8 @@
     <div class="row" data-equalizer>
         @foreach (var item in Model.ComingSoon)
         {
-            <div class="medium-6 columns" data-equalizer-watch>
-                <div class="panel">
+            <div class="medium-6 columns">
+                <div class="panel" data-equalizer-watch>
                     <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image">
                     <h4><a href="@Url.Action("Details", "Games", new { id = item.Id })">@item.Name</a></h4>
                     <p class="margin-bottom-0"><strong>@item.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong>
