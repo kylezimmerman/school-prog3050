@@ -1,8 +1,11 @@
-﻿@model Veil.Models.ReviewViewModel
+﻿@using Veil.Controllers
+@model Veil.Models.ReviewViewModel
 
-@using (Html.BeginForm())
+@using (Html.BeginForm("CreateReviewForGameProduct", "Reviews"))
 {
     @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.GameId)
+
     <div class="row">
         <div class="small-12 columns">
             <h3>Ratings and Reviews</h3>
@@ -12,15 +15,26 @@
         <div class="column">
             <h4>Rate the Game</h4>
 
-            @for (int i = 1; i <= 5; i++)
-            {
-                <label class="rating">
-                    @Html.RadioButtonFor(model => model.Review.Rating, i)
-                    @i
-                </label>
-            }
+            <div>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <label class="rating">
+                        @Html.RadioButtonFor(model => model.Review.Rating, i)
+                        @i
+                    </label>
+                }
+            </div>
 
-            @Html.DropDownListFor(model => model.Game.GameSKUs, Model.GameSKUSelectList)
+            @if (Model.Review == null)
+            {
+                @Html.DropDownListFor(model => model.Review.ProductReviewedId, Model.GameSKUSelectList)
+            }
+            else
+            {
+                @Html.HiddenFor(model => model.Review.ProductReviewedId)
+                <strong>Format:</strong>
+                @Model.Review.ProductReviewed.Name
+            }
 
             @Html.LabelFor(model => model.Review.ReviewText)
             @Html.EditorFor(model => model.Review.ReviewText, new { placeholder = "Write a review!" })

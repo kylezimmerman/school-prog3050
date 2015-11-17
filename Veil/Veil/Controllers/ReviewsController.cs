@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
+using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Helpers;
 using Veil.Models;
 
 namespace Veil.Controllers
@@ -35,20 +37,67 @@ namespace Veil.Controllers
         [ChildActionOnly]
         public async Task<PartialViewResult> CreateReviewForGame([NotNull]Game game)
         {
+            var memberId = Guid.Parse(User.Identity.GetUserId());
+            var previousReview = game.AllReviews.FirstOrDefault(r => r.MemberId == memberId);
+
             ReviewViewModel viewModel = new ReviewViewModel
             {
-                Game = game,
-                GameSKUSelectList = new SelectList(game.GameSKUs, "Id", "Name")
+                GameId = game.Id,
+                GameSKUSelectList = new SelectList(game.GameSKUs, "Id", "Name"),
+                Review = previousReview
             };
+
             return PartialView(viewModel);
         }
 
         [HttpPost]
-        [ChildActionOnly]
         [ValidateAntiForgeryToken]
-        public PartialViewResult CreateReviewForGameProduct(Guid id, [Bind] Review<GameProduct> review)
+        public async Task<ActionResult> CreateReviewForGameProduct([Bind] ReviewViewModel reviewViewModel)
         {
-            return PartialView("CreateReviewForGame");
+            var review = reviewViewModel.Review;
+
+            review.MemberId = Guid.Parse(User.Identity.GetUserId());
+
+            var previousReview = await db.GameReviews.FindAsync(review.MemberId, review.ProductReviewedId);
+
+
+            if (ModelState.IsValid)
+            {
+                //If there is review text, it's pending otherwise it's just approved.
+                review.ReviewStatus = !string.IsNullOrWhiteSpace(review.ReviewText) ? ReviewStatus.Pending : ReviewStatus.Approved;
+
+                if (previousReview == null)
+                {
+                    //It's a new review
+                    db.GameReviews.Add(review);
+                    await db.SaveChangesAsync();
+
+                    this.AddAlert(AlertType.Success, "Your review has been saved.");
+                }
+                else
+                {
+                    //User is updating their review
+                    previousReview.ReviewText = review.ReviewText;
+                    previousReview.Rating = review.Rating;
+                    previousReview.ReviewStatus = review.ReviewStatus;
+
+                    db.MarkAsModified(previousReview);
+                    await db.SaveChangesAsync();
+
+                    this.AddAlert(AlertType.Success, "Your review has been updated.");
+                }
+
+                if (review.ReviewStatus == ReviewStatus.Pending)
+                {
+                    this.AddAlert(AlertType.Info, "Your rating will be visible immediately, but your comments will be visible pending review.");
+                }
+            }
+            else
+            {
+                this.AddAlert(AlertType.Error, "There was an error saving your review. Please try again.");
+            }
+
+            return RedirectToAction("Details", "Games", new {id = reviewViewModel.GameId});
         }
     }
 }

@@ -5,30 +5,32 @@
 
 @if (rating.HasValue)
 {
-        var starsRemaining = 5;
+    var starsRemaining = 5;
+
+    var ratingRemaining = rating;
                 
-        @($"{rating:0.0}")
+    //Add at least one star, reducing the rating by 1 each time we do.
+    //Keep doing this as long as the remaining rating is at least 0.8 stars (to round up x.8 stars to full)
+    //Also reduce the number of stars remaining
+    do
+    {
+        <i class="fa fa-star"></i>
 
-        //Add at least one star, reducing the rating by 1 each time we do.
-        //Keep doing this as long as the remaining rating is at least 0.8 stars (to round up x.8 stars to full)
-        //Also reduce the number of stars remaining
-        do
-        {
-            <i class="fa fa-star"></i>
+        ratingRemaining -= 1;
+        starsRemaining -= 1;
+    } while (ratingRemaining > 0.79 && starsRemaining > 0);
 
-            rating -= 1;
-            starsRemaining -= 1;
-        } while (rating > 0.79 && starsRemaining > 0);
+    //If we haven't used up all of the stars, and the raiting is still > 0.3, show a half star
+    if (starsRemaining > 0 && ratingRemaining > 0.29)
+    {
+        <i class="fa fa-star-half-o"></i>
+        starsRemaining -= 1;
+    }
+    // Add empty stars for remainng spaces
+    for (int i = 0; i < starsRemaining; i++)
+    {
+        <i class="fa fa-star-o"></i>
+    }
 
-        //If we haven't used up all of the stars, and the raiting is still > 0.3, show a half star
-        if (starsRemaining > 0 && rating > 0.29)
-        {
-            <i class="fa fa-star-half-o"></i>
-            starsRemaining -= 1;
-        }
-        // Add empty stars for remainng spaces
-        for (int i = 0; i < starsRemaining; i++)
-        {
-            <i class="fa fa-star-o"></i>
-        }
+     @($"({rating:0.0})")
 }
