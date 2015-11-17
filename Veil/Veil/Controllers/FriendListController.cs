@@ -9,12 +9,14 @@ using System.Web.Mvc;
 using LinqKit;
 using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 
 namespace Veil.Controllers
 {
+    [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class FriendListController : BaseController
     {
         protected readonly IVeilDataAccess db;
@@ -27,6 +29,10 @@ namespace Veil.Controllers
         }
 
         // GET: FriendList
+        /// <summary>
+        /// Returns the list of friends and requests sent/received for the current user
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult> Index()
         {
@@ -72,6 +78,11 @@ namespace Veil.Controllers
         }
 
         // POST: FriendList
+        /// <summary>
+        /// Processes a friends request made by the user.
+        /// </summary>
+        /// <param name="username">The username entered by the user.</param>
+        /// <returns>Redirect to 'Index' action.</returns>
         [HttpPost]
         public async Task<ActionResult> AddFriendRequest(string username)
         {
@@ -87,7 +98,7 @@ namespace Veil.Controllers
 
             if (currentUser == targetUser)
             {
-                this.AddAlert(AlertType.Error, "Are you so lonely that you want to friend yourself?");
+                this.AddAlert(AlertType.Error, "Cannot add yourself as a friend.");
 
                 return RedirectToAction("Index");
             }
@@ -130,7 +141,6 @@ namespace Veil.Controllers
             {
                 existingFriendship.RequestStatus = FriendshipRequestStatus.Accepted;
 
-                //db.Friendships.AddOrUpdate(existingFriendship);
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved!");
@@ -139,6 +149,11 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Approves a received friend request.
+        /// </summary>
+        /// <param name="memberId">The GUID of the requesting user.</param>
+        /// <returns>Redirect to 'Index' action.</returns>
         public async Task<ActionResult> Approve(Guid memberId)
         {
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
@@ -161,6 +176,11 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Declines the a received friend request.
+        /// </summary>
+        /// <param name="memberId">The GUID of the requesting user.</param>
+        /// <returns>Result from Delete method.</returns>
         public async Task<ActionResult> Decline(Guid memberId)
         {
             this.AddAlert(AlertType.Success, "Friend request declined.");
@@ -170,6 +190,11 @@ namespace Veil.Controllers
             return await result;
         }
 
+        /// <summary>
+        /// Removes a friend from the user's friend list.
+        /// </summary>
+        /// <param name="memberId">The GUID of the user being removed from the friend list.</param>
+        /// <returns>Result from Delete method.</returns>
         public async Task<ActionResult> Remove(Guid memberId)
         {
             this.AddAlert(AlertType.Success, "Friend removed.");
@@ -179,6 +204,11 @@ namespace Veil.Controllers
             return await result;
         }
 
+        /// <summary>
+        /// Cancels the current user's friend request sent to another user.
+        /// </summary>
+        /// <param name="memberId">The GUID of the requested user.</param>
+        /// <returns>Result from Delete method.</returns>
         public async Task<ActionResult> Cancel(Guid memberId)
         {
             this.AddAlert(AlertType.Success, "Friend request cancelled.");
@@ -188,6 +218,11 @@ namespace Veil.Controllers
             return await result;
         }
 
+        /// <summary>
+        /// Method to delete any friendship between the current user and another user.
+        /// </summary>
+        /// <param name="memberId">The GUID of the requesting/requested/friend user (not the current user).</param>
+        /// <returns>Redirect to 'Index' action.</returns>
         [NonAction]
         private async Task<ActionResult> Delete(Guid memberId)
         {
