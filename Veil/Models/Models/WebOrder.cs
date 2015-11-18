@@ -132,5 +132,20 @@ namespace Veil.DataModels.Models
         /// </summary>
         [MaxLength(512)]
         public string ReasonForCancellationMessage { get; set; }
+
+        /// <summary>
+        ///     The total tax amount for the order
+        /// </summary>
+        public decimal TaxAmount { get; set; }
+
+        /// <summary>
+        ///     The shipping cost for the order
+        /// </summary>
+        public decimal ShippingCost { get; set; }
+
+        /// <summary>
+        ///     The cart subtotal
+        /// </summary>
+        public decimal OrderSubtotal { get; set; }
     }
 }
