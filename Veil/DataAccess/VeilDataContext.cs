@@ -23,7 +23,7 @@ namespace Veil.DataAccess
 
     public class VeilDataContext : IdentityDbContext<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>, IVeilDataAccess
     {
-        // NOTE: If you change either of this value, the Down() in the AddPhysicalGameProductSkuSequence
+        // NOTE: If you change this value, the Down() in the AddPhysicalGameProductSkuSequence
         // migration will not remove the old-named sequence
         internal const string PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME = "PhysicalGameProductSkuSequence";
 
@@ -74,7 +74,6 @@ namespace Veil.DataAccess
 
         public string GetNextPhysicalGameProductSku()
         {
-            // TODO: Add actual checking logic into this
             DbRawSqlQuery<long> result = Database.SqlQuery<long>($"SELECT NEXT VALUE FOR {PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME};");
 
             long value = result.FirstOrDefault();

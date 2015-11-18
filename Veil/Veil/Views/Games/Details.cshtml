@@ -54,10 +54,6 @@
             {
                 <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
             }
-            @if (User.IsEmployeeOrAdmin())
-            {
-                // TODO: Dropdown and + button to add a tag
-            }
         </ul>
     </div>
     <div class="small-2 medium-1 columns" data-equalizer-watch>

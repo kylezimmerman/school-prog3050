@@ -13,8 +13,8 @@ namespace Veil.Models
         public IList<UserLoginInfo> Logins { get; set; }
 
         [DataType(DataType.PhoneNumber)]
-        [RegularExpression(ValidationRegex.INPUT_PHONE /* TODO: Add error message */)]
-        [MaxLength(32 /* TODO: Add error message */)]
+        [RegularExpression(ValidationRegex.INPUT_PHONE, ErrorMessage = "Must be in the format 800-555-0199 or 800-555-0199, ext. 1234")]
+        [MaxLength(24, ErrorMessage = "Can't be longer than 24 characters")]
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
 

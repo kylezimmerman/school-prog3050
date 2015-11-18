@@ -93,7 +93,6 @@ namespace Veil.Controllers
                 this.AddAlert(AlertType.Error, $"An error occured while adding {platform}: {name} to your cart");
             }
 
-            //TODO: do we really want this to redirect the user
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
