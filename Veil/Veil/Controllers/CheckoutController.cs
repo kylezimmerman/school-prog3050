@@ -10,12 +10,14 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web.Mvc;
 using System.Web.Routing;
+using Microsoft.AspNet.Identity;
 using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -34,21 +36,32 @@ namespace Veil.Controllers
         private readonly IGuidUserIdGetter idGetter;
         private readonly IStripeService stripeService;
         private readonly IShippingCostService shippingCostService;
+        private readonly IIdentityMessageService emailService;
 
-        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService, IShippingCostService shippingCostService)
+        public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService, IShippingCostService shippingCostService, IIdentityMessageService emailService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
             this.stripeService = stripeService;
             this.shippingCostService = shippingCostService;
+            this.emailService = emailService;
         }
 
         [HttpGet]
         public async Task<ActionResult> ShippingInfo()
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             AddressViewModel viewModel = new AddressViewModel();
 
-            await viewModel.SetupAddressesAndCountries(db, GetUserId());
+            await viewModel.SetupAddressesAndCountries(db, memberId);
 
             WebOrderCheckoutDetails orderCheckoutDetails = Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
@@ -64,18 +77,26 @@ namespace Veil.Controllers
 
             return View(viewModel);
         }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> NewShippingInfo(AddressViewModel model, bool saveAddress, bool returnToConfirm = false)
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             if (!ModelState.IsValid)
             {
                 model.UpdatePostalCodeModelError(ModelState);
 
                 this.AddAlert(AlertType.Error, "Some address information was invalid.");
 
-                await model.SetupAddressesAndCountries(db, GetUserId());
+                await model.SetupAddressesAndCountries(db, memberId);
 
                 return View("ShippingInfo", model);
             }
@@ -100,7 +121,7 @@ namespace Veil.Controllers
 
             if (!validCountry || !validProvince)
             {
-                await model.SetupAddressesAndCountries(db, GetUserId());
+                await model.SetupAddressesAndCountries(db, memberId);
 
                 return View("ShippingInfo", model);
             }
@@ -114,7 +135,7 @@ namespace Veil.Controllers
             {
                 MemberAddress newAddress = new MemberAddress
                 {
-                    MemberId = GetUserId(),
+                    MemberId = memberId,
                     Address = model.MapToNewAddress(),
                     CountryCode = model.CountryCode,
                     ProvinceCode = model.ProvinceCode
@@ -149,10 +170,18 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExistingShippingInfo(Guid addressId, bool returnToConfirm = false)
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             if (!await db.MemberAddresses.AnyAsync(ma => ma.Id == addressId))
             {
                 AddressViewModel model = new AddressViewModel();
-                await model.SetupAddressesAndCountries(db, GetUserId());
+                await model.SetupAddressesAndCountries(db, memberId);
 
                 this.AddAlert(AlertType.Error, "The address you selected could not be found.");
 
@@ -178,6 +207,14 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> BillingInfo()
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
@@ -190,7 +227,7 @@ namespace Veil.Controllers
 
             BillingInfoViewModel viewModel = new BillingInfoViewModel();
 
-            await viewModel.SetupCreditCardsAndCountries(db, GetUserId());
+            await viewModel.SetupCreditCardsAndCountries(db, memberId);
 
             return View(viewModel);
         }
@@ -199,6 +236,14 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> NewBillingInfo(string stripeCardToken, bool saveCard)
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
@@ -220,7 +265,7 @@ namespace Veil.Controllers
                     return RedirectToAction("BillingInfo");
                 }
 
-                Member currentMember = await db.Members.FindAsync(GetUserId());
+                Member currentMember = await db.Members.FindAsync(memberId);
 
                 if (currentMember == null)
                 {
@@ -272,6 +317,14 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExistingBillingInfo(Guid cardId)
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
@@ -283,8 +336,6 @@ namespace Veil.Controllers
             }
 
             Contract.Assume(orderCheckoutDetails != null);
-
-            Guid memberId = GetUserId();
 
             if (!await db.Members.Where(m => m.UserId == memberId).AnyAsync(m => m.CreditCards.Any(cc => cc.Id == cardId)))
             {
@@ -305,6 +356,14 @@ namespace Veil.Controllers
 
         public async Task<ActionResult> ConfirmOrder()
         {
+            Guid memberId = GetUserId();
+
+            ActionResult redirectToAction = await EnsureCartNotEmptyAsync(memberId);
+            if (redirectToAction != null)
+            {
+                return redirectToAction;
+            }
+
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
 
@@ -316,8 +375,6 @@ namespace Veil.Controllers
             }
 
             Contract.Assume(orderCheckoutDetails != null);
-
-            Guid memberId = GetUserId();
 
             var memberInfo =
                 await db.Users.
@@ -410,6 +467,13 @@ namespace Veil.Controllers
             Guid memberId = GetUserId();
             Cart cart = await GetCartWithLoadedProductsAsync(memberId);
 
+            if (cart.Items.Count == 0)
+            {
+                this.AddAlert(AlertType.Error, "You can't place an order with an empty cart.");
+
+                return RedirectToAction("Index", "Cart");
+            }
+
             if (!EnsureCartMatchesConfirmedCart(items, memberId, cart))
             {
                 this.AddAlert(AlertType.Warning, "Your cart changed between confirming it and placing the order.");
@@ -440,11 +504,11 @@ namespace Veil.Controllers
             Member currentMember = await db.Members.FindAsync(memberId);
             string stripeCardToken = await GetStripeCardToken(orderCheckoutDetails, memberId);
 
-            decimal cartTotal = cart.TotalCartItemsPrice;
+            decimal cartTotal = Math.Round(cart.TotalCartItemsPrice, 2);
             decimal shippingCost = shippingCostService.CalculateShippingCost(cartTotal, cart.Items);
-            decimal taxAmount = cartTotal * (memberAddress.Province.ProvincialTaxRate + memberAddress.Country.FederalTaxRate);
+            decimal taxAmount = Math.Round(cartTotal * (memberAddress.Province.ProvincialTaxRate + memberAddress.Country.FederalTaxRate), 2);
 
-            decimal orderTotal = cart.TotalCartItemsPrice * taxAmount + shippingCost;
+            decimal orderTotal = cart.TotalCartItemsPrice + taxAmount + shippingCost;
 
             string stripeChargeId;
 
@@ -531,24 +595,32 @@ namespace Veil.Controllers
 
             this.AddAlert(AlertType.Success, $"Successfully placed an order for {orderTotal:C}. ", orderDetailLink);
 
-
             string to = currentMember.UserAccount.Email;
             string subject = $"Veil Order Confirmation - # {newOrder.Id}";
-            string message =
-                $"<h1>Veil Order Confirmation - #{newOrder.Id}</h1>" +
-                $"<p>Thanks for buying from Veil! If you would like to view your order or cancel it, please {orderDetailLink} or visit My Orders on Veil.</p>" +
-                "<h2>Order Details</h2>" +
-                "<table>" +
-                    "<td>productName</td><td>product price</td>" +
-                    $"<td>Subtotal:</td><td>{cartTotal}</td>" +
-                    $"<td>Shipping:</td><td>{shippingCost}</td>" +
-                    $"<td>Tax:</td><td>{taxAmount}" +
-                    $"<td>Total:</td><td>{orderTotal}" +
-                "</table>";
 
-            // TODO: Send email with the info
+            IdentityMessage email = new IdentityMessage
+            {
+                Body = RenderRazorPartialViewToString("~/Views/WebOrders/_OrderConfirmationEmail.cshtml", newOrder),
+                Destination = to,
+                Subject = subject
+            };
+
+            await emailService.SendAsync(email);
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private string RenderRazorPartialViewToString(string viewName, object model)
+        {
+            ViewData.Model = model;
+            using (var sw = new StringWriter())
+            {
+                var viewResult = ViewEngines.Engines.FindPartialView(ControllerContext, viewName);
+                var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw);
+                viewResult.View.Render(viewContext, sw);
+                viewResult.ViewEngine.ReleaseView(ControllerContext, viewResult.View);
+                return sw.GetStringBuilder().ToString();
+            }
         }
 
         /// <summary>
@@ -732,6 +804,23 @@ namespace Veil.Controllers
             }
 
             return orderCheckoutDetails.StripeCardToken;
+        }
+
+        private async Task<ActionResult> EnsureCartNotEmptyAsync(Guid memberId)
+        {
+            int cartQuantity = await db.Carts.
+                Where(c => c.MemberId == memberId).
+                Select(c => c.Items.Count).
+                SingleOrDefaultAsync();
+
+            if (cartQuantity == 0)
+            {
+                this.AddAlert(AlertType.Error, "You can't place an order with an empty cart.");
+
+                return RedirectToAction("Index", "Cart");
+            }
+
+            return null;
         }
 
         private ActionResult EnsureValidSessionForBillingStep(WebOrderCheckoutDetails checkoutDetails)
