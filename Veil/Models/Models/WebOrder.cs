@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -19,11 +20,13 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The order isn't being handled by anyone
         /// </summary>
+        [Display(Name = "Pending Processing")]
         PendingProcessing,
 
         /// <summary>
         ///     Someone is currently processing the order
         /// </summary>
+        [Display(Name = "Being Processed")]
         BeingProcessed,
 
         /// <summary>
@@ -34,11 +37,13 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The user cancelled the order.
         /// </summary>
+        [Display(Name = "Cancelled by User")]
         UserCancelled,
 
         /// <summary>
         ///     An employee cancelled the order
         /// </summary>
+        [Display(Name = "Cancelled by Employee")]
         EmployeeCancelled
     }
 
