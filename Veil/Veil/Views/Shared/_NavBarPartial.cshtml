@@ -58,7 +58,7 @@
             <li>@Html.ActionLink("Games", "Index", new { Controller = "Games" }) </li>
             @if (User.IsInRole(VeilRoles.MEMBER_ROLE))
             {
-                <li class="has-dropdown">
+                <li>
                     @Html.ActionLink("Events", "Index", new { Controller = "Events" })
                 </li>
             }
