@@ -471,7 +471,10 @@ namespace Veil.Controllers
                 CreditCardLast4Digits = last4Digits,
                 OrderDate = DateTime.Now,
                 OrderStatus = OrderStatus.PendingProcessing,
-                StripeChargeId = stripeChargeId
+                StripeChargeId = stripeChargeId,
+                TaxAmount = taxAmount,
+                ShippingCost = shippingCost,
+                OrderSubtotal = cartTotal
             };
 
             using (TransactionScope newOrderScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
