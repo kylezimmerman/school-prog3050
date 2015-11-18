@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Veil.DataModels.Models.WebOrder>
+﻿@using Veil.Extensions
+@model IEnumerable<Veil.DataModels.Models.WebOrder>
 
 @{
     ViewBag.Title = "Order History";
@@ -20,15 +21,29 @@
                 <th class="text-right">Order Total</th>
                 <td></td>
             </tr>
-            <tr>
-                <td>293817184</td>
-                <td>Octover 21, 2017</td>
-                <td>Processed</td>
-                <td class="text-right">$62.15</td>
-                <td>
-                    @Html.ActionLink("View Details", "Details", new { Id = 1 })
-                </td>
-            </tr>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5">
+                        You haven't ordered anything yet.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var item in Model)
+                 {
+                     <tr>
+                         <td>@item.Id</td>
+                         <td>@item.OrderDate</td>
+                         <td>@item.OrderStatus</td>
+                         <td class="text-right">@item.OrderItems.Sum(i => i.ListPrice*i.Quantity).ToString("C")</td>
+                         <td>
+                             @Html.ActionLink("Order Details", "Details", new {id = item.Id})
+                         </td>
+                     </tr>
+                 }
+            }
         </table>
     </div>
 </div>

@@ -236,6 +236,7 @@
     <Compile Include="Helpers\CommonErrorResults.cs" />
     <Compile Include="Models\ErrorViewModel.cs" />
     <Compile Include="Models\EventViewModel.cs" />
+    <Compile Include="Models\OrderDetailsViewModel.cs" />
     <Compile Include="Models\PhysicalGameProductViewModel.cs" />
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\AddressViewModel.cs" />
@@ -515,7 +516,7 @@
     <Content Include="Views\Reviews\CreateReviewForGame.cshtml" />
     <Content Include="Views\WebOrders\_OrderConfirmationEmail.cshtml" />
     <None Include="Views\WebOrders\UnprocessedOrderDetails.cshtml" />
-    <None Include="Views\WebOrders\UnprocessedOrders.cshtml" />
+    <None Include="Views\WebOrders\Index_Employee.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>

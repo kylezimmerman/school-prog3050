@@ -1,48 +1,74 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Net;
+using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.Extensions;
+using Veil.Helpers;
 
 namespace Veil.Controllers
 {
     public class WebOrdersController : BaseController
     {
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public WebOrdersController(IVeilDataAccess veilDataAccess)
+        public WebOrdersController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         // GET: WebOrders
         public async Task<ActionResult> Index()
         {
-            var webOrders = db.WebOrders.Include(w => w.Member);
-            return View(await webOrders.ToListAsync());
+            IEnumerable<WebOrder> model = null;
+
+            if (User.IsEmployeeOrAdmin())
+            {
+                model = await db.WebOrders
+                    .Where(wo => wo.OrderStatus == OrderStatus.PendingProcessing)
+                    .OrderBy(wo => wo.OrderDate).ToListAsync();
+                return View("Index_Employee", model);
+            }
+
+            if (User.IsInRole(VeilRoles.MEMBER_ROLE))
+            {
+                Guid memberId = idGetter.GetUserId(User.Identity);
+                model = await db.WebOrders
+                    .Where(wo => wo.MemberId == memberId)
+                    .OrderByDescending(wo => wo.OrderDate).ToListAsync();
+            }
+
+            return View(model);
         }
 
         // GET: WebOrders/Details/5
         public async Task<ActionResult> Details(long? id)
         {
-            // TODO: Validate that the order id is from the logged in user
-            // TODO: Add a cancel button order to the view
-
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                throw new HttpException(NotFound, nameof(WebOrder));
             }
-            WebOrder webOrder = await db.WebOrders.FindAsync(id);
-            /*if (webOrder == null)
-            {
-                return HttpNotFound();
-            }*/
 
-            // TODO: Remove this and add back DB usage
-            webOrder = new WebOrder();
+            WebOrder webOrder = await db.WebOrders.Include(wo => wo.Member).FirstOrDefaultAsync(wo => wo.Id == id);
+
+            if (webOrder == null)
+            {
+                throw new HttpException(NotFound, nameof(WebOrder));
+            }
+
+            if (!User.IsEmployeeOrAdmin() &&
+                webOrder.MemberId != idGetter.GetUserId(User.Identity))
+            {
+                throw new HttpException(NotFound, nameof(WebOrder));
+            }
+
             return View(webOrder);
         }
 
@@ -64,21 +90,6 @@ namespace Veil.Controllers
             }
 
             return RedirectToAction("Index");
-        }
-
-        public async Task<ActionResult> UnprocessedOrders()
-        {
-            var unprocessedOrders =
-                await db.WebOrders.Where(wo => wo.OrderStatus == OrderStatus.PendingProcessing).ToListAsync();
-
-            return View(unprocessedOrders);
-        }
-
-        public async Task<ActionResult> UnprocessedOrderDetails(long? id)
-        {
-            WebOrder order = await db.WebOrders.FindAsync(id);
-
-            return View(order);
         }
     }
 }
