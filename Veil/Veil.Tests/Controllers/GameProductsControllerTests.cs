@@ -425,6 +425,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(async () => await controller.DeleteConfirmed(Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
+
         [Test]
         public async void DeletePhysicalGameProductConfirmed_CatchesOnSaveDelete()
         {
@@ -453,6 +454,14 @@ namespace Veil.Tests.Controllers
             var result = await controller.DeleteConfirmed(aGameProduct.Id) as ViewResult;
 
             Assert.That(result != null);
+        }
+
+        // TODO: Implement this
+        [Ignore]
+        [Test]
+        public async void DeleteGameProduct_SaveAsyncThrows_HasValidModelForRedisplayedView()
+        {
+            
         }
     }
 }

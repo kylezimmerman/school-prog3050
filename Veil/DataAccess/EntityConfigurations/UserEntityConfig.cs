@@ -34,6 +34,18 @@ namespace Veil.DataAccess.EntityConfigurations
                 WillCascadeOnDelete(true);
 
             modelBuilder.Entity<User>().
+                HasMany(u => u.Logins).
+                WithRequired().
+                HasForeignKey(l => l.UserId).
+                WillCascadeOnDelete(true);
+
+            modelBuilder.Entity<User>().
+                HasMany(u => u.Claims).
+                WithRequired().
+                HasForeignKey(uc => uc.UserId).
+                WillCascadeOnDelete(true);
+
+            modelBuilder.Entity<User>().
                 Property(u => u.Email).
                 IsRequired();
 

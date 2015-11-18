@@ -393,7 +393,7 @@ namespace Veil.Controllers
             // Clear the cart
             // Saves changes
             // If any exceptions occur, refund the charge
-            // Clear out the session item for the order
+            // If no exceptions occur, clear out the session item for the order and send a order confirmation email
 
             WebOrderCheckoutDetails orderCheckoutDetails =
                 Session[OrderCheckoutDetailsKey] as WebOrderCheckoutDetails;
@@ -555,14 +555,20 @@ namespace Veil.Controllers
                             itemStatus == AvailabilityStatus.NotForSale) &&
                         item.Quantity > inventory.NewOnHand)
                     {
-                        throw new NotEnoughInventoryException($"Not enough copies of {item.Product.Name} which has been discontinued to guarantee we will be able to fulfill your order.");
+                        throw new NotEnoughInventoryException(
+                            $"Not enough copies of {item.Product.Name} which has been discontinued to " +
+                                "guarantee we will be able to fulfill your order.",
+                            item.Product);
                     }
                 }
                 else
                 {
                     if (inventory.UsedOnHand < item.Quantity)
                     {
-                        throw new NotEnoughInventoryException($"Not enough used copies of {item.Product.Name} to guarantee we will be able to fulfill your order.");
+                        throw new NotEnoughInventoryException(
+                            $"Not enough used copies of {item.Product.Name} to guarantee we " +
+                                "will be able to fulfill your order.",
+                            item.Product);
                     }
 
                     inventory.UsedOnHand -= item.Quantity;

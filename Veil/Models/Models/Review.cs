@@ -59,7 +59,7 @@ namespace Veil.DataModels.Models
         public ReviewStatus ReviewStatus { get; set; }
 
         /// <summary>
-        /// The <see cref="TKey"/> Id for the <see cref="TProduct"/> this review is for
+        /// The Id for the <see cref="TProduct"/> this review is for
         /// </summary>
         [Key]
         public Guid ProductReviewedId { get; set; }

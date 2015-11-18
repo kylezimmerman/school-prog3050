@@ -222,9 +222,10 @@ namespace Veil.Controllers
         public void SetSessionCartQty()
         {
             Guid currentUserId = idGetter.GetUserId(User.Identity);
-            Member currentMember = db.Members.Find(currentUserId);
 
-            Session[CART_QTY_SESSION_KEY] = currentMember.Cart.Items.Count;
+            int cartCount = db.Carts.Where(c => c.MemberId == currentUserId).Select(c => c.Items.Count).SingleOrDefault();
+
+            Session[CART_QTY_SESSION_KEY] = cartCount;
         }
     }
 }
