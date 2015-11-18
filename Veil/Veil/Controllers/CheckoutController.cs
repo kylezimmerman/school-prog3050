@@ -440,12 +440,26 @@ namespace Veil.Controllers
             Member currentMember = await db.Members.FindAsync(memberId);
             string stripeCardToken = await GetStripeCardToken(orderCheckoutDetails, memberId);
 
-            decimal orderTotal = CalculateOrderTotal(cart,
-                memberAddress.Province.ProvincialTaxRate,
-                memberAddress.Country.FederalTaxRate);
+            decimal cartTotal = cart.TotalCartItemsPrice;
+            decimal shippingCost = shippingCostService.CalculateShippingCost(cartTotal, cart.Items);
+            decimal taxAmount = cartTotal * (memberAddress.Province.ProvincialTaxRate + memberAddress.Country.FederalTaxRate);
 
-            // TODO: This could throw
-            string stripeChargeId = stripeService.ChargeCard(orderTotal, stripeCardToken, currentMember.StripeCustomerId);
+            decimal orderTotal = cart.TotalCartItemsPrice * taxAmount + shippingCost;
+
+            string stripeChargeId;
+
+            try
+            {
+                stripeChargeId = stripeService.ChargeCard(
+                    orderTotal, stripeCardToken, currentMember.StripeCustomerId);
+            }
+            catch (StripeException ex)
+            {
+                // TODO: We would want to log this
+                this.AddAlert(AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
+
+                return RedirectToAction("BillingInfo");
+            }
 
             WebOrder newOrder = new WebOrder
             {
@@ -477,9 +491,10 @@ namespace Veil.Controllers
 
                 db.WebOrders.Add(newOrder);
 
-                // TODO: This might not clear out the cart, or might clear out items added while this is being processed
-                // Clear out the cart
-                cart.Items = new List<CartItem>();
+                // This only clears out the cart as we have it. 
+                // Anything added during this method's execution will remain in the cart.
+                // I consider this to be the desired outcome.
+                cart.Items.Clear();
 
                 try
                 {
@@ -501,25 +516,113 @@ namespace Veil.Controllers
             Session.Remove(OrderCheckoutDetailsKey);
             Session[CartController.CART_QTY_SESSION_KEY] = null;
 
-            
+            string orderDetailLink = HtmlHelper.GenerateLink(
+                ControllerContext.RequestContext,
+                RouteTable.Routes,
+                "View Order",
+                null,
+                "Details",
+                "WebOrders",
+                new RouteValueDictionary(new { id = newOrder.Id }),
+                null);
 
-            string orderDetailLink = HtmlHelper.GenerateLink(ControllerContext.RequestContext, System.Web.Routing.RouteTable.Routes, "View Order", null, "Details", "WebOrders", new RouteValueDictionary(new { id = newOrder.Id }), null);
             this.AddAlert(AlertType.Success, $"Successfully placed an order for {orderTotal:C}. ", orderDetailLink);
+
+
+            string to = currentMember.UserAccount.Email;
+            string subject = $"Veil Order Confirmation - # {newOrder.Id}";
+            string message =
+                $"<h1>Veil Order Confirmation - #{newOrder.Id}</h1>" +
+                $"<p>Thanks for buying from Veil! If you would like to view your order or cancel it, please {orderDetailLink} or visit My Orders on Veil.</p>" +
+                "<h2>Order Details</h2>" +
+                "<table>" +
+                    "<td>productName</td><td>product price</td>" +
+                    $"<td>Subtotal:</td><td>{cartTotal}</td>" +
+                    $"<td>Shipping:</td><td>{shippingCost}</td>" +
+                    $"<td>Tax:</td><td>{taxAmount}" +
+                    $"<td>Total:</td><td>{orderTotal}" +
+                "</table>";
+
+            // TODO: Send email with the info
 
             return RedirectToAction("Index", "Home");
         }
 
-        private decimal CalculateOrderTotal(Cart cart, decimal provincialTaxRate, decimal federalTaxRate)
+        /// <summary>
+        ///     Gets the Guid id of the current user
+        /// </summary>
+        /// <returns>
+        ///     Guid id of the current user
+        /// </returns>
+        private Guid GetUserId()
         {
-            decimal cartTotal = cart.TotalCartItemsPrice;
-            decimal shippingCost = shippingCostService.CalculateShippingCost(cartTotal, cart.Items);
+            return idGetter.GetUserId(User.Identity);
+        }
 
-            decimal orderTotal = 
-                cart.TotalCartItemsPrice * 
-                (1 + provincialTaxRate + federalTaxRate) +
-                shippingCost;
+        private async Task<string> GetLast4DigitsAsync(WebOrderCheckoutDetails orderCheckoutDetails, Guid memberId)
+        {
+            string last4Digits;
 
-            return orderTotal;
+            if (orderCheckoutDetails.MemberCreditCardId != null)
+            {
+                last4Digits = await db.Members.
+                    Where(m => m.UserId == memberId).
+                    SelectMany(m => m.CreditCards).
+                    Where(cc => cc.Id == orderCheckoutDetails.MemberCreditCardId.Value).
+                    Select(cc => cc.Last4Digits).
+                    SingleOrDefaultAsync();
+            }
+            else
+            {
+                // TODO: This can throw
+                // TODO: This should probably throw if we fail due to backend issues and inform the user of it
+                last4Digits = stripeService.GetLast4ForToken(orderCheckoutDetails.StripeCardToken);
+            }
+
+            return last4Digits;
+        }
+
+        private async Task<Cart> GetCartWithLoadedProductsAsync(Guid memberId)
+        {
+            Cart cart = await db.Carts.
+                Where(m => m.MemberId == memberId).
+                Include(c => c.Items).
+                Include(c => c.Items.Select(ci => ci.Product)).
+                SingleOrDefaultAsync();
+
+            cart.Items = SortCartItems(cart.Items);
+
+            return cart;
+        }
+
+        private List<CartItem> SortCartItems(IEnumerable<CartItem> cartItems)
+        {
+            return cartItems.
+                OrderByDescending(ci => ci.ProductId).
+                ToList();
+        } 
+
+        private List<ConfirmOrderCartItem> GetConfirmOrderCartItems(Cart cart)
+        {
+            List<ConfirmOrderCartItem> cartItems =
+                cart.Items.
+                    Select(
+                        ci =>
+                            new ConfirmOrderCartItem
+                            {
+                                ProductId = ci.ProductId,
+                                IsNew = ci.IsNew,
+                                ItemPrice = ci.IsNew ? ci.Product.NewWebPrice : ci.Product.UsedWebPrice.Value,
+                                Name = ci.Product.Name,
+                                PlatformName =
+                                    ci.Product is PhysicalGameProduct
+                                        ? ((PhysicalGameProduct)ci.Product).Platform.PlatformName
+                                        : "",
+                                Quantity = ci.Quantity
+                            }
+                    ).ToList();
+
+            return cartItems;
         }
 
         private bool EnsureCartMatchesConfirmedCart(List<CartItem> items, Guid memberId, Cart cart)
@@ -626,77 +729,6 @@ namespace Veil.Controllers
             }
 
             return orderCheckoutDetails.StripeCardToken;
-        }
-
-        private Guid GetUserId()
-        {
-            return idGetter.GetUserId(User.Identity);
-        }
-
-        private async Task<string> GetLast4DigitsAsync(WebOrderCheckoutDetails orderCheckoutDetails, Guid memberId)
-        {
-            string last4Digits;
-
-            if (orderCheckoutDetails.MemberCreditCardId != null)
-            {
-                last4Digits = await db.Members.
-                    Where(m => m.UserId == memberId).
-                    SelectMany(m => m.CreditCards).
-                    Where(cc => cc.Id == orderCheckoutDetails.MemberCreditCardId.Value).
-                    Select(cc => cc.Last4Digits).
-                    SingleOrDefaultAsync();
-            }
-            else
-            {
-                // TODO: This can throw
-                // TODO: This should probably throw if we fail due to backend issues and inform the user of it
-                last4Digits = stripeService.GetLast4ForToken(orderCheckoutDetails.StripeCardToken);
-            }
-
-            return last4Digits;
-        }
-
-        private async Task<Cart> GetCartWithLoadedProductsAsync(Guid memberId)
-        {
-            Cart cart = await db.Carts.
-                Where(m => m.MemberId == memberId).
-                Include(c => c.Items).
-                Include(c => c.Items.Select(ci => ci.Product)).
-                SingleOrDefaultAsync();
-
-            cart.Items = SortCartItems(cart.Items);
-
-            return cart;
-        }
-
-        private List<CartItem> SortCartItems(IEnumerable<CartItem> cartItems)
-        {
-            return cartItems.
-                OrderByDescending(ci => ci.ProductId).
-                ToList();
-        } 
-
-        private List<ConfirmOrderCartItem> GetConfirmOrderCartItems(Cart cart)
-        {
-            List<ConfirmOrderCartItem> cartItems =
-                cart.Items.
-                    Select(
-                        ci =>
-                            new ConfirmOrderCartItem
-                            {
-                                ProductId = ci.ProductId,
-                                IsNew = ci.IsNew,
-                                ItemPrice = ci.IsNew ? ci.Product.NewWebPrice : ci.Product.UsedWebPrice.Value,
-                                Name = ci.Product.Name,
-                                PlatformName =
-                                    ci.Product is PhysicalGameProduct
-                                        ? ((PhysicalGameProduct)ci.Product).Platform.PlatformName
-                                        : "",
-                                Quantity = ci.Quantity
-                            }
-                    ).ToList();
-
-            return cartItems;
         }
 
         private ActionResult EnsureValidSessionForBillingStep(WebOrderCheckoutDetails checkoutDetails)
