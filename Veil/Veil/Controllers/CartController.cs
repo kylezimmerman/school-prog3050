@@ -86,7 +86,7 @@ namespace Veil.Controllers
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
                 this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully added to your your cart.");
-                SetSessionCartQty();
+                Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
@@ -122,7 +122,7 @@ namespace Veil.Controllers
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
                 this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully removed for your cart");
-                SetSessionCartQty();
+                Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
