@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
-using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Extensions;
 using Veil.Helpers;
@@ -69,7 +68,6 @@ namespace Veil.Controllers
 
             return View(webOrder);
         }
-
 
         // POST: WebOrders/CancelOrder/5
         [HttpPost]
