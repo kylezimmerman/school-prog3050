@@ -221,7 +221,8 @@
     <Compile Include="Exceptions\NotEnoughInventoryException.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
     <Compile Include="Extensions\HtmlHelperExtensions.cs" />
-    <Compile Include="Extensions\IPrincipleExtensions.cs" />
+    <Compile Include="Extensions\IPrincipalExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\GuidUserIdGetter.cs" />
     <Compile Include="Helpers\IGuidUserIdGetter.cs" />
@@ -513,8 +514,8 @@
     <Content Include="Views\Shared\AddressViewModel\_AddressFormFields.cshtml" />
     <Content Include="Views\Shared\BillingInfoViewModel\_BillingInfoFormFields.cshtml" />
     <Content Include="Views\Reviews\CreateReviewForGame.cshtml" />
+    <Content Include="Views\Checkout\_OrderConfirmationEmail.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
-    <Content Include="Views\WebOrders\_OrderConfirmationEmail.cshtml" />
     <None Include="Views\WebOrders\Index_Employee.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />
   </ItemGroup>

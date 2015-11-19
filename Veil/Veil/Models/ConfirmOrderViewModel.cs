@@ -16,7 +16,7 @@ namespace Veil.Models
 
         public string CreditCardLast4Digits { get; set; }
 
-        public virtual ICollection<ConfirmOrderCartItem> Items { get; set; }
+        public virtual ICollection<ConfirmOrderCartItemViewModel> Items { get; set; }
 
         public decimal ItemSubTotal { get; set; }
         
@@ -26,7 +26,7 @@ namespace Veil.Models
         public string PhoneNumber { get; set; }
     }
 
-    public class ConfirmOrderCartItem
+    public class ConfirmOrderCartItemViewModel
     {
         public Guid ProductId { get; set; }
 
