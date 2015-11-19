@@ -18,7 +18,7 @@
         <dl>
             <dt>Billing Information</dt>
             <dd>@Model.Member.UserAccount.FirstName @Model.Member.UserAccount.LastName</dd>
-            <dd>@Model.CreditCardLast4Digits.PadLeft(16, '*').Insert(4, " ").Insert(9, " ").Insert(14, " ")</dd>
+            <dd>@Model.CreditCardLast4Digits.FormatLast4Digits()</dd>
         </dl>
     </div>
     <div class="medium-6 columns">

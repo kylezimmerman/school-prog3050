@@ -3,7 +3,7 @@ using Veil.DataModels;
 
 namespace Veil.Extensions
 {
-    public static class IPrincipleExtensions
+    public static class IPrincipalExtensions
     {
         public static bool IsEmployeeOrAdmin(this IPrincipal principal)
         {
