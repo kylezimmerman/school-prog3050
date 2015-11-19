@@ -145,6 +145,14 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public void Details_IdIsNull_Throws404Exception()
+        {
+            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null);
+
+            Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
         public async void Details_UserIsEmployee_ReturnsMatchingModel()
         {
             List<WebOrder> orders = new List<WebOrder>
@@ -350,11 +358,205 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Details_IdIsNull_Throws404Exception()
+        public void Cancel_IdIsNull_Throws404Exception()
         {
             WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null);
 
-            Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.Cancel(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void Cancel_UserIsMember_IsOwnOrder_OrderUnprocessed_ReturnsMatchingModel()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.PendingProcessing
+                },
+                new WebOrder
+                {
+                    Id = 2,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.BeingProcessed
+                },
+                new WebOrder
+                {
+                    Id = 3,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.PendingProcessing
+                },
+                new WebOrder
+                {
+                    Id = 4,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.UserCancelled
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.Cancel(1) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+            Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.UserCancelled));
+        }
+
+        [Test]
+        public async void Cancel_UserIsMember_IsOwnOrder_OrderProcessed_ReturnsMatchingModel()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.Processed
+                },
+                new WebOrder
+                {
+                    Id = 2,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.BeingProcessed
+                },
+                new WebOrder
+                {
+                    Id = 3,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.PendingProcessing
+                },
+                new WebOrder
+                {
+                    Id = 4,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.UserCancelled
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.Cancel(1) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+            Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.Processed));
+        }
+
+        [Test]
+        public void Cancel_UserIsMember_IsNotOwnOrder_Throws404Exception()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.Processed
+                },
+                new WebOrder
+                {
+                    Id = 2,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.BeingProcessed
+                },
+                new WebOrder
+                {
+                    Id = 3,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.PendingProcessing
+                },
+                new WebOrder
+                {
+                    Id = 4,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.UserCancelled
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            Assert.That(async () => await controller.Cancel(3), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public void Cancel_WebOrderNotFound_Throws404Exception()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.Processed
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            Assert.That(async () => await controller.Cancel(2), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
     }
 }

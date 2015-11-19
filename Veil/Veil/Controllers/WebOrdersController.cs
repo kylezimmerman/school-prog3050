@@ -25,6 +25,13 @@ namespace Veil.Controllers
         }
 
         // GET: WebOrders
+        /// <summary>
+        ///     Displays a list of orders
+        /// </summary>
+        /// <returns>
+        ///     Index view with the current member's orders
+        ///     Index_Employee view with all unprocessed orders
+        /// </returns>
         public async Task<ActionResult> Index()
         {
             IEnumerable<WebOrder> model;
@@ -46,6 +53,17 @@ namespace Veil.Controllers
         }
 
         // GET: WebOrders/Details/5
+        /// <summary>
+        ///     Displays information about a specific order
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the order to view details of
+        /// </param>
+        /// <returns>
+        ///     Details view for the Order matching id
+        ///     404 Not Found view if the id does not match an order
+        ///     404 Not Found view if the current user is not the owner of the order and also not an employee
+        /// </returns>
         public async Task<ActionResult> Details(long? id)
         {
             if (id == null)
@@ -70,22 +88,52 @@ namespace Veil.Controllers
         }
 
         // POST: WebOrders/CancelOrder/5
+        /// <summary>
+        ///     Cancels an order
+        /// </summary>
+        /// <param name="id">
+        ///     The id of the order to cancel
+        /// </param>
+        /// <returns>
+        ///     Details view for the cancelled Order matching id
+        ///     404 Not Found view if the id does not match an order
+        ///     404 Not Found view if the current user is not the owner of the order
+        ///     Details view with error for the Order if order is being or has been processed
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CancelOrder(Guid? orderId)
+        public async Task<ActionResult> Cancel(long? id)
         {
-            // TODO: Confirm the order is for the current user
-            WebOrder orderToCancel;
-
-            if (orderId != null)
+            if (id == null)
             {
-                orderToCancel = await db.WebOrders.FindAsync(orderId);
-                db.WebOrders.Remove(orderToCancel);
+                throw new HttpException(NotFound, nameof(WebOrder));
+            }
 
+            WebOrder webOrder = await db.WebOrders.Include(wo => wo.Member).FirstOrDefaultAsync(wo => wo.Id == id);
+
+            if (webOrder == null)
+            {
+                throw new HttpException(NotFound, nameof(WebOrder));
+            }
+
+            if (webOrder.MemberId != idGetter.GetUserId(User.Identity))
+            {
+                throw new HttpException(NotFound, nameof(WebOrder));
+            }
+
+            if (webOrder.OrderStatus != OrderStatus.PendingProcessing)
+            {
+                this.AddAlert(AlertType.Error,
+                    "This order could not be processed. Only orders that are pending processing can be cancelled.");
+            }
+            else
+            {
+                webOrder.OrderStatus = OrderStatus.UserCancelled;
+                db.MarkAsModified(webOrder);
                 await db.SaveChangesAsync();
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", new { id = webOrder.Id });
         }
     }
 }
