@@ -1,7 +1,6 @@
-﻿@using Veil.DataModels
-@using Veil.DataModels.Models
+﻿@using Veil.DataModels.Models
 @using Veil.Extensions
-@model Veil.DataModels.Models.WebOrder
+@model WebOrder
 
 @{
     ViewBag.Title = $"Order {Model.Id}";
@@ -46,7 +45,7 @@
                 <table>
                     <tr><td>Order Number</td><td>@Model.Id</td></tr>
                     <tr><td>Order Date</td><td>@Model.OrderDate</td></tr>
-                    <tr><td>Order Status</td><td>@Model.OrderStatus</td></tr>
+                    <tr><td>Order Status</td><td>@Html.DisplayFor(m => m.OrderStatus)</td></tr>
                 </table>
             </dd>
             <dd>
@@ -69,30 +68,22 @@
                     }
 
                     <tr><td colspan="6"><hr/></td></tr>
-                    <tr><td colspan="5">Item Total</td><td class="text-right">@* TODO: make this work *@</td></tr>
-                    <tr><td colspan="5">Shipping and Handling</td><td class="text-right">@* TODO: make this work *@</td></tr>
-                    <tr><td colspan="5">Tax</td><td class="text-right">@* TODO: make this work *@</td></tr>
-                    <tr><td colspan="5"><strong>Order Total</strong></td><td class="text-right"><strong>@* TODO: make this work *@</strong></td></tr>
+                    <tr><td colspan="5">Item Total</td><td class="text-right">@Model.OrderSubtotal.ToString("C")</td></tr>
+                    <tr><td colspan="5">Shipping and Handling</td><td class="text-right">@Model.ShippingCost.ToString("C")</td></tr>
+                    <tr><td colspan="5">Tax</td><td class="text-right">@Model.TaxAmount.ToString("C")</td></tr>
+                    <tr><td colspan="5"><strong>Order Total</strong></td><td class="text-right"><strong>@((Model.OrderSubtotal + Model.ShippingCost + Model.TaxAmount).ToString("C"))</strong></td></tr>
                 </table>
             </dd>
         </dl>
         @{
-            string cancelButtonClasses = "alert";
-            if (Model.OrderStatus == OrderStatus.Processed ||
-                Model.OrderStatus == OrderStatus.EmployeeCancelled ||
-                Model.OrderStatus == OrderStatus.UserCancelled ||
-                (User.IsInRole(VeilRoles.MEMBER_ROLE) && Model.OrderStatus == OrderStatus.BeingProcessed))
-            {
-                cancelButtonClasses += " disabled";
-                <button class="@cancelButtonClasses">Cancel Order</button>
-            }
-            else
+            if (Model.OrderStatus == OrderStatus.PendingProcessing ||
+                (User.IsEmployeeOrAdmin() && Model.OrderStatus == OrderStatus.BeingProcessed))
             {
                 using (Html.BeginForm("CancelOrder", "WebOrders", FormMethod.Post))
                 {
                     @Html.AntiForgeryToken()
                     @Html.HiddenFor(m => m.Id)
-                    <button type="submit" class="@cancelButtonClasses">Cancel Order</button>
+                    <button type="submit" class="alert">Cancel Order</button>
                 }
             }
         }

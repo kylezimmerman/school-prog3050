@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
-using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Extensions;
 using Veil.Helpers;
 
 namespace Veil.Controllers
 {
+    [Authorize]
     public class WebOrdersController : BaseController
     {
         private readonly IVeilDataAccess db;
@@ -27,7 +27,7 @@ namespace Veil.Controllers
         // GET: WebOrders
         public async Task<ActionResult> Index()
         {
-            IEnumerable<WebOrder> model = null;
+            IEnumerable<WebOrder> model;
 
             if (User.IsEmployeeOrAdmin())
             {
@@ -37,13 +37,10 @@ namespace Veil.Controllers
                 return View("Index_Employee", model);
             }
 
-            if (User.IsInRole(VeilRoles.MEMBER_ROLE))
-            {
-                Guid memberId = idGetter.GetUserId(User.Identity);
-                model = await db.WebOrders
-                    .Where(wo => wo.MemberId == memberId)
-                    .OrderByDescending(wo => wo.OrderDate).ToListAsync();
-            }
+            Guid memberId = idGetter.GetUserId(User.Identity);
+            model = await db.WebOrders
+                .Where(wo => wo.MemberId == memberId)
+                .OrderByDescending(wo => wo.OrderDate).ToListAsync();
 
             return View(model);
         }
@@ -71,7 +68,6 @@ namespace Veil.Controllers
 
             return View(webOrder);
         }
-
 
         // POST: WebOrders/CancelOrder/5
         [HttpPost]

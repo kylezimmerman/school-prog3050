@@ -1,0 +1,33 @@
+﻿@* Source: http://codewala.net/2014/04/17/exploring-enums-support-in-asp-net-mvc-5-1-part-2/ *@
+@model Enum
+
+@if (EnumHelper.IsValidForEnumHelper(ViewData.ModelMetadata))
+{
+    string displayAttrName = null;
+    foreach (SelectListItem item in EnumHelper.GetSelectList(ViewData.ModelMetadata, (Enum)Model))
+    {
+        if (item.Selected)
+        {
+            displayAttrName = item.Text ?? item.Value;
+        }
+    }
+
+    // displayAttrName is not assigned to any value
+    if (String.IsNullOrEmpty(displayAttrName))
+    {
+        if (Model == null)
+        {
+            displayAttrName = String.Empty;
+        }
+        else
+        {
+            displayAttrName = Model.ToString();
+        }
+    }
+
+    @Html.DisplayTextFor(model => displayAttrName)
+}
+else
+{
+    @Html.DisplayTextFor(model => model)
+}
