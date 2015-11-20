@@ -250,8 +250,9 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Game));
             }
 
-            // TODO: When doing reviews, this will likely need to include all reviews too
-            Game game = await db.Games.Include(g => g.GameSKUs).FirstOrDefaultAsync(g => g.Id == id);
+            Game game = await db.Games.Include(g => g.GameSKUs)
+                .Include(g => g.GameSKUs.Select(sku => sku.Reviews.Select(r => r.Member)))
+                .FirstOrDefaultAsync(g => g.Id == id);
 
             if (game == null)
             {

@@ -79,7 +79,6 @@ namespace Veil.Models
             }
             set
             {
-                Last4Digits = null;
                 stripeCardToken = null;
 
                 memberCreditCardId = value;
@@ -105,10 +104,5 @@ namespace Veil.Models
                 stripeCardToken = value;
             }
         }
-
-        /// <summary>
-        ///     The last 4 digits of the card used to make the <see cref="StripeCardToken"/>
-        /// </summary>
-        public string Last4Digits { get; set; }
     }
 }
