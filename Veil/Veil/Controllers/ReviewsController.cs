@@ -23,19 +23,7 @@ namespace Veil.Controllers
         }
 
         [ChildActionOnly]
-        public PartialViewResult ListRatingsForGame(Guid id)
-        {
-            return PartialView();
-        }
-
-        [ChildActionOnly]
-        public PartialViewResult ListRatingsForGameProduct(Guid id)
-        {
-            return PartialView();
-        }
-
-        [ChildActionOnly]
-        public async Task<PartialViewResult> CreateReviewForGame([NotNull]Game game)
+        public PartialViewResult CreateReviewForGame([NotNull]Game game)
         {
             if (!(User?.Identity?.IsAuthenticated ?? false))
                 return null;
@@ -101,6 +89,12 @@ namespace Veil.Controllers
             }
 
             return RedirectToAction("Details", "Games", new {id = reviewViewModel.GameId});
+        }
+
+        [ChildActionOnly]
+        public PartialViewResult RenderReviewsForGame([NotNull] Game game)
+        {
+            return PartialView(game.AllReviews);
         }
     }
 }
