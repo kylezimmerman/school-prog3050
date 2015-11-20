@@ -517,6 +517,7 @@
     <Content Include="Views\Reviews\CreateReviewForGame.cshtml" />
     <Content Include="Views\Checkout\_OrderConfirmationEmail.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
+    <Content Include="Views\Reviews\Pending.cshtml" />
     <None Include="Views\WebOrders\Index_Employee.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />
   </ItemGroup>

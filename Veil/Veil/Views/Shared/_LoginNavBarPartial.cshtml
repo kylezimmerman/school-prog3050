@@ -25,7 +25,10 @@
                         @Html.ActionLink("Create Event", "Create", new { Controller = "Events" })
                     </li>
                     <li>
-                        @Html.ActionLink("Unprocessed Orders", "UnprocessedOrders", new { Controller = "WebOrders" })
+                        @Html.ActionLink("Unprocessed Orders", "UnprocessedOrders", new {Controller = "WebOrders"})
+                    </li>
+                    <li>
+                        @Html.ActionLink("Process Reviews", "Pending", new { Controller = "Reviews" })
                     </li>
                     <li>
                         @Html.ActionLink("Reports", "Index", new { Controller = "Reports" })
