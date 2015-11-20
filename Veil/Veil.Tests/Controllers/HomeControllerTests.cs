@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
@@ -7,59 +8,85 @@ using NUnit.Framework;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Models;
 
 namespace Veil.Tests.Controllers
 {
     [TestFixture]
     public class HomeControllerTests
     {
+        private Game game1;
+        private Game game2;
+        private Game game3;
+        private Game game4;
+        private Game game5;
+
+        [SetUp]
+        public void Setup()
+        {
+            GameProduct futureGameProduct = new PhysicalGameProduct()
+            {
+                ReleaseDate = DateTime.MaxValue
+            };
+
+            List<GameProduct> futureGames = new List<GameProduct>()
+            {
+                futureGameProduct
+            };
+
+            GameProduct pastGameProduct = new PhysicalGameProduct()
+            {
+                ReleaseDate = DateTime.MinValue
+            };
+
+            List<GameProduct> pastGames = new List<GameProduct>()
+            {
+                pastGameProduct
+            };
+
+            game1 = new Game()
+            {
+                GameSKUs = futureGames
+            };
+
+            game2 = new Game()
+            {
+                GameSKUs = futureGames
+            };
+
+            game3 = new Game()
+            {
+                GameSKUs = pastGames
+            };
+
+            game4 = new Game()
+            {
+                GameSKUs = pastGames
+            };
+
+            game5 = new Game()
+            {
+                GameSKUs = pastGames
+            };
+        }
+
         [Test]
         public async void Index_WhenCalled_ReturnsViewResult()
         {
-            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game>().AsQueryable());
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+            Mock<DbSet<Game>> gamesDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> {game1, game2, game3, game4, game5}.AsQueryable());
+            dbStub.Setup(db => db.Games).Returns(gamesDbSetStub.Object);
 
             HomeController controller = new HomeController(dbStub.Object);
 
-            ViewResult result = await controller.Index() as ViewResult;
+            var result = await controller.Index() as ViewResult;
 
-            Assert.That(result != null);
-        }
+            Assert.That(result.Model != null);
 
-        [Test]
-        public void About_WhenCalled_ReturnsViewResult()
-        {
-            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
-            HomeController controller = new HomeController(dbMock.Object);
+            var model = (HomePageViewModel)result.Model;
 
-            ViewResult result = controller.About() as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewBag.Message, Is.EqualTo("Your application description page."));
-        }
-
-        [Test]
-        public void About_WhenCalled_SetsViewBagMessage()
-        {
-            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
-            HomeController controller = new HomeController(dbMock.Object);
-
-            ViewResult result = controller.About() as ViewResult;
-
-            Assert.That(result != null);
-            Assert.That(result.ViewBag.Message, Is.EqualTo("Your application description page."));
-        }
-
-        [Test]
-        public void Contact_WhenCalled_ReturnsViewResult()
-        {
-            Mock<IVeilDataAccess> dbMock = new Mock<IVeilDataAccess>();
-            HomeController controller = new HomeController(dbMock.Object);
-
-            ViewResult result = controller.Contact() as ViewResult;
-
-            Assert.That(result != null);
+            Assert.That(model.ComingSoon.Select(g => g.GameSKUs), Has.All.Matches<List<GameProduct>>(gs => gs.Any(lgp => lgp.ReleaseDate > DateTime.Now)));
+            Assert.That(model.NewReleases.Select(g => g.GameSKUs), Has.All.Matches<List<GameProduct>>(gs => gs.Any(lgp => lgp.ReleaseDate < DateTime.Now)));
         }
     }
 }

@@ -36,7 +36,7 @@
                      <tr>
                          <td>@item.Id</td>
                          <td>@item.OrderDate</td>
-                         <td>@item.OrderStatus</td>
+                         <td>@Html.DisplayFor(m => item.OrderStatus)</td>
                          <td class="text-right">@item.OrderItems.Sum(i => i.ListPrice*i.Quantity).ToString("C")</td>
                          <td>
                              @Html.ActionLink("Order Details", "Details", new {id = item.Id})
