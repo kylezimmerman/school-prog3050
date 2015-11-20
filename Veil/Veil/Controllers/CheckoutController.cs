@@ -277,7 +277,9 @@ namespace Veil.Controllers
                 return invalidStateResult;
             }
 
-            return await SetupAndReturnBillingInfoView(memberId);
+            var viewModel = new BillingInfoViewModel();
+            await viewModel.SetupCreditCardsAndCountries(db, memberId);
+            return View("BillingInfo", viewModel);
         }
 
         /// <summary>
@@ -318,15 +320,15 @@ namespace Veil.Controllers
 
             Contract.Assume(orderCheckoutDetails != null);
 
+            if (string.IsNullOrWhiteSpace(stripeCardToken))
+            {
+                this.AddAlert(AlertType.Error, "Some credit card information is invalid.");
+
+                return RedirectToAction("BillingInfo");
+            }
+
             if (saveCard)
             {
-                if (string.IsNullOrWhiteSpace(stripeCardToken))
-                {
-                    this.AddAlert(AlertType.Error, "Some credit card information is invalid.");
-
-                    return await SetupAndReturnBillingInfoView(memberId);
-                }
-
                 Member currentMember = await db.Members.FindAsync(memberId);
                 if (currentMember == null)
                 {
@@ -355,11 +357,11 @@ namespace Veil.Controllers
                             "An error occured while talking to one of our backends. Sorry!");
                     }
 
-                    return await SetupAndReturnBillingInfoView(memberId);
+                    return RedirectToAction("BillingInfo");
                 }
 
                 currentMember.CreditCards.Add(newCard);
-
+                
                 await db.SaveChangesAsync();
 
                 this.AddAlert(AlertType.Success, "Successfully added the new Credit Card.");
@@ -416,7 +418,7 @@ namespace Veil.Controllers
             {
                 this.AddAlert(AlertType.Error, "The card you selected could not be found.");
 
-                return await SetupAndReturnBillingInfoView(memberId);
+                return RedirectToAction("BillingInfo");
             }
 
             orderCheckoutDetails.MemberCreditCardId = cardId;
@@ -465,9 +467,6 @@ namespace Veil.Controllers
                     ).
                     SingleOrDefaultAsync();
 
-            Cart cart = await GetCartWithLoadedProductsAsync(memberId);
-            var cartItems = GetConfirmOrderCartItems(cart);
-
             /* Setup the address information */
             MemberAddress memberAddress = await GetShippingAddress(orderCheckoutDetails);
             if (memberAddress == null)
@@ -481,6 +480,9 @@ namespace Veil.Controllers
             {
                 return RedirectToAction("BillingInfo");
             }
+
+            Cart cart = await GetCartWithLoadedProductsAsync(memberId);
+            var cartItems = GetConfirmOrderCartItems(cart);
 
             /* Setup the view model with the gathered information */
             var webOrder = new ConfirmOrderViewModel
@@ -702,23 +704,6 @@ namespace Veil.Controllers
         private Guid GetUserId()
         {
             return idGetter.GetUserId(User.Identity);
-        }
-
-        /// <summary>
-        ///     Sets up a <see cref="BillingInfoViewModel"/> and returns the BillingInfo view
-        /// </summary>
-        /// <param name="memberId">
-        ///     The id of the current member
-        /// </param>
-        /// <returns>
-        ///     The BillingInfo view
-        /// </returns>
-        private async Task<ActionResult> SetupAndReturnBillingInfoView(Guid memberId)
-        {
-            var viewModel = new BillingInfoViewModel();
-            await viewModel.SetupCreditCardsAndCountries(db, memberId);
-
-            return View("BillingInfo", viewModel);
         }
 
         /// <summary>
