@@ -175,7 +175,8 @@ namespace Veil.Tests.Controllers
                     },
                     CountryCode = "CA",
                     ProvinceCode = "ON",
-                    MemberId = memberId
+                    MemberId = memberId,
+                    Id = addressId
                 }
             };
         }
@@ -203,8 +204,6 @@ namespace Veil.Tests.Controllers
                 }
             };
         }
-
-        
 
         [Test]
         public async void ShippingInfo_EmptyCart_RedirectsToCartIndex()
@@ -768,46 +767,132 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingShippingInfo_EmptyCart_RedirectsToCartIndex()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart>().AsQueryable());
+            dbStub.
+                Setup(db => db.Carts).
+                Returns(cartDbSetStub.Object);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object);
+
+            var result = await controller.ExistingShippingInfo(addressId) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingShippingInfo_IdNotInDb_RedirectsToShippingInfo()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, new List<MemberAddress>());
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object);
+
+            var result = await controller.ExistingShippingInfo(addressId) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo("ShippingInfo"));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingShippingInfo_NewSession_AddsNewWebOrderCheckoutDetailsToSession()
         {
+            WebOrderCheckoutDetails checkoutDetails = null;
 
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+            contextStub.
+                SetupGet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey]).
+                Returns(null);
+
+            contextStub.
+                SetupSet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey] = It.IsAny<WebOrderCheckoutDetails>()).
+                Callback((string name, object val) => checkoutDetails = (WebOrderCheckoutDetails)val);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            await controller.ExistingShippingInfo(addressId);
+
+            Assert.That(checkoutDetails, Is.Not.Null);
+            Assert.That(checkoutDetails.MemberAddressId, Is.EqualTo(addressId));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingShippingInfo_ExistingSession_UpdatesAndReassignsOrderDetails()
         {
-            
+            WebOrderCheckoutDetails checkoutDetails = new WebOrderCheckoutDetails
+            {
+                StripeCardToken = "cardToken"
+            };
+            WebOrderCheckoutDetails setCheckoutDetails = null;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+            contextStub.
+                SetupGet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey]).
+                Returns(checkoutDetails);
+            contextStub.
+                SetupSet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey] = It.IsAny<WebOrderCheckoutDetails>()).
+                Callback((string name, object val) => setCheckoutDetails = (WebOrderCheckoutDetails)val);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            await controller.ExistingShippingInfo(addressId);
+
+            Assert.That(setCheckoutDetails, Is.Not.Null);
+            Assert.That(setCheckoutDetails, Is.SameAs(checkoutDetails));
+            Assert.That(setCheckoutDetails.MemberAddressId, Is.EqualTo(addressId));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingShippingInfo_ReturnToConfirm_RedirectsToConfirmOrder()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+            contextStub.
+                SetupGet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey]).
+                Returns(null);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ExistingShippingInfo(addressId, returnToConfirm: true) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingShippingInfo_DoNotReturnToConfirm_RedirectsToBillingInfo()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+            contextStub.
+                SetupGet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey]).
+                Returns(null);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ExistingShippingInfo(addressId, returnToConfirm: false) as RedirectToRouteResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
         [Ignore("No implemented yet")]
