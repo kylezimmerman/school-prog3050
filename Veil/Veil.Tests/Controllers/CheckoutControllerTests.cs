@@ -261,7 +261,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ShippingInfo() as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
@@ -282,7 +282,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ShippingInfo() as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel) result.Model;
@@ -306,7 +306,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ShippingInfo() as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel)result.Model;
@@ -332,7 +332,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(null, false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
@@ -356,7 +356,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(viewModel, false) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel)result.Model;
@@ -442,7 +442,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(viewModel, false) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel)result.Model;
@@ -470,7 +470,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(viewModel, false) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel)result.Model;
@@ -501,7 +501,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(viewModel, false) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel)result.Model;
@@ -599,7 +599,7 @@ namespace Veil.Tests.Controllers
                     Times.Once),
                 Throws.Nothing);
 
-            Assert.That(newAddress, Is.Not.Null);
+            Assert.That(newAddress != null);
             Assert.That(newAddress.CountryCode, Is.EqualTo(viewModel.CountryCode));
             Assert.That(newAddress.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
             Assert.That(newAddress.MemberId, Is.EqualTo(memberId));
@@ -673,7 +673,7 @@ namespace Veil.Tests.Controllers
 
             await controller.NewShippingInfo(viewModel, true);
 
-            Assert.That(checkoutDetails, Is.Not.Null);
+            Assert.That(checkoutDetails != null);
             Assert.That(checkoutDetails.MemberAddressId, Is.EqualTo(addressId));
         }
 
@@ -717,7 +717,7 @@ namespace Veil.Tests.Controllers
                     Times.Once),
                 Throws.Nothing);
 
-            Assert.That(checkoutDetails, Is.Not.Null);
+            Assert.That(checkoutDetails != null);
             Assert.That(checkoutDetails.Address, Is.EqualTo(mappedAddress));
             Assert.That(checkoutDetails.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
             Assert.That(checkoutDetails.CountryCode, Is.EqualTo(viewModel.CountryCode));
@@ -749,7 +749,7 @@ namespace Veil.Tests.Controllers
 
             await controller.NewShippingInfo(viewModel, false);
 
-            Assert.That(setCheckoutDetails, Is.Not.Null);
+            Assert.That(setCheckoutDetails != null);
             Assert.That(setCheckoutDetails, Is.SameAs(checkoutDetails));
             Assert.That(setCheckoutDetails.StripeCardToken, Is.SameAs(checkoutDetails.StripeCardToken));
             Assert.That(setCheckoutDetails.ProvinceCode, Is.EqualTo(viewModel.ProvinceCode));
@@ -770,7 +770,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(viewModel, false, returnToConfirm: true) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
@@ -790,7 +790,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewShippingInfo(viewModel, false, returnToConfirm: false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
@@ -808,7 +808,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ExistingShippingInfo(addressId) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
@@ -824,7 +824,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ExistingShippingInfo(addressId) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("ShippingInfo"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
@@ -847,7 +847,7 @@ namespace Veil.Tests.Controllers
 
             await controller.ExistingShippingInfo(addressId);
 
-            Assert.That(checkoutDetails, Is.Not.Null);
+            Assert.That(checkoutDetails != null);
             Assert.That(checkoutDetails.MemberAddressId, Is.EqualTo(addressId));
         }
 
@@ -872,7 +872,7 @@ namespace Veil.Tests.Controllers
 
             await controller.ExistingShippingInfo(addressId);
 
-            Assert.That(setCheckoutDetails, Is.Not.Null);
+            Assert.That(setCheckoutDetails != null);
             Assert.That(setCheckoutDetails, Is.SameAs(checkoutDetails));
             Assert.That(setCheckoutDetails.MemberAddressId, Is.EqualTo(addressId));
         }
@@ -889,7 +889,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ExistingShippingInfo(addressId, returnToConfirm: true) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
@@ -906,7 +906,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ExistingShippingInfo(addressId, returnToConfirm: false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
@@ -924,7 +924,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.BillingInfo() as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
@@ -942,7 +942,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.BillingInfo() as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
@@ -958,7 +958,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.BillingInfo() as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
@@ -986,7 +986,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.BillingInfo() as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.ViewName, Is.EqualTo(string.Empty).Or.EqualTo("BillingInfo"));
         }
         
@@ -1011,7 +1011,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.BillingInfo() as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.ViewName, Is.EqualTo(string.Empty).Or.EqualTo("BillingInfo"));
         }
 
@@ -1034,7 +1034,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.BillingInfo() as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<BillingInfoViewModel>());
 
             var model = (BillingInfoViewModel) result.Model;
@@ -1056,7 +1056,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewBillingInfo(null, false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
@@ -1074,7 +1074,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewBillingInfo(null, false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
@@ -1090,7 +1090,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewBillingInfo(null, false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
@@ -1108,7 +1108,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewBillingInfo(cardToken, false) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
@@ -1125,7 +1125,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewBillingInfo("cardToken", saveCard: true) as HttpStatusCodeResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.StatusCode, Is.GreaterThanOrEqualTo((int)HttpStatusCode.InternalServerError));
         }
 
@@ -1226,7 +1226,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.NewBillingInfo(cardToken, saveCard: true) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
@@ -1414,7 +1414,6 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingBillingInfo_EmptyCart_RedirectsToCartIndex()
         {
@@ -1428,37 +1427,106 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ExistingBillingInfo(creditCardId) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingBillingInfo_AddressNotSetInSession_RedirectsToShippingInfo()
         {
-            
+            WebOrderCheckoutDetails checkoutDetails = new WebOrderCheckoutDetails();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(checkoutDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ExistingBillingInfo(creditCardId) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingBillingInfo_NullSessionOrderDetails_RedirectsToShippingInfo()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ExistingBillingInfo(creditCardId) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingBillingInfo_IdNotInDb_RedirectsToBillingInfo()
         {
+            member.CreditCards = new List<MemberCreditCard>();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
             
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ExistingBillingInfo(creditCardId) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ExistingBillingInfo_IdInDb_AddsCardIdToOrderDetailsAndReassignsToSession()
         {
-            
+            WebOrderCheckoutDetails details = validShippingDetails;
+            WebOrderCheckoutDetails setDetails = null;
+
+            member.CreditCards = new List<MemberCreditCard> { memberCreditCard };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+            contextStub.
+                SetupSet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey] = It.IsAny<WebOrderCheckoutDetails>()).
+                Callback((string name, object val) => setDetails = (WebOrderCheckoutDetails)val);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            await controller.ExistingBillingInfo(memberCreditCard.Id);
+
+            //Assert.That(setDetails, Is.Not.Null);
+            Assert.That(setDetails, Is.SameAs(details));
+            Assert.That(details.MemberCreditCardId, Is.EqualTo(memberCreditCard.Id));
+        }
+
+        [Test]
+        public async void ExistingBillingInfo_ValidState_RedirectsToConfirmOrder()
+        {
+            member.CreditCards = new List<MemberCreditCard> { memberCreditCard };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ExistingBillingInfo(memberCreditCard.Id) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
         [Ignore("No implemented yet")]
@@ -1475,7 +1543,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.ConfirmOrder() as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
@@ -1484,7 +1552,19 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void ConfirmOrder_AddressNotSetInSession_RedirectsToShippingInfo()
         {
-            
+            WebOrderCheckoutDetails checkoutDetails = new WebOrderCheckoutDetails();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(checkoutDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ConfirmOrder() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
         [Ignore("No implemented yet")]
@@ -1596,7 +1676,19 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void PlaceOrder_AddressNotSetInSession_RedirectsToShippingInfo()
         {
+            WebOrderCheckoutDetails checkoutDetails = new WebOrderCheckoutDetails();
 
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(checkoutDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.PlaceOrder(new List<CartItem>()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
         [Ignore("No implemented yet")]
@@ -1610,7 +1702,17 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void PlaceOrder_NullSessionOrderDetails_RedirectsToShippingInfo()
         {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.PlaceOrder(new List<CartItem>()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
         [Ignore("No implemented yet")]
@@ -1627,7 +1729,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.PlaceOrder(null) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Index"));
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
