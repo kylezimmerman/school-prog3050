@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -104,7 +106,8 @@ namespace Veil.Controllers
         ///     Details view for the cancelled Order matching id
         ///     404 Not Found view if the id does not match an order
         ///     404 Not Found view if the current user is not the owner of the order
-        ///     Details view with error for the Order if order is being or has been processed
+        ///     Details view with error if the order is being or has been processed
+        ///     Details view with error if the order cancellation or refund fails
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -134,28 +137,31 @@ namespace Veil.Controllers
             }
             else
             {
-                OrderStatus oldStatus = webOrder.OrderStatus;
-                webOrder.OrderStatus = OrderStatus.UserCancelled;
-                webOrder.ReasonForCancellationMessage = "Order cancelled by user.";
-                db.MarkAsModified(webOrder);
+                await CancelAndRefundOrder(webOrder);
+            }
 
-                await db.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = webOrder.Id });
+        }
+
+        private async Task CancelAndRefundOrder(WebOrder order)
+        {
+            using (var refundScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                order.OrderStatus = OrderStatus.UserCancelled;
+                order.ReasonForCancellationMessage = "Order cancelled by customer.";
+                await RestoreInventoryOnCancellation(order);
+                db.MarkAsModified(order);
 
                 try
                 {
-                    stripeService.RefundCharge(webOrder.StripeChargeId);
+                    await db.SaveChangesAsync();
+                    stripeService.RefundCharge(order.StripeChargeId);
 
                     this.AddAlert(AlertType.Success, "Your order has been cancelled and payment refunded.");
+                    refundScope.Complete();
                 }
-                catch (StripeException)
+                catch (Exception ex) when (ex is DataException || ex is StripeException)
                 {
-                    // TODO: This second SaveChanges is kind of weird, is there a better way to revert?
-                    webOrder.OrderStatus = oldStatus;
-                    webOrder.ReasonForCancellationMessage = null;
-                    db.MarkAsModified(webOrder);
-
-                    await db.SaveChangesAsync();
-
                     string customerSupportLink = HtmlHelper.GenerateLink(
                         ControllerContext.RequestContext,
                         RouteTable.Routes,
@@ -166,11 +172,52 @@ namespace Veil.Controllers
                         null,
                         null);
 
-                    this.AddAlert(AlertType.Error, "An error occurred refunding your payment. Please try again. If this issue persists please contact ", customerSupportLink);
+                    string errorMessage;
+
+                    if (ex is DataException)
+                    {
+                        errorMessage =
+                            "An error occurred cancelling the order. Your payment has not been refunded. Please try again. If this issue persists please contact ";
+                    }
+                    else
+                    {
+                        errorMessage =
+                            "An error occurred refunding your payment. Please try again. If this issue persists please contact ";
+                    }
+
+                    this.AddAlert(AlertType.Error, errorMessage, customerSupportLink);
                 }
             }
+        }
+        
+        /// <summary>
+        ///     Adds the items in a cancelled order back to the OnHand inventory levels
+        /// </summary>
+        /// <param name="order">
+        ///     The order being cancelled
+        /// </param>
+        /// <returns>
+        ///     A Task to await
+        /// </returns>
+        private async Task RestoreInventoryOnCancellation(WebOrder order)
+        {
+            foreach (var item in order.OrderItems)
+            {
+                ProductLocationInventory inventory = await db.ProductLocationInventories.
+                    Where(
+                        pli => pli.ProductId == item.ProductId &&
+                            pli.Location.SiteName == Location.ONLINE_WAREHOUSE_NAME).
+                    FirstOrDefaultAsync();
 
-            return RedirectToAction("Details", new { id = webOrder.Id });
+                if (item.IsNew)
+                {
+                    inventory.NewOnHand += item.Quantity;
+                }
+                else
+                {
+                    inventory.UsedOnHand += item.Quantity;
+                }
+            }
         }
     }
 }

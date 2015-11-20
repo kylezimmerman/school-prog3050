@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Security.Principal;
@@ -376,32 +377,44 @@ namespace Veil.Tests.Controllers
                 {
                     Id = 1,
                     MemberId = UserId,
-                    OrderStatus = OrderStatus.PendingProcessing
-                },
-                new WebOrder
-                {
-                    Id = 2,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.BeingProcessed
-                },
-                new WebOrder
-                {
-                    Id = 3,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.PendingProcessing
-                },
-                new WebOrder
-                {
-                    Id = 4,
-                    MemberId = UserId,
-                    OrderStatus = OrderStatus.UserCancelled
+                    OrderStatus = OrderStatus.PendingProcessing,
+                    OrderItems = new List<OrderItem>
+                    {
+                        new OrderItem
+                        {
+                            IsNew = true,
+                            ProductId = Id,
+                            Quantity = 2
+                        },
+                        new OrderItem
+                        {
+                            IsNew = false,
+                            ProductId = Id,
+                            Quantity = 1
+                        },
+                    }
                 }
+            };
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                Location = new Location
+                {
+                    SiteName = Location.ONLINE_WAREHOUSE_NAME
+                },
+                ProductId = Id,
+                NewOnHand = 0,
+                UsedOnHand = 0
             };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
             webOrdersDbSetStub.SetupForInclude();
             dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+            dbStub.Setup(db => db.ProductLocationInventories).Returns(inventoryDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
             context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
@@ -423,7 +436,9 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
             Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.UserCancelled));
-            Assert.That(orders[0].ReasonForCancellationMessage, Is.EqualTo("Order cancelled by user."));
+            Assert.That(orders[0].ReasonForCancellationMessage, Is.EqualTo("Order cancelled by customer."));
+            Assert.That(inventory.NewOnHand, Is.EqualTo(2));
+            Assert.That(inventory.UsedOnHand, Is.EqualTo(1));
         }
 
         [Test]
@@ -435,32 +450,44 @@ namespace Veil.Tests.Controllers
                 {
                     Id = 1,
                     MemberId = UserId,
-                    OrderStatus = OrderStatus.PendingProcessing
-                },
-                new WebOrder
-                {
-                    Id = 2,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.BeingProcessed
-                },
-                new WebOrder
-                {
-                    Id = 3,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.PendingProcessing
-                },
-                new WebOrder
-                {
-                    Id = 4,
-                    MemberId = UserId,
-                    OrderStatus = OrderStatus.UserCancelled
+                    OrderStatus = OrderStatus.PendingProcessing,
+                    OrderItems = new List<OrderItem>
+                    {
+                        new OrderItem
+                        {
+                            IsNew = true,
+                            ProductId = Id,
+                            Quantity = 2
+                        },
+                        new OrderItem
+                        {
+                            IsNew = false,
+                            ProductId = Id,
+                            Quantity = 1
+                        },
+                    }
                 }
+            };
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                Location = new Location
+                {
+                    SiteName = Location.ONLINE_WAREHOUSE_NAME
+                },
+                ProductId = Id,
+                NewOnHand = 0,
+                UsedOnHand = 0
             };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
             webOrdersDbSetStub.SetupForInclude();
             dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+            dbStub.Setup(db => db.ProductLocationInventories).Returns(inventoryDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
             context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
@@ -481,8 +508,77 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
-            Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.PendingProcessing));
-            Assert.That(orders[0].ReasonForCancellationMessage, Is.Null);
+        }
+
+        [Test]
+        public async void Cancel_UserIsMember_ValidCancellation_SaveChangesFails_ReturnsMatchingModel()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.PendingProcessing,
+                    OrderItems = new List<OrderItem>
+                    {
+                        new OrderItem
+                        {
+                            IsNew = true,
+                            ProductId = Id,
+                            Quantity = 2
+                        },
+                        new OrderItem
+                        {
+                            IsNew = false,
+                            ProductId = Id,
+                            Quantity = 1
+                        },
+                    }
+                }
+            };
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                Location = new Location
+                {
+                    SiteName = Location.ONLINE_WAREHOUSE_NAME
+                },
+                ProductId = Id,
+                NewOnHand = 0,
+                UsedOnHand = 0
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            dbStub.Setup(db => db.SaveChangesAsync()).Throws(new DataException());
+
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+            dbStub.Setup(db => db.ProductLocationInventories).Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Returns(true);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeServiceStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.Cancel(1) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
         }
 
         [Test]
@@ -495,24 +591,6 @@ namespace Veil.Tests.Controllers
                     Id = 1,
                     MemberId = UserId,
                     OrderStatus = OrderStatus.Processed
-                },
-                new WebOrder
-                {
-                    Id = 2,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.BeingProcessed
-                },
-                new WebOrder
-                {
-                    Id = 3,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.PendingProcessing
-                },
-                new WebOrder
-                {
-                    Id = 4,
-                    MemberId = UserId,
-                    OrderStatus = OrderStatus.UserCancelled
                 }
             };
 
@@ -551,27 +629,9 @@ namespace Veil.Tests.Controllers
             {
                 new WebOrder
                 {
-                    Id = 1,
-                    MemberId = UserId,
-                    OrderStatus = OrderStatus.Processed
-                },
-                new WebOrder
-                {
-                    Id = 2,
-                    MemberId = Id,
-                    OrderStatus = OrderStatus.BeingProcessed
-                },
-                new WebOrder
-                {
                     Id = 3,
                     MemberId = Id,
                     OrderStatus = OrderStatus.PendingProcessing
-                },
-                new WebOrder
-                {
-                    Id = 4,
-                    MemberId = UserId,
-                    OrderStatus = OrderStatus.UserCancelled
                 }
             };
 

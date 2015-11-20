@@ -69,7 +69,7 @@
                                 ? ((PhysicalGameProduct)item.Product).Platform.PlatformName
                                 : "")
                             </td>
-                            <td>@item.IsNew</td>
+                            <td>@(item.IsNew ? "New" : "Used")</td>
                             <td>@item.Quantity</td>
                             <td class="text-right">@item.ListPrice.ToString("C")</td>
                             <td class="text-right">@((item.ListPrice*item.Quantity).ToString("C"))</td>
