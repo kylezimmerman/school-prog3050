@@ -7,11 +7,13 @@ using System.Web;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
+using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Helpers;
+using Veil.Services.Interfaces;
 
 namespace Veil.Tests.Controllers
 {
@@ -70,7 +72,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -128,7 +130,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -147,7 +149,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Details_IdIsNull_Throws404Exception()
         {
-            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null);
+            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null, stripeService: null);
 
             Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -196,7 +198,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -256,7 +258,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -316,7 +318,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -349,7 +351,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -360,7 +362,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Cancel_IdIsNull_Throws404Exception()
         {
-            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null);
+            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null, stripeService: null);
 
             Assert.That(async () => await controller.Cancel(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
@@ -408,7 +410,10 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Returns(true);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeServiceStub.Object)
             {
                 ControllerContext = context.Object
             };
@@ -418,6 +423,66 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
             Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.UserCancelled));
+            Assert.That(orders[0].ReasonForCancellationMessage, Is.EqualTo("Order cancelled by user."));
+        }
+
+        [Test]
+        public async void Cancel_UserIsMember_ValidCancellation_RefundFails_ReturnsMatchingModel()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.PendingProcessing
+                },
+                new WebOrder
+                {
+                    Id = 2,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.BeingProcessed
+                },
+                new WebOrder
+                {
+                    Id = 3,
+                    MemberId = Id,
+                    OrderStatus = OrderStatus.PendingProcessing
+                },
+                new WebOrder
+                {
+                    Id = 4,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.UserCancelled
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Throws(new StripeException());
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeServiceStub.Object)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.Cancel(1) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+            Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.PendingProcessing));
+            Assert.That(orders[0].ReasonForCancellationMessage, Is.Null);
         }
 
         [Test]
@@ -463,7 +528,10 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Returns(true);
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeServiceStub.Object)
             {
                 ControllerContext = context.Object
             };
@@ -473,6 +541,7 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
             Assert.That(orders[0].OrderStatus, Is.EqualTo(OrderStatus.Processed));
+            Assert.That(orders[0].ReasonForCancellationMessage, Is.Null);
         }
 
         [Test]
@@ -518,7 +587,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };
@@ -551,7 +620,7 @@ namespace Veil.Tests.Controllers
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
-            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object)
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeService: null)
             {
                 ControllerContext = context.Object
             };

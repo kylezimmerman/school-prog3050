@@ -36,14 +36,16 @@ namespace Veil.DataModels.Models
 
         /// <summary>
         ///     The user cancelled the order.
+        ///     The ReasonForCancellationMessage distinguishes between user and employee cancelled orders
         /// </summary>
-        [Display(Name = "Cancelled by User")]
+        [Display(Name = "Cancelled")]
         UserCancelled,
 
         /// <summary>
         ///     An employee cancelled the order
+        ///     The ReasonForCancellationMessage distinguishes between user and employee cancelled orders
         /// </summary>
-        [Display(Name = "Cancelled by Employee")]
+        [Display(Name = "Cancelled")]
         EmployeeCancelled
     }
 
