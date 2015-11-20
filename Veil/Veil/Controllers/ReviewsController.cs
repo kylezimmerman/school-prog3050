@@ -37,6 +37,9 @@ namespace Veil.Controllers
         [ChildActionOnly]
         public async Task<PartialViewResult> CreateReviewForGame([NotNull]Game game)
         {
+            if (!(User?.Identity?.IsAuthenticated ?? false))
+                return null;
+
             var memberId = Guid.Parse(User.Identity.GetUserId());
             var previousReview = game.AllReviews.FirstOrDefault(r => r.MemberId == memberId);
 
