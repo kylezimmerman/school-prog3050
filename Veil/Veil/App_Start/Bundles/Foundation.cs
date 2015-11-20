@@ -7,11 +7,11 @@ namespace Veil
         public static Bundle Scripts()
         {
             return new ScriptBundle("~/bundles/foundation").Include(
-                      "~/Scripts/foundation/fastclick.js",
-                      "~/Scripts/jquery.cookie.js",
-                      "~/Scripts/foundation/foundation.js",
-                      "~/Scripts/foundation/foundation.*",
-                      "~/Scripts/foundation/app.js");
+                      "~/Scripts/Library/foundation/fastclick.js",
+                      "~/Scripts/Library/jquery.cookie.js",
+                      "~/Scripts/Library/foundation/foundation.js",
+                      "~/Scripts/Library/foundation/foundation.*",
+                      "~/Scripts/Library/foundation/app.js");
         }
     }
 }
