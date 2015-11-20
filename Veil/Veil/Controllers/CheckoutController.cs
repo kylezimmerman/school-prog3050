@@ -119,7 +119,7 @@ namespace Veil.Controllers
         {
             Guid memberId = GetUserId();
 
-            ActionResult invalidStateResult = await EnsureCartNotEmptyAsync(memberId);
+            RedirectToRouteResult invalidStateResult = await EnsureCartNotEmptyAsync(memberId);
             if (invalidStateResult != null)
             {
                 return invalidStateResult;
@@ -137,20 +137,23 @@ namespace Veil.Controllers
             }
 
             bool validCountry = await db.Countries.AnyAsync(c => c.CountryCode == model.CountryCode);
+            bool validProvince = true;
 
             if (!validCountry)
             {
                 this.AddAlert(AlertType.Error, "The Country you selected isn't valid.");
             }
-
-            bool validProvince = await db.Provinces.
+            else
+            {
+                validProvince = await db.Provinces.
                 AnyAsync(p => p.CountryCode == model.CountryCode &&
                         p.ProvinceCode == model.ProvinceCode);
 
-            if (!validProvince)
-            {
-                this.AddAlert(AlertType.Error,
-                    "The Province/State you selected isn't in the Country you selected.");
+                if (!validProvince)
+                {
+                    this.AddAlert(AlertType.Error,
+                        "The Province/State you selected isn't in the Country you selected.");
+                }
             }
 
             if (!validCountry || !validProvince)
@@ -1001,7 +1004,7 @@ namespace Veil.Controllers
         ///     Otherwise, a <see cref="RedirectToRouteResult"/> which should be returned
         /// </returns>
         [NonAction]
-        private async Task<RedirectToRouteResult> EnsureCartNotEmptyAsync(Guid memberId)
+        protected virtual async Task<RedirectToRouteResult> EnsureCartNotEmptyAsync(Guid memberId)
         {
             int cartQuantity = await db.Carts.
                 Where(c => c.MemberId == memberId).
