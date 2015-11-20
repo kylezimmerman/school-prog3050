@@ -149,6 +149,7 @@
     <Compile Include="Controllers\EventsControllerTests.cs" />
     <Compile Include="Controllers\GamesControllerTests.cs" />
     <Compile Include="Controllers\CartControllerTests.cs" />
+    <Compile Include="Controllers\ReviewsControllerTests.cs" />
     <Compile Include="Controllers\WebOrdersControllerTests.cs" />
     <Compile Include="Controllers\WishlistControllerTests.cs" />
     <Compile Include="Controllers\ManageControllerTests.cs" />
