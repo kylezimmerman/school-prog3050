@@ -38,7 +38,7 @@ namespace Veil.Controllers
     [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class CheckoutController : BaseController
     {
-        private static string OrderCheckoutDetailsKey = "CheckoutController.OrderCheckoutDetails";
+        public static string OrderCheckoutDetailsKey = "CheckoutController.OrderCheckoutDetails";
 
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
