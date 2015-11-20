@@ -1,4 +1,5 @@
-﻿@using Veil.DataModels.Models
+﻿@using Veil.DataModels
+@using Veil.DataModels.Models
 @using Veil.Extensions
 @model WebOrder
 
@@ -76,10 +77,10 @@
             </dd>
         </dl>
         @{
-            if (Model.OrderStatus == OrderStatus.PendingProcessing ||
-                (User.IsEmployeeOrAdmin() && Model.OrderStatus == OrderStatus.BeingProcessed))
+            if (User.IsInRole(VeilRoles.MEMBER_ROLE) &&
+                Model.OrderStatus == OrderStatus.PendingProcessing)
             {
-                using (Html.BeginForm("CancelOrder", "WebOrders", FormMethod.Post))
+                using (Html.BeginForm("Cancel", "WebOrders", FormMethod.Post))
                 {
                     @Html.AntiForgeryToken()
                     @Html.HiddenFor(m => m.Id)
