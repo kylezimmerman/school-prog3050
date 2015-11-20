@@ -5,10 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
+using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.Extensions;
 using Veil.Helpers;
+using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
@@ -17,11 +20,14 @@ namespace Veil.Controllers
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
+        private readonly IStripeService stripeService;
 
-        public WebOrdersController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
+        public WebOrdersController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter,
+            IStripeService stripeService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
+            this.stripeService = stripeService;
         }
 
         // GET: WebOrders
@@ -89,7 +95,7 @@ namespace Veil.Controllers
 
         // POST: WebOrders/CancelOrder/5
         /// <summary>
-        ///     Cancels an order
+        ///     Cancels an order and refunds payment
         /// </summary>
         /// <param name="id">
         ///     The id of the order to cancel
@@ -124,13 +130,44 @@ namespace Veil.Controllers
             if (webOrder.OrderStatus != OrderStatus.PendingProcessing)
             {
                 this.AddAlert(AlertType.Error,
-                    "This order could not be processed. Only orders that are pending processing can be cancelled.");
+                    "This order could not be cancelled. Only orders that are pending processing can be cancelled.");
             }
             else
             {
+                OrderStatus oldStatus = webOrder.OrderStatus;
                 webOrder.OrderStatus = OrderStatus.UserCancelled;
+                webOrder.ReasonForCancellationMessage = "Order cancelled by user.";
                 db.MarkAsModified(webOrder);
+
                 await db.SaveChangesAsync();
+
+                try
+                {
+                    stripeService.RefundCharge(webOrder.StripeChargeId);
+
+                    this.AddAlert(AlertType.Success, "Your order has been cancelled and payment refunded.");
+                }
+                catch (StripeException)
+                {
+                    // TODO: This second SaveChanges is kind of weird, is there a better way to revert?
+                    webOrder.OrderStatus = oldStatus;
+                    webOrder.ReasonForCancellationMessage = null;
+                    db.MarkAsModified(webOrder);
+
+                    await db.SaveChangesAsync();
+
+                    string customerSupportLink = HtmlHelper.GenerateLink(
+                        ControllerContext.RequestContext,
+                        RouteTable.Routes,
+                        "customer support.",
+                        null,
+                        "Contact",
+                        "Home",
+                        null,
+                        null);
+
+                    this.AddAlert(AlertType.Error, "An error occurred refunding your payment. Please try again. If this issue persists please contact ", customerSupportLink);
+                }
             }
 
             return RedirectToAction("Details", new { id = webOrder.Id });

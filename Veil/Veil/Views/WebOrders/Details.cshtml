@@ -47,6 +47,14 @@
                     <tr><td>Order Number</td><td>@Model.Id</td></tr>
                     <tr><td>Order Date</td><td>@Model.OrderDate</td></tr>
                     <tr><td>Order Status</td><td>@Html.DisplayFor(m => m.OrderStatus)</td></tr>
+                    @if (Model.ProcessedDate != null)
+                    {
+                        <tr><td>Processing Date</td><td>@Model.ProcessedDate</td></tr>
+                    }
+                    @if (Model.ReasonForCancellationMessage != null)
+                    {
+                        <tr><td>Reason for Cancellation</td><td>@Model.ReasonForCancellationMessage</td></tr>
+                    }
                 </table>
             </dd>
             <dd>
