@@ -745,7 +745,6 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void NewShippingInfo_DoNotReturnToConfirm_RedirectsToBilingInfo()
         {
