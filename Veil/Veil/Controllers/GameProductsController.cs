@@ -16,7 +16,7 @@ namespace Veil.Controllers
     public class GameProductsController : BaseController
     {
         private readonly IVeilDataAccess db;
-        private IGuidUserIdGetter idGetter;
+        private readonly IGuidUserIdGetter idGetter;
 
         public GameProductsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
@@ -77,7 +77,7 @@ namespace Veil.Controllers
             return View(gameProduct);
         }
 
-        [Authorize(Roles = VeilRoles.ADMIN_ROLE + "," + VeilRoles.EMPLOYEE_ROLE)]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(Guid id = default(Guid))
@@ -119,11 +119,11 @@ namespace Veil.Controllers
             catch (DbUpdateException)
             {
                 // TODO: This fails due to the platform and game being null
-                this.AddAlert(AlertType.Error, "There was an error deleting " + platform + ": " + gameName);
+                this.AddAlert(AlertType.Error, $"There was an error deleting {platform}: {gameName}.");
                 return View(gameProduct);
             }
 
-            this.AddAlert(AlertType.Success, platform + ": " + gameName + " was deleted succesfully");
+            this.AddAlert(AlertType.Success, $"{platform}: {gameName} was deleted succesfully.");
 
             return RedirectToAction("Index", "Games");
         }
@@ -136,6 +136,7 @@ namespace Veil.Controllers
         ///     Redirects to the Game Details page if successful
         ///     Redirects to the Game List page if the id does not match an existing Game.
         /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> CreatePhysicalSKU(Guid id)
         {
             if (!await db.Games.AnyAsync(g => g.Id == id))
@@ -160,12 +161,13 @@ namespace Veil.Controllers
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> CreatePhysicalSKU(Guid id, 
             [Bind(Exclude = nameof(PhysicalGameProduct.NewInventory) + "," + nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
         {
             if (!await db.Games.AnyAsync(g => g.Id == id))
             {
-                throw new HttpException(NotFound, "Game");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             if (ModelState.IsValid)
@@ -191,6 +193,7 @@ namespace Veil.Controllers
         ///     Edit view if the Id is for a physical game product
         ///     404 Not Found view if the Id couldn't be matched to a game product
         /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> EditPhysicalSKU(Guid? id)
         {
             if (id == null)
@@ -222,6 +225,7 @@ namespace Veil.Controllers
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind]PhysicalGameProduct gameProduct)
         {
             if (id == null)
@@ -251,6 +255,7 @@ namespace Veil.Controllers
         ///     A View to create the new downloadable product for if the id is a valid game
         ///     Redirects to the Game List page if the game id was invalid
         /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> CreateDownloadSKU(Guid id)
         {
             if (!await db.Games.AnyAsync(g => g.Id == id))
@@ -275,6 +280,7 @@ namespace Veil.Controllers
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> CreateDownloadSKU(Guid id, [Bind] DownloadGameProduct gameProduct)
         {
             if (!await db.Games.AnyAsync(g => g.Id == id))
@@ -300,6 +306,7 @@ namespace Veil.Controllers
         ///     A view to edit the existing Download Game Product
         ///     404 Not Found if the id does not map to a valid Download Game Product
         /// </returns>
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> EditDownloadSKU(Guid? id)
         {
             if (id == null)
@@ -331,6 +338,7 @@ namespace Veil.Controllers
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> EditDownloadSKU(Guid? id, DownloadGameProduct gameProduct)
         {
             if (id == null)

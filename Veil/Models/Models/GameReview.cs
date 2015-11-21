@@ -5,8 +5,6 @@
  *      Drew Matheson, 2015.10.03: Created
  */
 
-using System;
-
 namespace Veil.DataModels.Models
 {
     /// <summary>
