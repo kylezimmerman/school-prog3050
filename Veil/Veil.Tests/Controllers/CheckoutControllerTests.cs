@@ -36,7 +36,7 @@ namespace Veil.Tests.Controllers
         private MemberCreditCard memberCreditCard;
         private Member member;
         private WebOrderCheckoutDetails validShippingDetails;
-        private WebOrderCheckoutDetails validBillingDetails;
+        private WebOrderCheckoutDetails validNotSavedBillingDetails;
         private WebOrderCheckoutDetails validConfirmDetails;
 
         [SetUp]
@@ -105,8 +105,19 @@ namespace Veil.Tests.Controllers
                 StripeCardId = "cardToken"
             };
 
-            validBillingDetails = validShippingDetails;
-            validBillingDetails.StripeCardToken = "card_token";
+            validNotSavedBillingDetails = new WebOrderCheckoutDetails
+            {
+                Address = new Address
+                {
+                    City = "Waterloo",
+                    PostalCode = "N2L 6R2",
+                    POBoxNumber = "123",
+                    StreetAddress = "445 Wes Graham Way"
+                },
+                ProvinceCode = "ON",
+                CountryCode = "CA",
+                StripeCardToken = "card_token"
+            };
         }
 
         private CheckoutController CreateCheckoutController(
@@ -131,6 +142,7 @@ namespace Veil.Tests.Controllers
         {
             Mock<DbSet<MemberAddress>> addressDbSetFake =
                 TestHelpers.GetFakeAsyncDbSet(addresses.AsQueryable());
+            addressDbSetFake.SetupForInclude();
 
             dbFake.
                 Setup(db => db.MemberAddresses).
@@ -158,10 +170,11 @@ namespace Veil.Tests.Controllers
                 Returns(cartDbSetFake.Object);
         }
 
-        private void SetupVeilDataAccessWithProvinces(Mock<IVeilDataAccess> dbFake, IEnumerable<Province> provinces)
+        private void SetupVeilDataAccessWithProvincesSetupForInclude(Mock<IVeilDataAccess> dbFake, IEnumerable<Province> provinces)
         {
             Mock<DbSet<Province>> provinceDbSetFake = TestHelpers.GetFakeAsyncDbSet(
                 provinces.AsQueryable());
+            provinceDbSetFake.SetupForInclude();
 
             dbFake.
                 Setup(db => db.Provinces).
@@ -248,6 +261,32 @@ namespace Veil.Tests.Controllers
             };
         }
 
+        private List<Province> GetProvinceList(WebOrderCheckoutDetails details)
+        {
+            List<Province> provinces = new List<Province>
+            {
+                new Province
+                {
+                    ProvinceCode = details.ProvinceCode,
+                    CountryCode = details.CountryCode
+                }
+            };
+
+            return provinces;
+        }
+
+        private List<Province> GetProvinceList(AddressViewModel model)
+        {
+            return new List<Province>
+            {
+                new Province
+                {
+                    ProvinceCode = model.ProvinceCode,
+                    CountryCode = model.CountryCode
+                }
+            };
+        }
+            
         [Test]
         public async void ShippingInfo_EmptyCart_RedirectsToCartIndex()
         {
@@ -463,7 +502,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
-            SetupVeilDataAccessWithProvinces(dbStub, provinces);
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, provinces);
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
@@ -494,7 +533,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithAddresses(dbStub, addresses);
-            SetupVeilDataAccessWithProvinces(dbStub, provinces);
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, provinces);
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
@@ -531,7 +570,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode} });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
@@ -580,7 +619,7 @@ namespace Veil.Tests.Controllers
                 Setup(db => db.MemberAddresses).
                 Returns(addressDbSetMock.Object);
 
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
@@ -621,7 +660,7 @@ namespace Veil.Tests.Controllers
                 ReturnsAsync(1).
                 Verifiable();
 
-            SetupVeilDataAccessWithProvinces(dbMock, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbMock, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             CheckoutController controller = CreateCheckoutController(dbMock.Object, context: contextStub.Object);
@@ -662,7 +701,7 @@ namespace Veil.Tests.Controllers
                 Setup(db => db.SaveChangesAsync()).
                 ReturnsAsync(1);
 
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             contextStub.
@@ -700,7 +739,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             contextStub.
@@ -738,7 +777,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(checkoutDetails);
 
             contextStub.
@@ -763,7 +802,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
@@ -783,7 +822,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(viewModel));
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
@@ -978,7 +1017,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
             SetupVeilDataAccessWithMember(dbStub, new Member());
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(checkoutDetails);
 
@@ -1003,7 +1042,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, new List<Province> { new Province { ProvinceCode = viewModel.ProvinceCode, CountryCode = viewModel.CountryCode } });
             SetupVeilDataAccessWithMember(dbStub, new Member());
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(checkoutDetails);
 
@@ -1026,7 +1065,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
-            SetupVeilDataAccessWithProvinces(dbStub, new List<Province>());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, new List<Province>());
             SetupVeilDataAccessWithMember(dbStub, memberWithCreditCards);
             Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
 
@@ -1529,15 +1568,11 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_EmptyCart_RedirectsToCartIndex()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart>().AsQueryable());
-            dbStub.
-                Setup(db => db.Carts).
-                Returns(cartDbSetStub.Object);
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart>());
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object);
 
@@ -1548,7 +1583,6 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_AddressNotSetInSession_RedirectsToShippingInfo()
         {
@@ -1567,67 +1601,157 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_BillingInfoNotSetInsession_RedirectsToBillingInfo()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, new List<MemberAddress> { new MemberAddress { Id = addressId } });
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ConfirmOrder() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_NullSessionOrderDetails_RedirectsToShippingInfo()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(null);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ConfirmOrder() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_AddressIsIdButIdNotInDb_RedirectsToShippingInfo()
         {
-            
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                MemberCreditCardId = creditCardId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, new List<MemberAddress>());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ConfirmOrder() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void ConfirmOrder_AddressIsId_GetsAddressFromDb()
+        public void ConfirmOrder_AddressIsUnsaved_DoesNotTouchMemberAddressDbSet()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedBillingDetails));
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Returns<string>(null);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedBillingDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceStub.Object);
+
+            Assert.That(async () => await controller.ConfirmOrder(), Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void ConfirmOrder_AddressIsUnsaved_DoesNotTouchMemberAddressDbSet()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_CardIsIdButIdNotInDb_RedirectsToBillingInfo()
         {
-            
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                MemberCreditCardId = creditCardId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, new Member { CreditCards = new List<MemberCreditCard>() });
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.ConfirmOrder() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void ConfirmOrder_CardIsId_GetsCardFromDb()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_CardIsToken_CallsStripeServiceGetLast4ForToken()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedBillingDetails));
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Returns<string>(null).
+                Verifiable();
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
+
+            await controller.ConfirmOrder();
+
+            Assert.That(
+                () => 
+                    stripeServiceMock.Verify(s => s.GetLast4ForToken(validNotSavedBillingDetails.StripeCardToken),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void ConfirmOrder_CardIsTokenAndStripeExceptionThrown_RedirectsToBillingInfo()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedBillingDetails));
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Throws<StripeException>();
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
+
+            var result = await controller.ConfirmOrder() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
         [Ignore("No implemented yet")]
@@ -1649,6 +1773,38 @@ namespace Veil.Tests.Controllers
         public async void ConfirmOrder_ValidState_CallsShippingCostServiceCalculateShippingCost()
         {
             
+        }
+
+        [Ignore("No implemented yet")]
+        [Test]
+        public async void ConfirmOrder_AddressIsId_GetsAddressFromDb()
+        {
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                MemberCreditCardId = creditCardId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListWithValidMemberCart());
+            Mock<DbSet<MemberAddress>> addressDbMock = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress> { new MemberAddress { Id = details.MemberAddressId.Value } }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbMock.Object);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            await controller.ConfirmOrder();
+        }
+
+        [Ignore("No implemented yet")]
+        [Test]
+        public async void ConfirmOrder_CardIsId_GetsCardFromDb()
+        {
+
         }
 
         [Ignore("No implemented yet")]

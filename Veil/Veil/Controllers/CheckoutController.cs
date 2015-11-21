@@ -458,18 +458,6 @@ namespace Veil.Controllers
 
             Contract.Assume(orderCheckoutDetails != null);
 
-            var memberInfo =
-                await db.Users.
-                    Where(m => m.Id == memberId).
-                    Select(u => 
-                        new
-                        {
-                            FullName = u.FirstName + " " + u.LastName,
-                            PhoneNumber = u.PhoneNumber
-                        }
-                    ).
-                    SingleOrDefaultAsync();
-
             /* Setup the address information */
             MemberAddress memberAddress = await GetShippingAddress(orderCheckoutDetails);
             if (memberAddress == null)
@@ -483,6 +471,18 @@ namespace Veil.Controllers
             {
                 return RedirectToAction("BillingInfo");
             }
+
+            var memberInfo =
+                await db.Users.
+                    Where(m => m.Id == memberId).
+                    Select(u =>
+                        new
+                        {
+                            FullName = u.FirstName + " " + u.LastName,
+                            PhoneNumber = u.PhoneNumber
+                        }
+                    ).
+                    SingleOrDefaultAsync();
 
             Cart cart = await GetCartWithLoadedProductsAsync(memberId);
             var cartItems = GetConfirmOrderCartItems(cart);
@@ -935,8 +935,6 @@ namespace Veil.Controllers
                     Include(ma => ma.Province).
                     Include(ma => ma.Country).
                     SingleOrDefaultAsync(ma => ma.Id == orderCheckoutDetails.MemberAddressId);
-
-                
             }
             else
             {
