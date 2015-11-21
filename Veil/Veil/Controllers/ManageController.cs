@@ -146,7 +146,6 @@ namespace Veil.Controllers
                 this.AddAlert(AlertType.Error, e.ToString());
             }
 
-
             return RedirectToAction("Index", new { Message = message });
         }
 
