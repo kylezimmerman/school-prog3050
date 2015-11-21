@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -31,6 +32,8 @@ namespace Veil.Models
         public string MemberLastName { get; internal set; }
         public string MemberEmail { get; set; }
         public WishListVisibility MemberVisibility { get; set; }
+        public bool ReceivePromotionalEmals { get; set; }
+        public Guid UserId { get; set; }
     }
 
     public class ManageLoginsViewModel

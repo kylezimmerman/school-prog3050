@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Migrations;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -79,7 +80,6 @@ namespace Veil.Controllers
             string phoneNumber;
 
             var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-           
 
             try
             {
@@ -104,7 +104,9 @@ namespace Veil.Controllers
                 MemberFirstName = user.FirstName,
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
-                MemberVisibility = user.Member.WishListVisibility
+                MemberVisibility = user.Member.WishListVisibility,
+                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails,
+                UserId = userId
             };
 
             return View(model);
@@ -115,6 +117,35 @@ namespace Veil.Controllers
         public async Task<ActionResult> UpdateProfile(IndexViewModel viewModel)
         {
             ManageMessageId? message = null;
+
+            if (viewModel.UserId == null)
+            {
+                throw new HttpException(NotFound, "error");
+            }
+
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == viewModel.UserId);
+
+            if (user == null)
+            {
+                throw new HttpException(NotFound, "error");
+            }
+
+            user.FirstName = viewModel.MemberFirstName;
+            user.LastName = viewModel.MemberLastName;
+            user.PhoneNumber = viewModel.PhoneNumber;
+            user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
+
+            try
+            {
+                db.MarkAsModified(user);
+                await db.SaveChangesAsync();
+                this.AddAlert(AlertType.Success, "Updates made"); 
+            }
+            catch (Exception e)
+            {
+                this.AddAlert(AlertType.Error, e.ToString());
+            }
+
 
             return RedirectToAction("Index", new { Message = message });
         }
