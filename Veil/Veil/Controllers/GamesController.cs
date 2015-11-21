@@ -278,8 +278,6 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        /* TODO: Every action after this should be employee only */
-
         /// <summary>
         ///     Displays the Create Game view
         /// </summary>
@@ -337,6 +335,7 @@ namespace Veil.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Edit([Bind(Exclude = "Tags")] Game game, List<string> tags)
         {
             if (ModelState.IsValid)

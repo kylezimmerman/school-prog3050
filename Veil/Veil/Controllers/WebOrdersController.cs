@@ -154,12 +154,23 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> SetStatusCancelled(long? id, string reasonForCancellation)
+        public async Task<ActionResult> SetStatusCancelled(long? id, string reasonForCancellation, bool? confirmed)
         {
+            bool badArguments = false;
+            if (confirmed == null || !confirmed.Value)
+            {
+                this.AddAlert(AlertType.Error, "You must confirm your action by checking \"Confirm Cancellation.\"");
+                badArguments = true;
+            }
+
             if (string.IsNullOrWhiteSpace(reasonForCancellation))
             {
                 this.AddAlert(AlertType.Error, "You must provide a reason for cancellation.");
+                badArguments = true;
+            }
 
+            if (badArguments)
+            {
                 return RedirectToAction("Details", new { id = id });
             }
 
@@ -192,8 +203,14 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> SetStatusProcessing(long? id)
+        public async Task<ActionResult> SetStatusProcessing(long? id, bool? confirmed)
         {
+            if (confirmed == null || !confirmed.Value)
+            {
+                this.AddAlert(AlertType.Error, "You must confirm your action by checking \"Confirm Processing.\"");
+                return RedirectToAction("Details", new { id = id });
+            }
+
             WebOrder webOrder = await GetOrder(id);
 
             if (webOrder.OrderStatus != OrderStatus.PendingProcessing)
@@ -222,8 +239,14 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> SetStatusProcessed(long? id)
+        public async Task<ActionResult> SetStatusProcessed(long? id, bool? confirmed)
         {
+            if (confirmed == null || !confirmed.Value)
+            {
+                this.AddAlert(AlertType.Error, "You must confirm your action by checking \"Confirm Processed.\"");
+                return RedirectToAction("Details", new { id = id });
+            }
+
             WebOrder webOrder = await GetOrder(id);
 
             if (webOrder.OrderStatus != OrderStatus.BeingProcessed)

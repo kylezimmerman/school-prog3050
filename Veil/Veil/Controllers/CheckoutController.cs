@@ -10,14 +10,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web.Mvc;
 using System.Web.Routing;
-using JetBrains.Annotations;
 using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
@@ -760,12 +758,19 @@ namespace Veil.Controllers
             return last4Digits;
         }
 
+        /// <summary>
+        ///     Loads the member's cart with all the items and items' products included.
+        ///     Sorts the cart items using <see cref="SortCartItems"/>
+        /// </summary>
+        /// <param name="memberId">
+        ///     The id of the member whose cart should be loaded
+        /// </param>
+        /// <returns></returns>
         private async Task<Cart> GetCartWithLoadedProductsAsync(Guid memberId)
         {
             Cart cart = await db.Carts.
-                Where(m => m.MemberId == memberId).
-                Include(c => c.Items).
                 Include(c => c.Items.Select(ci => ci.Product)).
+                Where(m => m.MemberId == memberId).
                 SingleOrDefaultAsync();
 
             cart.Items = SortCartItems(cart.Items);
@@ -774,7 +779,8 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        ///     Sorts the <see cref="cartItems"/> by <see cref="CartItem.ProductId"/>
+        ///     Sorts the <see cref="cartItems"/> by <see cref="CartItem.ProductId"/> descending
+        ///     then by <see cref="CartItem.IsNew"/> ascending
         /// </summary>
         /// <param name="cartItems">
         ///     The <see cref="IEnumerable{T}"/> of <see cref="CartItem"/>s to sort
@@ -786,6 +792,7 @@ namespace Veil.Controllers
         {
             return cartItems.
                 OrderByDescending(ci => ci.ProductId).
+                ThenBy(ci => ci.IsNew).
                 ToList();
         }
 

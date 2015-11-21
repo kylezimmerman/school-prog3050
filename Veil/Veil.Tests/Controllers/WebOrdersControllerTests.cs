@@ -713,13 +713,12 @@ namespace Veil.Tests.Controllers
             Assert.That(async () => await controller.Cancel(2), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
-
         [Test]
         public async void SetStatusCancelled_ReasonIsNull_PresentsError()
         {
             WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null, stripeService: null, userManager: null);
 
-            var result = await controller.SetStatusCancelled(null, null) as RedirectToRouteResult;
+            var result = await controller.SetStatusCancelled(null, null, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
@@ -729,6 +728,23 @@ namespace Veil.Tests.Controllers
 
             AlertMessage message = ((List<AlertMessage>) alerts)[0];
             Assert.That(message.Message, Is.EqualTo("You must provide a reason for cancellation."));
+        }
+
+        [Test]
+        public async void SetStatusCancelled_Unconfirmed_PresentsError()
+        {
+            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null, stripeService: null, userManager: null);
+
+            var result = await controller.SetStatusCancelled(null, "TestReason", false) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+
+            var alerts = controller.TempData["AlertMessages"];
+            Assert.That(alerts is List<AlertMessage>);
+
+            AlertMessage message = ((List<AlertMessage>)alerts)[0];
+            Assert.That(message.Message, Is.EqualTo("You must confirm your action by checking \"Confirm Cancellation.\""));
         }
 
         [TestCase(OrderStatus.EmployeeCancelled)]
@@ -753,7 +769,7 @@ namespace Veil.Tests.Controllers
 
             WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetter: null, stripeService: null, userManager: null);
 
-            var result = await controller.SetStatusCancelled(1, "TestReason") as RedirectToRouteResult;
+            var result = await controller.SetStatusCancelled(1, "TestReason", true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
@@ -841,7 +857,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.SetStatusCancelled(1, "TestReason") as RedirectToRouteResult;
+            var result = await controller.SetStatusCancelled(1, "TestReason", true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
@@ -854,6 +870,23 @@ namespace Veil.Tests.Controllers
                 () =>
                     userManagerMock.Verify(um => um.SendEmailAsync(It.Is<Guid>(val => val == orders[0].MemberId), It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1)),
                 Throws.Nothing);
+        }
+
+        [Test]
+        public async void SetStatusProcessing_Unconfirmed_PresentsError()
+        {
+            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null, stripeService: null, userManager: null);
+
+            var result = await controller.SetStatusProcessing(null, false) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+
+            var alerts = controller.TempData["AlertMessages"];
+            Assert.That(alerts is List<AlertMessage>);
+
+            AlertMessage message = ((List<AlertMessage>)alerts)[0];
+            Assert.That(message.Message, Is.EqualTo("You must confirm your action by checking \"Confirm Processing.\""));
         }
 
         [TestCase(OrderStatus.UserCancelled)]
@@ -879,7 +912,7 @@ namespace Veil.Tests.Controllers
 
             WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetter: null, stripeService: null, userManager: null);
 
-            var result = await controller.SetStatusProcessing(1) as RedirectToRouteResult;
+            var result = await controller.SetStatusProcessing(1, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
@@ -911,7 +944,7 @@ namespace Veil.Tests.Controllers
 
             WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetter: null, stripeService: null, userManager: null);
 
-            var result = await controller.SetStatusProcessing(1) as RedirectToRouteResult;
+            var result = await controller.SetStatusProcessing(1, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
@@ -941,7 +974,7 @@ namespace Veil.Tests.Controllers
 
             WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetter: null, stripeService: null, userManager: null);
 
-            var result = await controller.SetStatusProcessed(1) as RedirectToRouteResult;
+            var result = await controller.SetStatusProcessed(1, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
@@ -951,6 +984,23 @@ namespace Veil.Tests.Controllers
 
             AlertMessage message = ((List<AlertMessage>)alerts)[0];
             Assert.That(message.Message, Is.EqualTo("An order can only be processed if its status is Being Processed."));
+        }
+
+        [Test]
+        public async void SetStatusProcessed_Unconfirmed_PresentsError()
+        {
+            WebOrdersController controller = new WebOrdersController(veilDataAccess: null, idGetter: null, stripeService: null, userManager: null);
+
+            var result = await controller.SetStatusProcessed(null, false) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+
+            var alerts = controller.TempData["AlertMessages"];
+            Assert.That(alerts is List<AlertMessage>);
+
+            AlertMessage message = ((List<AlertMessage>)alerts)[0];
+            Assert.That(message.Message, Is.EqualTo("You must confirm your action by checking \"Confirm Processed.\""));
         }
 
         [Test]
@@ -995,7 +1045,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.SetStatusProcessed(1) as RedirectToRouteResult;
+            var result = await controller.SetStatusProcessed(1, true) as RedirectToRouteResult;
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));

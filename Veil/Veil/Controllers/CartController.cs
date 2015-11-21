@@ -11,7 +11,6 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services.Interfaces;
-using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
 {

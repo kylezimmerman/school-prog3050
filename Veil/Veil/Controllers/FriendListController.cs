@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using LinqKit;
-using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -127,11 +123,11 @@ namespace Veil.Controllers
                 db.Friendships.Add(friendship);
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request sent to {targetUser.UserAccount.UserName}!");
+                this.AddAlert(AlertType.Success, $"Request sent to {targetUser.UserAccount.UserName}.");
             }
             else if (existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted)
             {
-                this.AddAlert(AlertType.Info, $"Already friends with {targetUser.UserAccount.UserName}!");
+                this.AddAlert(AlertType.Info, $"You are already friends with {targetUser.UserAccount.UserName}.");
             }
             else if (existingFriendship.Requester == currentUser)
             {
@@ -143,7 +139,7 @@ namespace Veil.Controllers
 
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved!");
+                this.AddAlert(AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved.");
             }
             
             return RedirectToAction("Index");
@@ -171,7 +167,7 @@ namespace Veil.Controllers
             existingFriendship.RequestStatus = FriendshipRequestStatus.Accepted;
             await db.SaveChangesAsync();
 
-            this.AddAlert(AlertType.Success, "Friend request approved!");
+            this.AddAlert(AlertType.Success, "Friend request approved.");
 
             return RedirectToAction("Index");
         }

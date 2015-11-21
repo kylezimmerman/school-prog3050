@@ -110,13 +110,17 @@
                         {
                             @Html.AntiForgeryToken()
                             @Html.HiddenFor(m => m.Id)
-                            <div class="row collapse">
-                                @Html.LabelFor(m => m.ReasonForCancellationMessage)
+                            <div class="row">
+                                
                                 <div class="small-8 columns">
+                                    @Html.LabelFor(m => m.ReasonForCancellationMessage)
                                     @Html.EditorFor(m => m.ReasonForCancellationMessage)
                                 </div>
                                 <div class="small-4 columns">
-                                    <button type="submit" class="alert postfix">Cancel Order</button>
+                                    <input id="confirmCancelCheckbox" name="confirmed" value="true" type="checkbox"/>
+                                    <label for="confirmCancelCheckbox">Confirm Cancellation</label>
+                                    <input type="hidden" name="confirmed" value="false" />
+                                    <button type="submit" class="small expand alert">Cancel Order</button>
                                 </div>
                             </div>
                         }
@@ -129,6 +133,11 @@
                         {
                             @Html.AntiForgeryToken()
                             @Html.HiddenFor(m => m.Id)
+                            <div class="right">
+                                <input id="confirmCheckbox" name="confirmed" value="true" type="checkbox"/>
+                                <label for="confirmCheckbox">Confirm Processing</label>
+                                <input type="hidden" name="confirmed" value="false" />
+                            </div>
                             <button type="submit" class="small expand">Begin Processing</button>
                         }
                     }
@@ -138,6 +147,11 @@
                         {
                             @Html.AntiForgeryToken()
                             @Html.HiddenFor(m => m.Id)
+                            <div class="right">
+                                <input id="confirmCheckbox" name="confirmed" value="true" type="checkbox"/>
+                                <label for="confirmCheckbox">Confirm Processed</label>
+                                <input type="hidden" name="confirmed" value="false" />
+                            </div>
                             <button type="submit" class="small expand success">Complete Processing</button>
                         }
                     }

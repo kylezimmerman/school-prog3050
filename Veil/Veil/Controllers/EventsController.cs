@@ -225,9 +225,8 @@ namespace Veil.Controllers
             return View("Details", model);
         }
 
-        // TODO: Every action after this should be employee only
-
         // GET: Events/Create
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public ActionResult Create()
         {
             return View();
@@ -241,6 +240,7 @@ namespace Veil.Controllers
         /// <returns>Sends user to the Event Index action.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Create(EventViewModel eventViewModel)
         {
             if (!ModelState.IsValid)
