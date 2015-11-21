@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using Veil.DataModels.Models;
 using Veil.DataModels.Validation;
 
 namespace Veil.Models
@@ -26,6 +27,10 @@ namespace Veil.Models
         public bool ReceivePromotionalEmail { get; set; }
 
         public string StatusMessage { get; set; }
+        public string MemberFirstName { get; internal set; }
+        public string MemberLastName { get; internal set; }
+        public string MemberEmail { get; set; }
+        public WishListVisibility MemberVisibility { get; set; }
     }
 
     public class ManageLoginsViewModel
