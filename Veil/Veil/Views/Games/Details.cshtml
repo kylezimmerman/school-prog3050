@@ -54,10 +54,6 @@
             {
                 <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
             }
-            @if (User.IsEmployeeOrAdmin())
-            {
-                // TODO: Dropdown and + button to add a tag
-            }
         </ul>
     </div>
     <div class="small-2 medium-1 columns" data-equalizer-watch>
@@ -106,50 +102,12 @@
         @{ Html.RenderPartial("~/Views/GameProducts/_DownloadGameProduct.cshtml", downloadGameProduct); }
     </div>
 }
-
-@{
-    Html.RenderAction("CreateReviewForGame", "Reviews", new { game = Model });
-}
-
-@* TODO: Implement or remove extra feature of filtering reviews based on available time *@
 <div class="row">
-    <div class="columns">
-        <span>Filter Reviews by Format</span>
-        <select>
-            <option>PS4</option>
-            <option>Xbox One</option>
-            <option>Windows</option>
-        </select>
-        <button type="submit">Apply Filter</button>
+    <div class="Column">
+        <h3>Reviews</h3>
     </div>
 </div>
-
-@foreach (var review in Model.AllReviews)
-{
-    <div class="row panel">
-        <div class="small-3 columns">
-            <h5>@review.Member.UserAccount.UserName</h5>
-            <p>Format: @review.ProductReviewed.Name</p>
-            <div class="rating panel">
-                <strong>Average Rating:</strong><br />
-                @Html.Partial("_RatingStarsPartial", review.Rating)
-            </div>
-        </div>
-        <div class="small-9 columns">
-            @{
-                if (review.ReviewStatus == ReviewStatus.Approved)
-                {
-                    <p>@review.ReviewText</p>
-                }
-                else if (review.ReviewStatus == ReviewStatus.Denied)
-                {
-                    <p><em>This review has been flagged as inappropriate.</em></p>
-                }
-                else if (review.ReviewStatus == ReviewStatus.Denied)
-                {
-                    <p><em>This review is pending approval.</em></p>
-                }
-            }
-        </div>
-    </div>
+@{
+    Html.RenderAction("CreateReviewForGame", "Reviews", new { game = Model });
+    Html.RenderAction("RenderReviewsForGame", "Reviews", new { game = Model, platform = ViewBag.Platform });
 }

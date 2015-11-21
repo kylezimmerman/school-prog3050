@@ -10,9 +10,14 @@
         {
             <div class="row">
                 <div class="column">
-                    <div data-alert class="alert-box @alert.AlertClass">
+                    <div data-alert class="alert-box margin-bottom-0 @alert.AlertClass" tabindex="0" aria-live="assertive" role="alertdialog">
                         @alert.Message
-                        <a href="#" class="close">&times;</a>
+
+                        @if (alert.Link != null)
+                        {
+                            @(Html.Raw(alert.Link))
+                        }
+                        <button tabindex="0" class="close" aria-label="Close Alert">&times;</button>
                     </div>
                 </div>
             </div>

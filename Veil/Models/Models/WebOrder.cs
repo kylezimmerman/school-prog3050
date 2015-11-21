@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -19,11 +20,13 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The order isn't being handled by anyone
         /// </summary>
+        [Display(Name = "Pending Processing")]
         PendingProcessing,
 
         /// <summary>
         ///     Someone is currently processing the order
         /// </summary>
+        [Display(Name = "Being Processed")]
         BeingProcessed,
 
         /// <summary>
@@ -33,12 +36,16 @@ namespace Veil.DataModels.Models
 
         /// <summary>
         ///     The user cancelled the order.
+        ///     The ReasonForCancellationMessage distinguishes between user and employee cancelled orders
         /// </summary>
+        [Display(Name = "Cancelled")]
         UserCancelled,
 
         /// <summary>
         ///     An employee cancelled the order
+        ///     The ReasonForCancellationMessage distinguishes between user and employee cancelled orders
         /// </summary>
+        [Display(Name = "Cancelled")]
         EmployeeCancelled
     }
 
@@ -131,6 +138,22 @@ namespace Veil.DataModels.Models
         ///     A message explaining why the order was cancelled by an employee
         /// </summary>
         [MaxLength(512)]
+        [DisplayName("Reason For Cancellation")]
         public string ReasonForCancellationMessage { get; set; }
+
+        /// <summary>
+        ///     The total tax amount for the order
+        /// </summary>
+        public decimal TaxAmount { get; set; }
+
+        /// <summary>
+        ///     The shipping cost for the order
+        /// </summary>
+        public decimal ShippingCost { get; set; }
+
+        /// <summary>
+        ///     The cart subtotal
+        /// </summary>
+        public decimal OrderSubtotal { get; set; }
     }
 }

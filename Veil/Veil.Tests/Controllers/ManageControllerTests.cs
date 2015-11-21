@@ -604,7 +604,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.CreateAddress(viewModel) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageAddresses)));
         }
 
@@ -653,7 +653,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.EditAddress(addressId) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel) result.Model;
@@ -692,7 +692,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.EditAddress(addressId) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<AddressViewModel>());
 
             var model = (AddressViewModel) result.Model;
@@ -1051,7 +1051,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.EditAddress(addressId, viewModel) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageAddresses)));
         }
 
@@ -1205,7 +1205,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.CreateCreditCard(token) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
         }
 
@@ -1445,7 +1445,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.CreateCreditCard(stripeCardToken) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
         }
 
@@ -1624,7 +1624,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.CreateCreditCard(stripeCardToken) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
         }
     }

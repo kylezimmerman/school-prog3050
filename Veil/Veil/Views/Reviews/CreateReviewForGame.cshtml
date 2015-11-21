@@ -1,31 +1,56 @@
-﻿@model Veil.Models.ReviewViewModel
+﻿@using Veil.Controllers
+@model Veil.Models.ReviewViewModel
 
-@using (Html.BeginForm())
+<style>
+</style>
+
+@using (Html.BeginForm("CreateReviewForGameProduct", "Reviews"))
 {
     @Html.AntiForgeryToken()
-    <div class="row">
-        <div class="small-12 columns">
-            <h3>Ratings and Reviews</h3>
-        </div>
-    </div>
+    @Html.HiddenFor(model => model.GameId)
+
     <div class="row panel">
         <div class="column">
-            <h4>Rate the Game</h4>
+            <h4>Leave a Review</h4>
+            <div class="row">
+                <div class="medium-4 column">
+                    @if (Model.Review == null)
+                    {
+                        @Html.LabelFor(model => model.Review.ProductReviewedId)
+                        @Html.DropDownListFor(model => model.Review.ProductReviewedId, Model.GameSKUSelectList)
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(model => model.Review.ProductReviewedId)
+                        <strong>Format:</strong>
+                        @Model.Review.ProductReviewed.Name
+                    }
 
-            @for (int i = 1; i <= 5; i++)
-            {
-                <label class="rating">
-                    @Html.RadioButtonFor(model => model.Review.Rating, i)
-                    @i
-                </label>
-            }
+                    <fieldset>
+                        <legend>Rating</legend>
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            <label class="rating">
+                                @Html.RadioButtonFor(model => model.Review.Rating, i)
+                                <span class="show-for-sr">@i stars</span>
 
-            @Html.DropDownListFor(model => model.Game.GameSKUs, Model.GameSKUSelectList)
+                                @for (int r = 1; r <= i; r++)
+                                {
+                                    <i class="fa fa-star"></i>
+                                }
+                            </label>
+                            <br/>
+                        }
+                    </fieldset>
+                </div>
 
-            @Html.LabelFor(model => model.Review.ReviewText)
-            @Html.EditorFor(model => model.Review.ReviewText, new { placeholder = "Write a review!" })
+                <div class="medium-8 column">
+                    @Html.LabelFor(model => model.Review.ReviewText)
+                    @Html.EditorFor(model => model.Review.ReviewText)
+                </div>
+            </div>
 
-            <button class="right" type="submit">Submit Rating</button>
+            <button class="right" type="submit">Submit Review</button>
         </div>
     </div>
 }

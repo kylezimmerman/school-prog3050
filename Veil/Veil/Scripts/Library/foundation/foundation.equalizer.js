@@ -35,12 +35,12 @@
       settings.before_height_change();
       equalizer.trigger('before-height-change').trigger('before-height-change.fndth.equalizer');
       vals.height('inherit');
-      vals.each(function(){
-        var el = $(this);
-        if (el.offset().top !== firstTopOffset) {
-          isStacked = true;
-        }
-      });
+      //vals.each(function(){
+      //  var el = $(this);
+      //  if (el.offset().top !== firstTopOffset) {
+      //    isStacked = true;
+      //  }
+      //});
 
       if (settings.equalize_on_stack === false) {
         if (isStacked) return;

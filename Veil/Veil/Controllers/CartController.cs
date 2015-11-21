@@ -9,6 +9,8 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Helpers;
+using Veil.Models;
+using Veil.Services.Interfaces;
 using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
@@ -18,13 +20,15 @@ namespace Veil.Controllers
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
+        private readonly IShippingCostService shippingCostService;
 
         public const string CART_QTY_SESSION_KEY = "Session.Cart.Quantity";
         
-        public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
+        public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IShippingCostService shippingCostService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
+            this.shippingCostService = shippingCostService;
         }
 
         // GET: Cart
@@ -36,7 +40,15 @@ namespace Veil.Controllers
         /// </returns>
         public async Task<ActionResult> Index()
         {
-            return View(await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)));
+            CartViewModel model = new CartViewModel
+            {
+                Cart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)),
+            };
+
+            model.ShippingCost = shippingCostService.CalculateShippingCost(model.Cart.TotalCartItemsPrice,
+                model.Cart.Items);
+
+            return View(model);
         }
 
         /// <summary>
@@ -82,14 +94,13 @@ namespace Veil.Controllers
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
                 this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully added to your your cart.");
-                SetSessionCartQty();
+                Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
                 this.AddAlert(AlertType.Error, $"An error occured while adding {platform}: {name} to your cart");
             }
 
-            //do we really want this to redirect the user
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
@@ -126,7 +137,7 @@ namespace Veil.Controllers
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
                 this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully removed for your cart");
-                SetSessionCartQty();
+                Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
@@ -161,7 +172,12 @@ namespace Veil.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (quantity.Value < 1)
+            if (quantity.Value == 0)
+            {
+                return RedirectToAction("RemoveItem", new { productId = productId, isNew = isNew });
+            }
+
+            if (quantity.Value < 0)
             {
                 this.AddAlert(AlertType.Error,
                     "Your cart cannot contain less than 1 of a product. Consider removing the item from your cart instead.");
@@ -176,20 +192,42 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(CartItem));
             }
 
-            int usedInventory = item.Product.UsedInventory;
-
-            if (usedInventory < quantity.Value)
+            if (isNew.Value)
             {
-                quantity = usedInventory;
-                this.AddAlert(AlertType.Warning,
-                    $"We do not have enough used copies of {item.Product.Name} to fulfill your order. There are {quantity} available for purchase.");
+                int newInventory = item.Product.NewInventory;
+
+                if (newInventory < quantity.Value)
+                {
+                    this.AddAlert(AlertType.Info,
+                        $"We currently have {newInventory} new copies of {item.Product.Name}. Your order may take longer to process than usual.");
+                }
+            }
+            else
+            {
+                int usedInventory = item.Product.UsedInventory;
+
+                if (usedInventory < quantity.Value)
+                {
+                    quantity = usedInventory;
+                    this.AddAlert(AlertType.Warning,
+                        $"We currently have {usedInventory} used copies of {item.Product.Name}. Your cart has been set to the maximum deliverable quantity.");
+                }
             }
 
             item.Quantity = quantity.Value;
             await db.SaveChangesAsync();
 
             this.AddAlert(AlertType.Success, $"{item.Product.Name} quantity set to {quantity}.");
-            return View("Index", currentMemberCart);
+
+            CartViewModel model = new CartViewModel
+            {
+                Cart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)),
+            };
+
+            model.ShippingCost = shippingCostService.CalculateShippingCost(model.Cart.TotalCartItemsPrice,
+                model.Cart.Items);
+
+            return View("Index", model);
         }
 
         /// <summary>
@@ -199,9 +237,10 @@ namespace Veil.Controllers
         public void SetSessionCartQty()
         {
             Guid currentUserId = idGetter.GetUserId(User.Identity);
-            Member currentMember = db.Members.Find(currentUserId);
 
-            Session[CART_QTY_SESSION_KEY] = currentMember.Cart.Items.Count;
+            int cartCount = db.Carts.Where(c => c.MemberId == currentUserId).Select(c => c.Items.Count).SingleOrDefault();
+
+            Session[CART_QTY_SESSION_KEY] = cartCount;
         }
     }
 }

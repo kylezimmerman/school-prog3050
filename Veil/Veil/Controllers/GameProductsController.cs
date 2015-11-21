@@ -89,40 +89,41 @@ namespace Veil.Controllers
 
             GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
 
-            if (gameProduct != null)
-            {
-                string gameName = gameProduct.Game.Name;
-                string platform = gameProduct.Platform.PlatformName;
-                try
-                {
-                    // TODO: This is new untested code.
-                    // TODO: We might want a specific message for failing to delete due to existing inventory
-                    db.ProductLocationInventories.RemoveRange(
-                        await db.ProductLocationInventories.Where(
-                                pli =>
-                                    pli.ProductId == id &&
-                                    pli.NewOnHand == 0 &&
-                                    pli.UsedOnHand == 0 &&
-                                    pli.NewOnOrder == 0).ToListAsync()
-                    );
-                    // TODO: End new untested code.
-
-                    db.GameProducts.Remove(gameProduct);
-                    
-                    await db.SaveChangesAsync();
-                    this.AddAlert(AlertType.Success, platform + ": " + gameName + " was deleted succesfully");
-                }
-                catch (DbUpdateException)
-                {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + platform + ": " + gameName);
-                    return View(gameProduct);
-                }
-            }
-            else
+            if (gameProduct == null)
             {
                 // TODO: Actually give this a message. Cmon Sean!
                 throw new HttpException(NotFound, "some message");
             }
+
+            string gameName = gameProduct.Game.Name;
+            string platform = gameProduct.Platform.PlatformName;
+
+            try
+            {
+                // TODO: This is new untested code.
+                // TODO: We might want a specific message for failing to delete due to existing inventory
+                db.ProductLocationInventories.RemoveRange(
+                    await db.ProductLocationInventories.Where(
+                            pli =>
+                                pli.ProductId == id &&
+                                pli.NewOnHand == 0 &&
+                                pli.UsedOnHand == 0 &&
+                                pli.NewOnOrder == 0).ToListAsync()
+                );
+                // TODO: End new untested code.
+
+                db.GameProducts.Remove(gameProduct);
+
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // TODO: This fails due to the platform and game being null
+                this.AddAlert(AlertType.Error, "There was an error deleting " + platform + ": " + gameName);
+                return View(gameProduct);
+            }
+
+            this.AddAlert(AlertType.Success, platform + ": " + gameName + " was deleted succesfully");
 
             return RedirectToAction("Index", "Games");
         }

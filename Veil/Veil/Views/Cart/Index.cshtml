@@ -1,5 +1,5 @@
 ﻿@using Veil.DataModels.Models
-@model Cart
+@model Veil.Models.CartViewModel
 
 @{
     ViewBag.Title = "Your Cart";
@@ -11,7 +11,7 @@
     </div>
 </div>
 
-@if (!Model.Items.Any())
+@if (!Model.Cart.Items.Any())
 {
     <div class="row">
         <div class="column">
@@ -21,7 +21,7 @@
 }
 else
 {
-    foreach (var item in Model.Items.Where(i => i.Product is PhysicalGameProduct))
+    foreach (var item in Model.Cart.Items.Where(i => i.Product is PhysicalGameProduct))
     {
         var gameProduct = item.Product as PhysicalGameProduct;
         <div class="row panel" data-equalizer>
@@ -90,20 +90,13 @@ else
         </div>
     }
 
-    <div class="row panel">
+    <div class="row">
         <div class="column">
             <table class="right">
-                <tr><th>Item Total:</th><td>@Model.TotalCartItemsPrice.ToString("C")</td></tr>
+                <tr><th>Item Total:</th><td>@Model.Cart.TotalCartItemsPrice.ToString("C")</td></tr>
                 <tr>
                     <th>Shipping &amp; Handling:</th>
-                    @if (Model.TotalCartItemsPrice < 120m)
-                    {
-                        <td>$12.00</td>
-                    }
-                    else
-                    {
-                        <td>Free</td>
-                    }
+                    <td>@Model.ShippingCost.ToString("C")</td>
                 </tr>
                 <tr><td colspan="2">@Html.ActionLink("Proceed to Checkout", "ShippingInfo", new { Controller = "Checkout" }, new { @class = "button expand small success margin-bottom-0" })</td></tr>
             </table>

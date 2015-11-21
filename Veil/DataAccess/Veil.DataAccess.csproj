@@ -156,6 +156,14 @@
     <Compile Include="Migrations\201511171619572_Updated_OrderItem_PK_ToMatchCartItem.Designer.cs">
       <DependentUpon>201511171619572_Updated_OrderItem_PK_ToMatchCartItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511172126299_Added_CascadeDeletes.cs" />
+    <Compile Include="Migrations\201511172126299_Added_CascadeDeletes.Designer.cs">
+      <DependentUpon>201511172126299_Added_CascadeDeletes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511181352200_Added_Costs_ToWebOrder.cs" />
+    <Compile Include="Migrations\201511181352200_Added_Costs_ToWebOrder.Designer.cs">
+      <DependentUpon>201511181352200_Added_Costs_ToWebOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -203,6 +211,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511171619572_Updated_OrderItem_PK_ToMatchCartItem.resx">
       <DependentUpon>201511171619572_Updated_OrderItem_PK_ToMatchCartItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511172126299_Added_CascadeDeletes.resx">
+      <DependentUpon>201511172126299_Added_CascadeDeletes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511181352200_Added_Costs_ToWebOrder.resx">
+      <DependentUpon>201511181352200_Added_Costs_ToWebOrder.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

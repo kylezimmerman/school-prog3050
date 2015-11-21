@@ -41,7 +41,7 @@ namespace Veil.DataAccess.EntityConfigurations
             HasRequired(ma => ma.Member).
                 WithMany(m => m.ShippingAddresses).
                 HasForeignKey(ma => ma.MemberId).
-                WillCascadeOnDelete(true); // TODO: Figure out what this cascade delete actually means
+                WillCascadeOnDelete(true);
 
             /* Map Complex Type */
             Property(wo => wo.Address.StreetAddress).HasColumnName(nameof(Address.StreetAddress));

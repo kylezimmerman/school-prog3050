@@ -30,7 +30,7 @@
             </div>
 
             <div class="row collapse">
-                @using (Html.BeginForm("EditAddress", "Manage", FormMethod.Get)) // TODO: Change the action name for this form
+                @using (Html.BeginForm("DeleteAddress", "Manage", FormMethod.Get))
                 {
                     <input type="hidden" id="deleteAddressId" name="addressId" />
 

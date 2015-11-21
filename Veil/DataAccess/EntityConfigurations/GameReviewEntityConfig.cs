@@ -32,12 +32,14 @@ namespace Veil.DataAccess.EntityConfigurations
              */
 
             HasRequired(gr => gr.ProductReviewed).
-                WithMany(g => g.Reviews).
-                HasForeignKey(gr => gr.ProductReviewedId);
+                WithMany(gp => gp.Reviews).
+                HasForeignKey(gr => gr.ProductReviewedId).
+                WillCascadeOnDelete(true);
 
             HasRequired(g => g.Member).
                 WithMany().
-                HasForeignKey(g => g.MemberId);
+                HasForeignKey(g => g.MemberId).
+                WillCascadeOnDelete(true);
 
             // Map concrete type
             Map(

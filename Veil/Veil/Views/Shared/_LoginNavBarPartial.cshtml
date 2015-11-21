@@ -25,7 +25,10 @@
                         @Html.ActionLink("Create Event", "Create", new { Controller = "Events" })
                     </li>
                     <li>
-                        @Html.ActionLink("Unprocessed Orders", "UnprocessedOrders", new { Controller = "WebOrders" })
+                        @Html.ActionLink("Unprocessed Orders", "UnprocessedOrders", new {Controller = "WebOrders"})
+                    </li>
+                    <li>
+                        @Html.ActionLink("Process Reviews", "Pending", new { Controller = "Reviews" })
                     </li>
                     <li>
                         @Html.ActionLink("Reports", "Index", new { Controller = "Reports" })
@@ -41,10 +44,13 @@
                         @Html.ActionLink("My Orders", "Index", new { Controller = "WebOrders" })
                     </li>
                     <li>
-                        @Html.ActionLink("Account Settings", "Index", new { Controller = "Manage" })
+                        @Html.ActionLink("My Events", "MyEvents", new {Controller = "Events"})
                     </li>
                     <li>
-                        @Html.ActionLink("Friends List", "Index", new { Controller = "FriendList" })
+                        @Html.ActionLink("My Friends", "Index", new { Controller = "FriendList" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Account Settings", "Index", new { Controller = "Manage" })
                     </li>
                 }
             </ul>

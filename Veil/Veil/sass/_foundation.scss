@@ -1,4 +1,4 @@
-@charset "UTF-8";
+﻿@charset "UTF-8";
 // Foundation by ZURB
 // foundation.zurb.com
 // Licensed under MIT Open Source
@@ -6,6 +6,7 @@
 // Make sure the charset is set appropriately
 
 // Behold, here are all the Foundation components.
+  @import "foundation/_settings.scss";
   @import "foundation/components/grid";
   @import "foundation/components/accordion";
   @import "foundation/components/alert-boxes";

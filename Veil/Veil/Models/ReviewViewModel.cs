@@ -9,8 +9,8 @@ namespace Veil.Models
 {
     public class ReviewViewModel
     {
-        public Game Game { get; set; }
+        public Guid GameId { get; set; }
         public SelectList GameSKUSelectList { get; set; }
-        public Review<GameProduct> Review { get; set; }
+        public GameReview Review { get; set; }
     }
 }

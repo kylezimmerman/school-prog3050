@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Veil.DataModels.Models
@@ -49,6 +50,7 @@ namespace Veil.DataModels.Models
         /// The review's text
         /// </summary>
         [DataType(DataType.MultilineText)]
+        [DisplayName("Review Description")]
         [MaxLength(4000)] // Note: SQL Server maximum specifiable size. 
             // MAX (which is used above 4000) allows 2GB of text which I'd rather not allow the user to do
         public string ReviewText { get; set; }
@@ -59,8 +61,9 @@ namespace Veil.DataModels.Models
         public ReviewStatus ReviewStatus { get; set; }
 
         /// <summary>
-        /// The <see cref="TKey"/> Id for the <see cref="TProduct"/> this review is for
+        /// The Id for the <see cref="TProduct"/> this review is for
         /// </summary>
+        [DisplayName("SKU")]
         [Key]
         public Guid ProductReviewedId { get; set; }
 

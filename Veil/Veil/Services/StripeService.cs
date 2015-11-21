@@ -10,18 +10,11 @@ namespace Veil.Services
     [UsedImplicitly]
     public class StripeService : IStripeService
     {
+        // TODO: I'd like to create our own StripeException and handle the exceptions in here in a way that lets the users just output the message of the exception
+
         /// <summary>
-        ///     Creates a Stripe customer for the given user
+        ///     Implements <see cref="IStripeService.CreateCustomer"/>
         /// </summary>
-        /// <param name="user">
-        ///     The User to create a Stripe customer for
-        /// </param>
-        /// <returns>
-        ///     The Stripe customer Id for the user
-        /// </returns>
-        /// <exception cref="StripeException">
-        ///     Thrown if Stripe returns any errors
-        /// </exception>
         public string CreateCustomer(User user)
         {
             var myCustomer = new StripeCustomerCreateOptions
@@ -38,22 +31,8 @@ namespace Veil.Services
         }
 
         /// <summary>
-        ///     Adds the credit card represented by <see cref="stripeCardToken"/> to the
-        ///     <see cref="member"/>'s Customer account
+        ///     Implements <see cref="IStripeService.CreateCreditCard"/>
         /// </summary>
-        /// <param name="member">
-        ///     The <see cref="Member"/> who this credit card belongs to
-        /// </param>
-        /// <param name="stripeCardToken">
-        ///     The Stripe Token for the new credit card
-        /// </param>
-        /// <returns>
-        ///     A new <see cref="MemberCreditCard"/> containing the new card's information
-        /// </returns>
-        /// <exception cref="StripeException">
-        ///     Thrown if Stripe returns any errors.
-        ///     The messages are safe to display to the user.
-        /// </exception>
         public MemberCreditCard CreateCreditCard(Member member, string stripeCardToken)
         {
             // Note: Stripe says their card_error messages are safe to display to the user
@@ -90,14 +69,8 @@ namespace Veil.Services
         }
 
         /// <summary>
-        ///     Retrived the last 4 digits for the credit card represented by the <see cref="stripeCardToken"/>
+        ///     Implements <see cref="IStripeService.GetLast4ForToken"/>
         /// </summary>
-        /// <param name="stripeCardToken">
-        ///     The token representing the card you want the last 4 digits of
-        /// </param>
-        /// <returns>
-        ///     The last 4 digits of the token's card
-        /// </returns>
         public string GetLast4ForToken(string stripeCardToken)
         {
             StripeTokenService tokenService = new StripeTokenService();
@@ -107,12 +80,15 @@ namespace Veil.Services
             return token.StripeCard.Last4;
         }
 
-        public string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null)
+        /// <summary>
+        ///     Implements <see cref="IStripeService.ChargeCard"/>
+        /// </summary>
+        public string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null, string description = null)
         {
             var newCharge = new StripeChargeCreateOptions
             {
                 Amount = (int)Math.Round(chargeAmount, 2) * 100,
-                //Description = "",
+                Description = description,
                 Capture = true,
                 Currency = "CAD",
                 CustomerId = customerId,
@@ -130,11 +106,14 @@ namespace Veil.Services
             return charge.Id;
         }
 
+        /// <summary>
+        ///     Implements <see cref="IStripeService.RefundCharge"/>
+        /// </summary>
         public bool RefundCharge(string chargeId)
         {
-            StripeRefundService chargeService = new StripeRefundService();
+            StripeRefundService refundService = new StripeRefundService();
 
-            StripeRefund refund = chargeService.Create(chargeId);
+            StripeRefund refund = refundService.Create(chargeId);
 
             return refund.Amount > 0;
         }

@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
+using Veil.Models.Reports;
 
 namespace Veil.Controllers
 {
@@ -21,14 +26,31 @@ namespace Veil.Controllers
 
         //Game List report
         [HttpGet]
-        public ActionResult GameList()
+        public async Task<ActionResult> GameList()
         {
-            return View();
+            // TODO: Remove these comments upon testing the query more
+            //var blerg = db.Games.Select(g => g.GameSKUs.SelectMany(gs => db.WebOrders.Select(wo => wo.OrderItems.Where(oi => oi.ProductId == gs.Id).Select(oi => oi.Quantity).DefaultIfEmpty(0).Sum()))).ToList();
+            // Potential solution to the blerg above
+            var gameList = await db.Games
+                .Select(g =>
+                    new GameListViewModel
+                    {
+                        Game = g,
+                        QuantitySold = db.WebOrders
+                            .SelectMany(wo => wo.OrderItems
+                                .Where(oi => g.GameSKUs.Contains(oi.Product)))
+                            .Select(oi => oi.Quantity)
+                            .DefaultIfEmpty(0).Sum()
+                    }
+                ).ToListAsync();
+
+            return View(gameList);
         }
 
         [HttpPost]
         public ActionResult GameList(DateTime start, DateTime? end)
         {
+            
             end = end ?? DateTime.Now;
 
             return View();
@@ -36,7 +58,7 @@ namespace Veil.Controllers
 
         //Game Detail report
         [HttpGet]
-        public ActionResult GameDetail()
+        public ActionResult GameDetail(Guid gameGuid)
         {
             return View();
         }

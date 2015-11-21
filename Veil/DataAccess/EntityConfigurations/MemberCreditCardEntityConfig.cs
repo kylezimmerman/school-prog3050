@@ -30,7 +30,8 @@ namespace Veil.DataAccess.EntityConfigurations
              */
             HasRequired(cc => cc.Member).
                 WithMany(m => m.CreditCards).
-                HasForeignKey(cc => cc.MemberId);
+                HasForeignKey(cc => cc.MemberId).
+                WillCascadeOnDelete(true);
         }
     }
 }

@@ -172,7 +172,7 @@ namespace Veil.Models
         /// <summary>
         ///     Formats the PostalCode to be the standard persisted format
         /// </summary>
-        public void FormatPostalCode()
+        public virtual void FormatPostalCode()
         {
             if (CountryCode == "CA" && postalCodeRegex.IsMatch(PostalCode))
             {
@@ -196,7 +196,7 @@ namespace Veil.Models
         ///     The new <see cref="Address"/> instance with the values of this
         ///     <see cref="AddressViewModel"/>
         /// </returns>
-        public Address MapToNewAddress()
+        public virtual Address MapToNewAddress()
         {
             return new Address
             {

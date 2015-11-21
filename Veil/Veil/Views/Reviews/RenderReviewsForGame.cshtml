@@ -1,0 +1,65 @@
+﻿@using Veil.DataModels.Models
+@model IEnumerable<Veil.DataModels.Models.GameReview>
+
+@* TODO: Implement or remove extra feature of filtering reviews based on available time *@
+
+@if (!Model.Any())
+{
+    <div class="row panel">
+        <div class="column">
+            No reviews found. You can be the first!
+        </div>
+    </div>
+}
+
+@foreach (var review in Model)
+{
+    <div class="row panel">
+
+        @if (!string.IsNullOrWhiteSpace(review.ReviewText))
+        {
+            <div class="row" data-equalizer>
+                <div class="medium-4 large-3 column">
+                    <div class="panel" data-equalizer-watch>
+                        <h5>@review.Member.UserAccount.UserName</h5>
+                        <span class="rating">@Html.Partial("_RatingStarsPartial", (double?)review.Rating)</span>
+                        <p>
+                            <strong>Format:</strong><br />
+                            @review.ProductReviewed.Name
+                        </p>
+                    </div>
+                </div>
+                <div class="medium-8 large-9 columns">
+                    <div class="panel light" data-equalizer-watch>
+                        @if (review.ReviewStatus == ReviewStatus.Approved)
+                        {
+                            <p>@review.ReviewText</p>
+                        }
+                        else if (review.ReviewStatus == ReviewStatus.Denied)
+                        {
+                            <p>
+                                <em>This review has been flagged as inappropriate.</em>
+                            </p>
+                        }
+                        else
+                        {
+                            <p>
+                                <em>This review is pending approval.</em>
+                            </p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="column">
+                    <h5 style="display: inline-block">@review.Member.UserAccount.UserName</h5>
+                    <span class="rating">@Html.Partial("_RatingStarsPartial", (double?)review.Rating)</span>
+                    <span class="right"><strong>Format:</strong> @review.ProductReviewed.Name</span>
+                </div>
+            </div>
+        }
+    </div>
+}

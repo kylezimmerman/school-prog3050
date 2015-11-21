@@ -16,6 +16,11 @@ namespace Veil.Helpers
         public AlertType Type { get; set; }
         public string Message { get; set; }
 
+        /// <summary>
+        ///     WARNING: This is rendered using Html.Raw. Do not include user input in this string
+        /// </summary>
+        public string Link { get; set; }
+
         public string AlertClass
         {
             get
@@ -39,10 +44,10 @@ namespace Veil.Helpers
 
     public static class AlertHelper
     {
-        public static void AddAlert(this Controller controller, AlertType type, string message)
+        public static void AddAlert(this Controller controller, AlertType type, string message, string link = null)
         {
             List<AlertMessage> alerts = controller.TempData["AlertMessages"] as List<AlertMessage> ?? new List<AlertMessage>();
-            alerts.Add(new AlertMessage() {Type = type, Message = message});
+            alerts.Add(new AlertMessage() {Type = type, Message = message, Link = link});
             controller.TempData["AlertMessages"] = alerts;
         }
 
