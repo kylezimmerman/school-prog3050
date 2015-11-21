@@ -1,5 +1,5 @@
 ﻿@using Veil.DataModels.Models
-@model IEnumerable<Veil.DataModels.Models.GameReview>
+@model IEnumerable<GameReview>
 
 @* TODO: Implement or remove extra feature of filtering reviews based on available time *@
 
@@ -25,7 +25,7 @@
                         <span class="rating">@Html.Partial("_RatingStarsPartial", (double?)review.Rating)</span>
                         <p>
                             <strong>Format:</strong><br />
-                            @review.ProductReviewed.Name
+                            @review.ProductReviewed.NamePlatformDistinct
                         </p>
                     </div>
                 </div>

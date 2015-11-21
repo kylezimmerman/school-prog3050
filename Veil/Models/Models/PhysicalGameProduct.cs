@@ -18,6 +18,8 @@ namespace Veil.DataModels.Models
     {
         public override string Name => $"{base.Name} {SKUNameSuffix}";
 
+        public override string NamePlatformDistinct => $"{Name} ({Platform.PlatformName})";
+
         /// <summary>
         /// The optional suffix for this specific SKU of the game.
         /// <example>

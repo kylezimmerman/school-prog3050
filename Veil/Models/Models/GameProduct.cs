@@ -76,6 +76,11 @@ namespace Veil.DataModels.Models
         public override string Name => Game.Name;
 
         /// <summary>
+        /// Gets the name for this GameProduct with its platform
+        /// </summary>
+        public virtual string NamePlatformDistinct => $"{Game.Name} ({Platform.PlatformName})";
+
+        /// <summary>
         ///     The Game's SKU's average rating
         /// </summary>
         public double? AverageRating

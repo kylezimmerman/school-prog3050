@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +35,7 @@ namespace Veil.Controllers
             ReviewViewModel viewModel = new ReviewViewModel
             {
                 GameId = game.Id,
-                GameSKUSelectList = new SelectList(game.GameSKUs, "Id", "Name"),
+                GameSKUSelectList = new SelectList(game.GameSKUs, "Id", "NamePlatformDistinct"),
                 Review = previousReview
             };
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
@@ -77,6 +78,9 @@ namespace Veil.Controllers
 
             string phoneNumber;
 
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+           
+
             try
             {
                 phoneNumber = await userManager.GetPhoneNumberAsync(userId);
@@ -96,7 +100,11 @@ namespace Veil.Controllers
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
                 BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
-                StatusMessage = statusMessage
+                StatusMessage = statusMessage,
+                MemberFirstName = user.FirstName,
+                MemberLastName = user.LastName,
+                MemberEmail = user.Email,
+                MemberVisibility = user.Member.WishListVisibility
             };
 
             return View(model);

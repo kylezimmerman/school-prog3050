@@ -11,7 +11,6 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services.Interfaces;
-using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
 {
@@ -51,6 +50,14 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        ///     Adds item to cart
+        /// </summary>
+        /// <param name="productId">the id of the product thats being added</param>
+        /// <param name="isNew">bool representing if product is new or used</param>
+        /// <returns>
+        ///     game details  page
+        /// </returns>
         public async Task<ActionResult> AddItem(Guid? productId, bool? isNew)
         {
             if (productId == null || isNew == null)
@@ -96,6 +103,14 @@ namespace Veil.Controllers
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
+        /// <summary>
+        ///     removed selected item from the cart
+        /// </summary>
+        /// <param name="productId">the id of product being removed</param>
+        /// <param name="isNew">represents if the product is used or new</param>
+        /// <returns>
+        ///     The index of the car controller
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemoveItem(Guid? productId, bool? isNew)
