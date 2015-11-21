@@ -1504,7 +1504,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.RouteValues, Is.Not.Null);
-            Assert.That(result.RouteValues["Id"], Is.EqualTo(game.Id));
+            Assert.That(result.RouteValues["id"], Is.EqualTo(game.Id));
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
         }
 
@@ -1695,7 +1695,7 @@ namespace Veil.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(game.Tags, Is.Empty);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
-            Assert.That(result.RouteValues["Id"], Is.EqualTo(game.Id));
+            Assert.That(result.RouteValues["id"], Is.EqualTo(game.Id));
         }
 
         [Test]
@@ -1775,7 +1775,7 @@ namespace Veil.Tests.Controllers
             Assert.That(game.Tags.Count, Is.EqualTo(1));
             Assert.That(game.Tags, Contains.Item(tag));
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
-            Assert.That(result.RouteValues["Id"], Is.EqualTo(game.Id));
+            Assert.That(result.RouteValues["id"], Is.EqualTo(game.Id));
         }
 
         [Test]

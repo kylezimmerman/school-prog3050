@@ -1042,32 +1042,6 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        ///     Renders the full-path viewName with the specified object and returns it as a string
-        /// </summary>
-        /// <param name="viewName">
-        ///     The full path to including extension for the view to render
-        /// </param>
-        /// <param name="model">
-        ///     The model to use for the view
-        /// </param>
-        /// <returns>
-        ///     The rendered view as a string
-        /// </returns>
-        private string RenderRazorPartialViewToString([NotNull]string viewName, object model)
-        {
-            ViewData.Model = model;
-
-            using (var sw = new StringWriter())
-            {
-                var viewResult = ViewEngines.Engines.FindPartialView(ControllerContext, viewName);
-                var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw);
-                viewResult.View.Render(viewContext, sw);
-                viewResult.ViewEngine.ReleaseView(ControllerContext, viewResult.View);
-                return sw.GetStringBuilder().ToString();
-            }
-        }
-
-        /// <summary>
         ///     Ensures the <see cref="checkoutDetails"/> is in a valid state for the billing step
         /// </summary>
         /// <param name="checkoutDetails">
