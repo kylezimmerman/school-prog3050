@@ -1235,7 +1235,7 @@ namespace Veil.Tests.Controllers
             var result = await controller.Details(matchingGame.Id) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.Not.Null);
+            Assert.That(result.Model != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
 
             var model = (Game) result.Model;
@@ -1271,7 +1271,7 @@ namespace Veil.Tests.Controllers
             var result = await controller.Details(matchingGame.Id) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.Not.Null);
+            Assert.That(result.Model != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
 
             var model = (Game)result.Model;
@@ -1503,7 +1503,7 @@ namespace Veil.Tests.Controllers
             var result = await controller.Create(game, null) as RedirectToRouteResult;
 
             Assert.That(result != null);
-            Assert.That(result.RouteValues, Is.Not.Null);
+            Assert.That(result.RouteValues != null);
             Assert.That(result.RouteValues["Id"], Is.EqualTo(game.Id));
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
         }
@@ -1654,7 +1654,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.Edit(game.Id) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
             Assert.That(result.Model, Is.EqualTo(game));
         }
@@ -1692,7 +1692,7 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.Edit(game, null) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result != null);
             Assert.That(game.Tags, Is.Empty);
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
             Assert.That(result.RouteValues["Id"], Is.EqualTo(game.Id));
@@ -1770,8 +1770,8 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.Edit(game, tagNames) as RedirectToRouteResult;
 
-            Assert.That(result, Is.Not.Null);
-            Assert.That(game.Tags, Is.Not.Null);
+            Assert.That(result != null);
+            Assert.That(game.Tags != null);
             Assert.That(game.Tags.Count, Is.EqualTo(1));
             Assert.That(game.Tags, Contains.Item(tag));
             Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
@@ -1793,8 +1793,8 @@ namespace Veil.Tests.Controllers
 
             var result = await controller.Edit(game, tags: null) as ViewResult;
 
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Model, Is.Not.Null);
+            Assert.That(result != null);
+            Assert.That(result.Model != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
             Assert.That(result.Model, Is.EqualTo(game));
         }
@@ -1832,7 +1832,7 @@ namespace Veil.Tests.Controllers
             var result = await controller.Delete(aGame.Id) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.Not.Null);
+            Assert.That(result.Model != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
         }
 
@@ -1861,7 +1861,7 @@ namespace Veil.Tests.Controllers
             var result = await controller.Delete(aGame.Id) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.Not.Null);
+            Assert.That(result.Model != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
         }
 
