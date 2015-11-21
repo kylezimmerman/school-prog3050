@@ -266,7 +266,7 @@ namespace Veil.Controllers
         {
             Guid memberId = GetUserId();
 
-            ActionResult invalidStateResult = await EnsureCartNotEmptyAsync(memberId);
+            RedirectToRouteResult invalidStateResult = await EnsureCartNotEmptyAsync(memberId);
             if (invalidStateResult != null)
             {
                 return invalidStateResult;
@@ -282,7 +282,7 @@ namespace Veil.Controllers
 
             var viewModel = new BillingInfoViewModel();
             await viewModel.SetupCreditCardsAndCountries(db, memberId);
-            return View("BillingInfo", viewModel);
+            return View(viewModel);
         }
 
         /// <summary>

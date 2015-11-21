@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -7,6 +8,7 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
@@ -23,19 +25,7 @@ namespace Veil.Controllers
         }
 
         [ChildActionOnly]
-        public PartialViewResult ListRatingsForGame(Guid id)
-        {
-            return PartialView();
-        }
-
-        [ChildActionOnly]
-        public PartialViewResult ListRatingsForGameProduct(Guid id)
-        {
-            return PartialView();
-        }
-
-        [ChildActionOnly]
-        public async Task<PartialViewResult> CreateReviewForGame([NotNull]Game game)
+        public PartialViewResult CreateReviewForGame([NotNull]Game game)
         {
             if (!(User?.Identity?.IsAuthenticated ?? false))
                 return null;
@@ -101,6 +91,83 @@ namespace Veil.Controllers
             }
 
             return RedirectToAction("Details", "Games", new {id = reviewViewModel.GameId});
+        }
+
+        [ChildActionOnly]
+        public PartialViewResult RenderReviewsForGame([NotNull] Game game)
+        {
+            return PartialView(game.AllReviews);
+        }
+
+        /// <summary>
+        /// This method gets all of the reviews from GameReviews and passes the list into the Pending view.
+        /// </summary>
+        /// <returns>View for Pending reviews</returns>
+        [HttpGet]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
+        public async Task<ActionResult> Pending()
+        {
+            var pendingReviews = await db.GameReviews
+                .Include(gr => gr.Member)
+                .Where(gr => gr.ReviewStatus == ReviewStatus.Pending).ToListAsync();
+
+            return View(pendingReviews);
+        }
+
+        /// <summary>
+        /// Method to approve a review.
+        /// </summary>
+        /// <param name="memberId">The GUID of the member who made the review.</param>
+        /// <param name="productReviewedId">The GUID of the product that was reviewed.</param>
+        /// <returns>Redirect to Pending action to display reviews awaiting approval.</returns>
+        [HttpGet]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
+        public async Task<ActionResult> Approve(Guid memberId, Guid productReviewedId)
+        {
+            var review = await db.GameReviews
+                .FirstOrDefaultAsync(gr => gr.MemberId == memberId
+                                            && gr.ProductReviewedId == productReviewedId);
+
+            if (review == null)
+            {
+                throw new HttpException(NotFound, nameof(GameReview));
+            }
+
+            review.ReviewStatus = ReviewStatus.Approved;
+
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Review approved!");
+
+            return RedirectToAction("Pending");
+        }
+
+        /// <summary>
+        /// Method to deny a review.
+        /// </summary>
+        /// <param name="memberId">The GUID of the member who made the review.</param>
+        /// <param name="productReviewedId">The GUID of the product that was reviewed.</param>
+        /// <returns>Redirect to Pending action to display reviews awaiting approval.</returns>
+        [HttpGet]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
+        public async Task<ActionResult> Deny(Guid memberId, Guid productReviewedId)
+        {
+            var review = await db.GameReviews
+                .FirstOrDefaultAsync(gr => gr.MemberId == memberId
+                                            && gr.ProductReviewedId == productReviewedId);
+
+            if (review == null)
+            {
+                throw new HttpException(NotFound, nameof(GameReview));
+            }
+
+            review.ReviewStatus = ReviewStatus.Denied;
+
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Review denied!");
+
+            return RedirectToAction("Pending");
         }
     }
 }

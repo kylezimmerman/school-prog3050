@@ -241,6 +241,7 @@
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
+    <Compile Include="Models\Reports\GameListViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
     <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
@@ -517,6 +518,8 @@
     <Content Include="Views\Reviews\CreateReviewForGame.cshtml" />
     <Content Include="Views\Checkout\_OrderConfirmationEmail.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
+    <Content Include="Views\Reviews\Pending.cshtml" />
+    <Content Include="Views\Reviews\RenderReviewsForGame.cshtml" />
     <None Include="Views\WebOrders\Index_Employee.cshtml" />
     <Content Include="Views\Wishlist\_PhysicalGameProductPartial.cshtml" />
     <Content Include="Views\WebOrders\_OrderCancellationEmail.cshtml" />
