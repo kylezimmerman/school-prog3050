@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -27,11 +28,10 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> GameList()
         {
-            var gameList = new List<GameListViewModel>();
-
+            // TODO: Remove these comments upon testing the query more
             //var blerg = db.Games.Select(g => g.GameSKUs.SelectMany(gs => db.WebOrders.Select(wo => wo.OrderItems.Where(oi => oi.ProductId == gs.Id).Select(oi => oi.Quantity).DefaultIfEmpty(0).Sum()))).ToList();
             // Potential solution to the blerg above
-            gameList = db.Games
+            var gameList = await db.Games
                 .Select(g =>
                     new GameListViewModel
                     {
@@ -42,7 +42,7 @@ namespace Veil.Controllers
                             .Select(oi => oi.Quantity)
                             .DefaultIfEmpty(0).Sum()
                     }
-                ).ToList();
+                ).ToListAsync();
 
             return View(gameList);
         }

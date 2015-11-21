@@ -131,6 +131,7 @@ namespace Veil.Controllers
             }
             else
             {
+                webOrder.OrderStatus = OrderStatus.UserCancelled;
                 await CancelAndRefundOrder(webOrder, "Order cancelled by customer.");
             }
 
@@ -171,6 +172,7 @@ namespace Veil.Controllers
             }
             else
             {
+                webOrder.OrderStatus = OrderStatus.EmployeeCancelled;
                 await CancelAndRefundOrder(webOrder, reasonForCancellation);
             }
 
@@ -259,7 +261,6 @@ namespace Veil.Controllers
         {
             using (var refundScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                order.OrderStatus = OrderStatus.UserCancelled;
                 order.ReasonForCancellationMessage = reasonForCancellation;
                 await RestoreInventoryOnCancellation(order);
                 db.MarkAsModified(order);
