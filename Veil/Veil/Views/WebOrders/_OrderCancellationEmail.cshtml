@@ -1,0 +1,45 @@
+﻿@model Veil.DataModels.Models.WebOrder
+
+<h1>Veil Order Cancellation - #@Model.Id</h1>
+<p>
+    Your order on Veil has been cancelled.
+    <a href="@Url.Action("Details", "WebOrders", new {Id = Model.Id}, Request.Url.Scheme)">View Order</a>
+</p>
+<p><strong>Reason:</strong>&nbsp;@Model.ReasonForCancellationMessage</p>
+
+<h2>Order Details</h2>
+
+<table>
+    @foreach (var orderItem in Model.OrderItems)
+    {
+        <tr>
+            <td style="padding-right: 2em;">@orderItem.Product.Name</td>
+            <td>@($"{orderItem.ListPrice:C}")</td>
+        </tr>
+    }
+    <tr>
+        <td colspan="2">
+            <hr />
+        </td>
+    </tr>
+    <tr>
+        <td>Subtotal:</td>
+        <td>@($"{Model.OrderSubtotal:C}")</td>
+    </tr>
+    <tr>
+        <td>Shipping:</td>
+        <td>@($"{Model.ShippingCost:C}")</td>
+    </tr>
+    <tr>
+        <td>Tax:</td>
+        <td>@($"{Model.TaxAmount:C}")</td>
+    </tr>
+    <tr>
+        <td>
+            <strong>Total:</strong>
+        </td>
+        <td>
+            <strong>@($"{(Model.OrderSubtotal + Model.ShippingCost + Model.TaxAmount):C}")</strong>
+        </td>
+    </tr>
+</table>
