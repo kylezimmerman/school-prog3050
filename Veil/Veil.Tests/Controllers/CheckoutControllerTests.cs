@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
+using Microsoft.AspNet.Identity;
 using Moq;
 using NUnit.Framework;
 using Stripe;
@@ -18,9 +22,6 @@ using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
 
-// TODO: Remove this after tests are implemented
-#pragma warning disable 1998
-
 namespace Veil.Tests.Controllers
 {
     [TestFixture]
@@ -29,21 +30,25 @@ namespace Veil.Tests.Controllers
         private Guid memberId;
         private Guid addressId;
         private Guid creditCardId;
-        private Guid cartProductId;
+        private Guid cartProduct1Id;
+        private Guid cartProduct2Id;
         private AddressViewModel validAddressViewModel;
-        private GameProduct cartProduct;
+        private GameProduct cartProduct1;
+        private GameProduct cartProduct2;
         private Game game;
         private Platform platform;
-        private CartItem newCartItem;
-        private CartItem usedCartItem;
+        private CartItem newProduct1CartItem;
+        private CartItem usedProduct1CartItem;
+        private CartItem newProduct2CartItem;
         private Cart cartWithNewAndUsed;
         private MemberCreditCard memberCreditCard;
+        private MemberAddress memberAddress;
         private Member member;
         private User memberUser;
-        private WebOrderCheckoutDetails validShippingDetails;
-        private WebOrderCheckoutDetails validNotSavedBillingDetails;
-        private WebOrderCheckoutDetails validSavedBillingDetails;
-        private WebOrderCheckoutDetails validConfirmDetails;
+        private WebOrderCheckoutDetails validNotSavedShippingDetails;
+        private WebOrderCheckoutDetails validNotSavedShippingBillingDetails;
+        private WebOrderCheckoutDetails validSavedShippingBillingDetails;
+        private Location onlineWarehouse;
 
         [SetUp]
         public void Setup()
@@ -51,7 +56,24 @@ namespace Veil.Tests.Controllers
             memberId = new Guid("59EF92BE-D71F-49ED-992D-DF15773DAF98");
             addressId = new Guid("53BE47E4-0C74-4D49-97BB-7246A7880B39");
             creditCardId = new Guid("D9A69026-E3DA-4748-816B-293D9BE3E43F");
-            cartProductId = new Guid("3882D242-A62A-4E99-BA11-D6EF340C2EE8");
+            cartProduct1Id = new Guid("3882D242-A62A-4E99-BA11-D6EF340C2EE8");
+            cartProduct2Id = new Guid("7413D131-7337-42DC-A7E4-1155EB91E8C9");
+
+            memberAddress = new MemberAddress
+            {
+                Address = new Address
+                {
+                    City = "Waterloo",
+                    PostalCode = "N2L 6R2",
+                    StreetAddress = "445 Wes Graham Way"
+                },
+                CountryCode = "CA",
+                Country = new Country { CountryCode = "CA", CountryName = "Canada", FederalTaxRate = 0.05m },
+                ProvinceCode = "ON",
+                Province = new Province { CountryCode = "CA", ProvinceCode = "ON", ProvincialTaxRate = 0.08m },
+                MemberId = memberId,
+                Id = addressId
+            };
 
             game = new Game
             {
@@ -64,9 +86,9 @@ namespace Veil.Tests.Controllers
                 PlatformName = "Xbox One"
             };
 
-            cartProduct = new PhysicalGameProduct
+            cartProduct1 = new PhysicalGameProduct
             {
-                Id = cartProductId,
+                Id = cartProduct1Id,
                 NewWebPrice = 60.00m,
                 ProductAvailabilityStatus = AvailabilityStatus.Available,
                 ReleaseDate = new DateTime(635835582902643008L, DateTimeKind.Local),
@@ -75,25 +97,44 @@ namespace Veil.Tests.Controllers
                 Platform = platform
             };
 
-            newCartItem = new CartItem
+            cartProduct2 = new PhysicalGameProduct
+            {
+                Id = cartProduct2Id,
+                NewWebPrice = 59.99m,
+                ProductAvailabilityStatus = AvailabilityStatus.Available,
+                ReleaseDate = new DateTime(635837213100050176L, DateTimeKind.Local),
+                Game = game,
+                Platform = platform
+            };
+
+            newProduct1CartItem = new CartItem
             {
                 IsNew = true,
                 MemberId = memberId,
-                Product = cartProduct,
-                ProductId = cartProduct.Id,
+                Product = cartProduct1,
+                ProductId = cartProduct1.Id,
                 Quantity = 1
             };
 
-            usedCartItem = new CartItem
+            usedProduct1CartItem = new CartItem
             {
                 IsNew = false,
                 MemberId = memberId,
-                Product = cartProduct,
-                ProductId = cartProduct.Id,
+                Product = cartProduct1,
+                ProductId = cartProduct1.Id,
                 Quantity = 1
             };
 
-            validShippingDetails = new WebOrderCheckoutDetails
+            newProduct2CartItem = new CartItem
+            {
+                IsNew = true,
+                MemberId = memberId,
+                Product = cartProduct2,
+                ProductId = cartProduct2.Id,
+                Quantity = 1
+            };
+
+            validNotSavedShippingDetails = new WebOrderCheckoutDetails
             {
                 Address = new Address
                 {
@@ -145,7 +186,7 @@ namespace Veil.Tests.Controllers
                 PhoneNumber = "800-555-0199",
             };
             
-            validNotSavedBillingDetails = new WebOrderCheckoutDetails
+            validNotSavedShippingBillingDetails = new WebOrderCheckoutDetails
             {
                 Address = new Address
                 {
@@ -159,7 +200,7 @@ namespace Veil.Tests.Controllers
                 StripeCardToken = "card_token"
             };
 
-            validSavedBillingDetails = new WebOrderCheckoutDetails
+            validSavedShippingBillingDetails = new WebOrderCheckoutDetails
             {
                 MemberCreditCardId = creditCardId,
                 MemberAddressId = addressId
@@ -169,11 +210,16 @@ namespace Veil.Tests.Controllers
             {
                 Items = new List<CartItem>
                 {
-                    newCartItem,
-                    usedCartItem
+                    newProduct1CartItem,
+                    usedProduct1CartItem
                 },
                 Member = member,
                 MemberId = memberId
+            };
+
+            onlineWarehouse = new Location
+            {
+                SiteName = Location.ONLINE_WAREHOUSE_NAME
             };
         }
 
@@ -239,16 +285,16 @@ namespace Veil.Tests.Controllers
                 Returns(provinceDbSetFake.Object);
         }
 
-        private void SetupVeilDataAccessWithMember(Mock<IVeilDataAccess> dbFake, Member member)
+        private void SetupVeilDataAccessWithMember(Mock<IVeilDataAccess> dbFake, Member theMember)
         {
             Mock<DbSet<Member>> memberDbSetFake =
-                TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+                TestHelpers.GetFakeAsyncDbSet(new List<Member> { theMember }.AsQueryable());
 
-            if (member != null)
+            if (theMember != null)
             {
                 memberDbSetFake.
-                    Setup(mdb => mdb.FindAsync(member.UserId)).
-                    ReturnsAsync(member);
+                    Setup(mdb => mdb.FindAsync(theMember.UserId)).
+                    ReturnsAsync(theMember);
             }
             
             dbFake.
@@ -265,6 +311,51 @@ namespace Veil.Tests.Controllers
                 Returns(userDbSetFake.Object);
         }
 
+        private void SetupVeilDataAccessWithInventoriesForBothCartProducts(Mock<IVeilDataAccess> dbFake, int newOnHand = 10, int usedOnHand = 2)
+        {
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub = 
+                TestHelpers.GetFakeAsyncDbSet(GetProductInventories(newOnHand, usedOnHand).AsQueryable());
+
+            dbFake.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object);
+        }
+        
+        private void SetupVeilDataAccessUserStore(Mock<IVeilDataAccess> dbFake)
+        {
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            dbFake.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+        }
+
+        private void SetupVeilDataAccessWithWebOrders(Mock<IVeilDataAccess> dbFake, List<WebOrder> webOrders)
+        {
+            Mock<DbSet<WebOrder>> webOrderDbSetFake = TestHelpers.GetFakeAsyncDbSet(webOrders.AsQueryable());
+            webOrderDbSetFake.
+                Setup(wdb => wdb.Add(It.IsAny<WebOrder>())).
+                Returns<WebOrder>(val => val).
+                Callback<WebOrder>(val => webOrders.Add(val));
+
+            dbFake.
+                Setup(db => db.WebOrders).
+                Returns(webOrderDbSetFake.Object);
+        }
+
+        private void SetupViewEngineStub(string viewString = null)
+        {
+            viewString = viewString ?? string.Empty;
+
+            Mock<IView> partialViewStub = new Mock<IView>();
+            partialViewStub.
+                Setup(pvs => pvs.Render(It.IsAny<ViewContext>(), It.IsAny<TextWriter>())).
+                Callback((ViewContext vc, TextWriter tw) => tw.Write(viewString));
+
+            Mock<IViewEngine> viewEngineStub = new Mock<IViewEngine>();
+            var viewEngineResult = new ViewEngineResult(partialViewStub.Object, viewEngineStub.Object);
+            viewEngineStub.Setup(ve => ve.FindPartialView(It.IsAny<ControllerContext>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(viewEngineResult);
+            ViewEngines.Engines.Clear();
+            ViewEngines.Engines.Add(viewEngineStub.Object);
+        }
+
         private Mock<ControllerContext> GetControllerContextWithSessionSetupToReturn(WebOrderCheckoutDetails returnValue)
         {
             Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
@@ -279,30 +370,7 @@ namespace Veil.Tests.Controllers
         {
             return new List<MemberAddress>
             {
-                new MemberAddress
-                {
-                    Address = new Address
-                    {
-                        City = "A city"
-                    },
-                    CountryCode = "CA",
-                    MemberId = memberId
-                },
-                new MemberAddress
-                {
-                    Address = new Address
-                    {
-                        City = "Waterloo",
-                        PostalCode = "N2L 6R2",
-                        StreetAddress = "445 Wes Graham Way"
-                    },
-                    CountryCode = "CA",
-                    Country = new Country { CountryCode = "CA", CountryName = "Canada", FederalTaxRate = 0.05m },
-                    ProvinceCode = "ON",
-                    Province = new Province { CountryCode = "CA", ProvinceCode = "ON", ProvincialTaxRate = 0.08m },
-                    MemberId = memberId,
-                    Id = addressId
-                }
+                memberAddress
             };
         }
 
@@ -330,7 +398,9 @@ namespace Veil.Tests.Controllers
                 new Province
                 {
                     ProvinceCode = details.ProvinceCode,
-                    CountryCode = details.CountryCode
+                    CountryCode = details.CountryCode,
+                    ProvincialTaxRate = 0.08m,
+                    Country = new Country { CountryCode = "CA", CountryName = "Canada", FederalTaxRate = 0.05m }
                 }
             };
 
@@ -348,7 +418,40 @@ namespace Veil.Tests.Controllers
                 }
             };
         }
-            
+
+        private List<ProductLocationInventory> GetProductInventories(int newOnHand = 10, int usedOnHand = 2)
+        {
+            return new List<ProductLocationInventory>
+            {
+                new ProductLocationInventory
+                {
+                    Location = onlineWarehouse,
+                    ProductId = cartProduct1Id,
+                    Product = cartProduct1,
+                    NewOnHand = newOnHand,
+                    UsedOnHand = usedOnHand
+                },
+                new ProductLocationInventory
+                {
+                    Location = onlineWarehouse,
+                    ProductId = cartProduct2Id,
+                    Product = cartProduct2,
+                    NewOnHand = newOnHand,
+                    UsedOnHand = usedOnHand
+                }
+            };
+        }
+
+        private Mock<VeilUserManager> GetUserManageStubWithSendEmailSetup(IVeilDataAccess db)
+        {
+            Mock<VeilUserManager> userManageStub = new Mock<VeilUserManager>(db, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManageStub.
+                Setup(um => um.SendEmailAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>())).
+                Returns(Task.FromResult(0));
+
+            return userManageStub;
+        }
+
         [Test]
         public async void ShippingInfo_EmptyCart_RedirectsToCartIndex()
         {
@@ -395,7 +498,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void ShippingInfo_NonEmptyCartWithNonSavedAddressAlreadyInSession_AddsAddressInfoToViewModel()
         {
-            var orderDetails = validShippingDetails;
+            var orderDetails = validNotSavedShippingDetails;
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
@@ -450,7 +553,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithAddresses(dbStub, addresses);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
             controller.ModelState.AddModelError(nameof(AddressViewModel.ProvinceCode), "Invalid");
@@ -490,7 +593,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithAddresses(dbStub, addresses);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -515,7 +618,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithAddresses(dbStub, addresses);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -536,7 +639,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, new List<Country>());
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -564,7 +667,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, provinces);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -594,7 +697,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithAddresses(dbStub, addresses);
             SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, provinces);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1127,7 +1230,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, countries);
             SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, new List<Province>());
             SetupVeilDataAccessWithMember(dbStub, memberWithCreditCards);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1194,14 +1297,12 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [TestCase(null)]
-        [TestCase("")]
-        [TestCase(" ")]
-        public async void NewBillingInfo_NullOrWhiteSpaceStripeToken_RedirectsToBillingInfo(string cardToken)
+        [Test]
+        public async void NewBillingInfo_NullOrWhiteSpaceStripeToken_RedirectsToBillingInfo([Values(null, "", " ")]string cardToken)
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1218,7 +1319,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithMember(dbStub, new Member());
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1237,7 +1338,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithMember(dbStub, currentMember);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             StripeException exception = new StripeException(
                 HttpStatusCode.BadRequest,
@@ -1274,7 +1375,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithMember(dbStub, currentMember);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             StripeException exception = new StripeException(
                 HttpStatusCode.BadRequest,
@@ -1306,7 +1407,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithMember(dbStub, currentMember);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             StripeException exception = new StripeException(
                 HttpStatusCode.BadRequest,
@@ -1353,7 +1454,7 @@ namespace Veil.Tests.Controllers
                 Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
                 Returns(newCard);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
 
@@ -1388,7 +1489,7 @@ namespace Veil.Tests.Controllers
                 Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
                 Returns(newCard);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbMock.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
 
@@ -1404,7 +1505,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void NewBillingInfo_SaveCard_AddsCardIdToSessionOrderDetails()
         {
-            WebOrderCheckoutDetails details = validShippingDetails;
+            WebOrderCheckoutDetails details = validNotSavedShippingDetails;
 
             Member currentMember = member;
             string cardToken = "cardToken";
@@ -1447,7 +1548,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void NewBillingInfo_DoNotSaveCard_AddsPassedTokenToSessionOrderDetails()
         {
-            WebOrderCheckoutDetails details = validShippingDetails;
+            WebOrderCheckoutDetails details = validNotSavedShippingDetails;
 
             Member currentMember = member;
             string cardToken = "cardToken";
@@ -1468,7 +1569,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void NewBillingInfo_ValidState_ReassignsUpdatedOrderDetails()
         {
-            WebOrderCheckoutDetails details = validShippingDetails;
+            WebOrderCheckoutDetails details = validNotSavedShippingDetails;
             WebOrderCheckoutDetails setDetails = null;
 
             Member currentMember = member;
@@ -1493,7 +1594,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void NewBillingInfo_ValidState_RedirectsToConfirmOrder()
         {
-            WebOrderCheckoutDetails details = validShippingDetails;
+            WebOrderCheckoutDetails details = validNotSavedShippingDetails;
 
             Member currentMember = member;
             string cardToken = "cardToken";
@@ -1573,7 +1674,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithMember(dbStub, member);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
             
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1587,7 +1688,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void ExistingBillingInfo_IdInDb_AddsCardIdToOrderDetailsAndReassignsToSession()
         {
-            WebOrderCheckoutDetails details = validShippingDetails;
+            WebOrderCheckoutDetails details = validNotSavedShippingDetails;
             WebOrderCheckoutDetails setDetails = null;
 
             member.CreditCards = new List<MemberCreditCard> { memberCreditCard };
@@ -1617,7 +1718,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithMember(dbStub, member);
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1667,7 +1768,7 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithAddresses(dbStub, new List<MemberAddress> { new MemberAddress { Id = addressId } });
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validShippingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
@@ -1723,14 +1824,14 @@ namespace Veil.Tests.Controllers
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedBillingDetails));
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
                 Returns<string>(null);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceStub.Object);
 
@@ -1770,9 +1871,9 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedBillingDetails));
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
 
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
@@ -1786,7 +1887,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(
                 () => 
-                    stripeServiceMock.Verify(s => s.GetLast4ForToken(validNotSavedBillingDetails.StripeCardToken),
+                    stripeServiceMock.Verify(s => s.GetLast4ForToken(validNotSavedShippingBillingDetails.StripeCardToken),
                     Times.Once),
                 Throws.Nothing);
         }
@@ -1798,9 +1899,9 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
-            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedBillingDetails));
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
 
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
@@ -1836,7 +1937,7 @@ namespace Veil.Tests.Controllers
                 Verifiable();
 
             Mock<IShippingCostService> shippingCostStub = new Mock<IShippingCostService>();
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbMock.Object, context: contextStub.Object, shippingCostService: shippingCostStub.Object);
 
@@ -1873,7 +1974,7 @@ namespace Veil.Tests.Controllers
                 Returns(0m).
                 Verifiable();
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, shippingCostService: shippingCostMock.Object);
 
@@ -2003,7 +2104,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithMember(dbStub, member);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
             shippingServiceStub.
                 Setup(sc => sc.CalculateShippingCost(It.IsAny<decimal>(), It.IsAny<ICollection<CartItem>>())).
@@ -2024,19 +2125,19 @@ namespace Veil.Tests.Controllers
             Assert.That(model.ItemSubTotal, Is.EqualTo(cartWithNewAndUsed.TotalCartItemsPrice));
             Assert.That(model.Items, 
                 Has.Exactly(1).Matches<ConfirmOrderCartItemViewModel>(vm => 
-                    vm.IsNew == newCartItem.IsNew &&
-                    vm.ItemPrice == newCartItem.Product.NewWebPrice &&
-                    vm.ProductId == newCartItem.ProductId &&
-                    vm.Quantity == newCartItem.Quantity &&
-                    vm.Name == newCartItem.Product.Name &&
-                    vm.PlatformName == cartProduct.Platform.PlatformName).
+                    vm.IsNew == newProduct1CartItem.IsNew &&
+                    vm.ItemPrice == newProduct1CartItem.Product.NewWebPrice &&
+                    vm.ProductId == newProduct1CartItem.ProductId &&
+                    vm.Quantity == newProduct1CartItem.Quantity &&
+                    vm.Name == newProduct1CartItem.Product.Name &&
+                    vm.PlatformName == cartProduct1.Platform.PlatformName).
                 And.Exactly(1).Matches<ConfirmOrderCartItemViewModel>(vm =>
-                    vm.IsNew == usedCartItem.IsNew &&
-                    vm.ItemPrice == usedCartItem.Product.UsedWebPrice &&
-                    vm.ProductId == usedCartItem.ProductId &&
-                    vm.Quantity == usedCartItem.Quantity &&
-                    vm.Name == usedCartItem.Product.Name &&
-                    vm.PlatformName == cartProduct.Platform.PlatformName));
+                    vm.IsNew == usedProduct1CartItem.IsNew &&
+                    vm.ItemPrice == usedProduct1CartItem.Product.UsedWebPrice &&
+                    vm.ProductId == usedProduct1CartItem.ProductId &&
+                    vm.Quantity == usedProduct1CartItem.Quantity &&
+                    vm.Name == usedProduct1CartItem.Product.Name &&
+                    vm.PlatformName == cartProduct1.Platform.PlatformName));
         }
 
         [Test]
@@ -2066,7 +2167,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithAddresses(dbStub, addresses);
             SetupVeilDataAccessWithMember(dbStub, member);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, shippingCostService: shippingServiceStub.Object);
@@ -2106,7 +2207,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithMember(dbStub, member);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, shippingCostService: shippingServiceStub.Object);
@@ -2130,7 +2231,7 @@ namespace Veil.Tests.Controllers
             SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
             SetupVeilDataAccessWithMember(dbStub, member);
 
-            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedBillingDetails);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, shippingCostService: shippingServiceStub.Object);
@@ -2145,7 +2246,6 @@ namespace Veil.Tests.Controllers
             Assert.That(model.Items, Is.Ordered.By(nameof(ConfirmOrderCartItemViewModel.IsNew)));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_AddressNotSetInSession_RedirectsToShippingInfo()
         {
@@ -2164,14 +2264,23 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_BillingInfoNotSetInsession_RedirectsToBillingInfo()
         {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, new List<MemberAddress> { new MemberAddress { Id = addressId } });
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingDetails);
 
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.PlaceOrder(new List<CartItem>()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_NullSessionOrderDetails_RedirectsToShippingInfo()
         {
@@ -2188,17 +2297,15 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_EmptyCart_RedirectsToCardIndex()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart>().AsQueryable());
-            dbStub.
-                Setup(db => db.Carts).
-                Returns(cartDbSetStub.Object);
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart>());
 
-            CheckoutController controller = CreateCheckoutController(dbStub.Object);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
 
             var result = await controller.PlaceOrder(null) as RedirectToRouteResult;
 
@@ -2207,207 +2314,1216 @@ namespace Veil.Tests.Controllers
             Assert.That(result.RouteValues["Controller"], Is.EqualTo("Cart"));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_CartDoesNotMatchPostedBackItems_RedirectsToConfirmOrder()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.PlaceOrder(new List<CartItem> { usedProduct1CartItem }) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo("ConfirmOrder"));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_AddressIsIdButIdNotInDb_RedirectsToShippingInfo()
         {
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                MemberCreditCardId = creditCardId
+            };
 
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, new List<MemberAddress>());
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ShippingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_AddressIsId_GetsAddressFromDb()
         {
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                StripeCardToken = "cardToken"
+            };
 
+            MemberAddress address = new MemberAddress
+            {
+                Address = new Address
+                {
+                    City = "Waterloo",
+                    PostalCode = "N2L 6R2",
+                    StreetAddress = "445 Wes Graham Way"
+                },
+                CountryCode = "CA",
+                Country = new Country { CountryCode = "CA", CountryName = "Canada", FederalTaxRate = 0.05m },
+                ProvinceCode = "ON",
+                Province = new Province { CountryCode = "CA", ProvinceCode = "ON", ProvincialTaxRate = 0.08m },
+                MemberId = memberId,
+                Id = addressId
+            };
+
+            List<MemberAddress> addresses = new List<MemberAddress> { address };
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbMock, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithMember(dbMock, member);
+            SetupVeilDataAccessWithUser(dbMock, memberUser);
+            Mock<DbSet<MemberAddress>> addressDbMock = TestHelpers.GetFakeAsyncDbSet(addresses.AsQueryable());
+            addressDbMock.SetupForInclude();
+
+            dbMock.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbMock.Object).
+                Verifiable();
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Returns<string>(null); // End the test early by returning null
+
+            CheckoutController controller = CreateCheckoutController(dbMock.Object, context: contextStub.Object, shippingCostService: shippingServiceStub.Object, stripeService: stripeServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    dbMock.Verify(db => db.MemberAddresses,
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void PlaceOrder_AddressIsUnsaved_DoesNotTouchDb()
+        public void PlaceOrder_AddressIsUnsaved_DoesNotTouchDb()
         {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
 
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Returns<string>(null);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceStub.Object);
+
+            Assert.That(
+                async () => await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()),
+                Throws.Nothing,
+                "MemberAddresses isn't set up as it shouldn't be touched by this test");
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_CardIsIdButIdNotInDb_RedirectsToBillingInfo()
         {
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                MemberCreditCardId = creditCardId
+            };
 
+            member.CreditCards = new List<MemberCreditCard>();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object);
+
+            var result = await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo(null));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_CardIsId_GetsCardFromDb()
         {
+            WebOrderCheckoutDetails details = new WebOrderCheckoutDetails
+            {
+                MemberAddressId = addressId,
+                MemberCreditCardId = creditCardId
+            };
 
+            member.CreditCards = new List<MemberCreditCard>();
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbMock, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithUser(dbMock, memberUser);
+            SetupVeilDataAccessWithAddresses(dbMock, GetMemberAddresses());
+            Mock<DbSet<Member>> memberDbSet = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+
+            dbMock.
+                Setup(db => db.Members).
+                Returns(memberDbSet.Object).
+                Verifiable();
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(details);
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(dbMock.Object, context: contextStub.Object, shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    dbMock.Verify(db => db.Members,
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_CardIsToken_CallsStripeServiceGetLast4ForToken()
         {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
 
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Returns<string>(null).
+                Verifiable();
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    stripeServiceMock.Verify(s => s.GetLast4ForToken(validNotSavedShippingBillingDetails.StripeCardToken),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_CardIsTokenAndStripeExceptionThrown_RedirectsToBillingInfo()
         {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
 
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Throws<StripeException>();
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
+
+            var result = await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void PlaceOrder_CardIsId_LoadsStripeCustomerIdFromDb()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void PlaceOrder_CardIsId_LoadsCardTokenFromDb()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void PlaceOrder_CardIsToken_DoesNotTouchMemberCreditCardDbSet()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_ValidState_GetsOnlineWarehouseProductLocationInventoryForEachCartItem()
         {
+            cartWithNewAndUsed.Items.Add(newProduct2CartItem);
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbMock, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbMock, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbMock, member);
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(GetProductInventories(10, 10).AsQueryable());
+
+            dbMock.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object).
+                Verifiable();
             
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbMock.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () => 
+                    dbMock.Verify(db => db.ProductLocationInventories,
+                    Times.Exactly(cartWithNewAndUsed.Items.GroupBy(i => i.ProductId).Count()), 
+                    "Should be called once per ProductId in the cart"),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void PlaceOrder_NewItemUnrestrictedAvailability_DecreasesInventoryLevelByQuantity()
+        public async void PlaceOrder_NewItemUnrestrictedAvailability_DecreasesInventoryLevelByQuantity(
+            [Values(AvailabilityStatus.Available, AvailabilityStatus.PreOrder)]AvailabilityStatus status,
+            [Values(1, 10, 50)]int quantity)
         {
-            
+            newProduct1CartItem.Quantity = quantity;
+            cartProduct1.ProductAvailabilityStatus = status;
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                ProductId = cartProduct1Id,
+                Product = cartProduct1,
+                Location = onlineWarehouse,
+                NewOnHand = 10,
+                UsedOnHand = 10
+            };
+
+            Cart cart = new Cart
+            {
+                Items = new List<CartItem>
+                {
+                    newProduct1CartItem
+                },
+                MemberId = memberId,
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart> { cart });
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cart.Items.ToList());
+
+            Assert.That(inventory.NewOnHand, Is.EqualTo(10 - newProduct1CartItem.Quantity));
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void PlaceOrder_NewItemDiscontinuedAvailabilityWithEnoughNewOnHand_DecreasesInventoryLevelByQuantity()
+        public async void PlaceOrder_NewItemDiscontinuedAvailabilityWithEnoughNewOnHand_DecreasesInventoryLevelByQuantity(
+            [Values(AvailabilityStatus.DiscontinuedByManufacturer, AvailabilityStatus.NotForSale)]AvailabilityStatus status,
+            [Values(1, 10)]int quantity)
         {
-            
+            newProduct1CartItem.Quantity = quantity;
+            cartProduct1.ProductAvailabilityStatus = status;
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                ProductId = cartProduct1Id,
+                Product = cartProduct1,
+                Location = onlineWarehouse,
+                NewOnHand = 10,
+                UsedOnHand = 10
+            };
+
+            Cart cart = new Cart
+            {
+                Items = new List<CartItem>
+                {
+                    newProduct1CartItem
+                },
+                MemberId = memberId,
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart> { cart });
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cart.Items.ToList());
+
+            Assert.That(inventory.NewOnHand, Is.EqualTo(10 - newProduct1CartItem.Quantity));
         }
 
-        [Ignore("No implemented yet")]
+        [TestCase(AvailabilityStatus.DiscontinuedByManufacturer)]
+        [TestCase(AvailabilityStatus.NotForSale)]
+        public async void PlaceOrder_NewItemDiscontinuedAvailabilityWithoutEnoughNewOnHand_RedirectsToConfirmOrder(AvailabilityStatus status)
+        {
+            newProduct1CartItem.Quantity = 11;
+            cartProduct1.ProductAvailabilityStatus = status;
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                ProductId = cartProduct1Id,
+                Product = cartProduct1,
+                Location = onlineWarehouse,
+                NewOnHand = 10,
+                UsedOnHand = 10
+            };
+
+            Cart cart = new Cart
+            {
+                Items = new List<CartItem>
+                {
+                    newProduct1CartItem
+                },
+                MemberId = memberId,
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart> { cart });
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            var result = await controller.PlaceOrder(cart.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
+
+            Assert.That(inventory.NewOnHand, Is.EqualTo(10));
+        }
+
+        [TestCase(AvailabilityStatus.Available)]
+        [TestCase(AvailabilityStatus.PreOrder)]
+        [TestCase(AvailabilityStatus.DiscontinuedByManufacturer)]
+        [TestCase(AvailabilityStatus.NotForSale)]
+        public async void PlaceOrder_UsedWithHigherQuantityThanUsedOnHand_RedirectsToConfirmOrder(AvailabilityStatus status)
+        {
+            usedProduct1CartItem.Quantity = 11;
+            cartProduct1.ProductAvailabilityStatus = status;
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                ProductId = cartProduct1Id,
+                Product = cartProduct1,
+                Location = onlineWarehouse,
+                NewOnHand = 10,
+                UsedOnHand = 10
+            };
+
+            Cart cart = new Cart
+            {
+                Items = new List<CartItem>
+                {
+                    usedProduct1CartItem
+                },
+                MemberId = memberId,
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart> { cart });
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            var result = await controller.PlaceOrder(cart.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
+
+            Assert.That(inventory.UsedOnHand, Is.EqualTo(10));
+        }
+
         [Test]
-        public async void PlaceOrder_NewItemDiscontinuedAvailabilityWithoutEnoughNewOnHand_RedirectsToConfirmOrder()
+        public async void PlaceOrder_UsedWithQuantityLessThanOrEqualToUsedOnHand_DecreasesInventoryLevelByQuantity(
+            [Values(AvailabilityStatus.Available,
+                    AvailabilityStatus.PreOrder,
+                    AvailabilityStatus.DiscontinuedByManufacturer,
+                    AvailabilityStatus.NotForSale)] AvailabilityStatus status,
+            [Values(1, 10)]int quantity)
         {
-            
+            usedProduct1CartItem.Quantity = quantity;
+            cartProduct1.ProductAvailabilityStatus = status;
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                ProductId = cartProduct1Id,
+                Product = cartProduct1,
+                Location = onlineWarehouse,
+                NewOnHand = 10,
+                UsedOnHand = 10
+            };
+
+            Cart cart = new Cart
+            {
+                Items = new List<CartItem>
+                {
+                    usedProduct1CartItem
+                },
+                MemberId = memberId,
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, new List<Cart> { cart });
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.ProductLocationInventories).
+                Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cart.Items.ToList());
+
+            Assert.That(inventory.UsedOnHand, Is.EqualTo(10 - usedProduct1CartItem.Quantity));
         }
 
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void PlaceOrder_UsedWithHigherQuantityThanUsedOnHand_RedirectsToConfirmOrder()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
-        [Test]
-        public async void PlaceOrder_UsedWithQuantityLessThanOrEqualToUsedOnHand_DecreasesInventoryLevelByQuantity()
-        {
-            
-        }
-
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_ValidInventoryLevels_CallsStripeServiceChargeCard()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>().
+                Verifiable(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () => 
+                    stripeServiceMock.Verify(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void PlaceOrder_ValidInventoryLevelsAndStripeExceptionThrow_RedirectsToConfirmOrder()
+        public async void PlaceOrder_ValidInventoryLevelsAndSavedCard_CallsStripeServiceChargeCardWithRetrievedCustomerIdAndCardToken()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>().
+                Verifiable(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    stripeServiceMock.Verify(s => s.ChargeCard(It.IsAny<decimal>(), memberCreditCard.StripeCardId, member.StripeCustomerId, It.IsAny<string>()),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
+        [Test]
+        public async void PlaceOrder_ValidInventoryLevelsAndNotSavedCard_CallsStripeServiceChargeCardWithNullCustomerId()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>().
+                Verifiable(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    stripeServiceMock.Verify(s => s.ChargeCard(It.IsAny<decimal>(), memberCreditCard.StripeCardId, null, It.IsAny<string>()),
+                    Times.Once),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void PlaceOrder_ValidInventoryLevels_CallsStripeServiceChargeCardWithCorrectOrderTotal()
+        {
+            decimal shippingCost = 8.0m;
+            decimal correctOrderTotal = 87.1m; /* 60 + 10 * (1.13) + 8.0 */
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>().
+                Verifiable(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+            shippingServiceStub.Setup(
+                s => s.CalculateShippingCost(It.IsAny<decimal>(), It.IsAny<ICollection<CartItem>>())).
+                Returns(shippingCost);
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    stripeServiceMock.Verify(s => s.ChargeCard(correctOrderTotal, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Once),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public void PlaceOrder_CardIsToken_DoesNotTouchMemberCreditCardDbSet()
+        {
+            member.CreditCards = null;
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Returns("4242");
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>(); // Throw to end execution early
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+            shippingServiceStub.
+                Setup(s => s.CalculateShippingCost(It.IsAny<decimal>(), It.IsAny<ICollection<CartItem>>())).
+                Returns(0m);
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            Assert.That(
+                async () => await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()),
+                Throws.Nothing,
+                "This test should not touch the member's credit cards." +
+                " It has been set up to throw when trying to select from member.CreditCards by setting that to null");
+        }
+
+        [Test]
+        public async void PlaceOrder_ValidInventoryLevelsAndStripeChargeCardExceptionThrow_RedirectsToConfirmOrder()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws<StripeException>();
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            var result = await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
+        }
+
         [Test]
         public async void PlaceOrder_SuccessfulCharge_AddsChargeIdToWebOrder()
         {
-            
-        }
+            string stripeChargeId = "chargeToken";
 
-        [Ignore("No implemented yet")]
+            List<WebOrder> webOrders = new List<WebOrder>();
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, webOrders);
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>(); // Throw to end early
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Returns(stripeChargeId);
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            WebOrder newOrder = webOrders.FirstOrDefault();
+
+            Assert.That(newOrder != null);
+            Assert.That(newOrder.StripeChargeId, Is.EqualTo(stripeChargeId));
+        }
+        
         [Test]
         public async void PlaceOrder_SuccessfulCharge_AddsNewOrderToWebOrdersDbSet()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            Mock<DbSet<WebOrder>> webOrderDbSetMock = TestHelpers.GetFakeAsyncDbSet(new List<WebOrder>().AsQueryable());
+            webOrderDbSetMock.
+                Setup(wdb => wdb.Add(It.IsAny<WebOrder>())).
+                Returns<WebOrder>(val => val).
+                Verifiable();
+
+            dbStub.
+                Setup(db => db.WebOrders).
+                Returns(webOrderDbSetMock.Object);
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>(); // Throw to end early
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () => 
+                    webOrderDbSetMock.Verify(wdb => wdb.Add(It.IsAny<WebOrder>()),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void PlaceOrder_SucessfulCharge_ClearsCart()
+        public async void PlaceOrder_SuccessfulCharge_ClearsCart()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>(); // Throw to end early
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            Assert.That(cartWithNewAndUsed.Items, Is.Not.Empty,
+                "Cart can't be empty at this point for the test to be valid");
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(cartWithNewAndUsed.Items, Is.Empty);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_SuccessfulCharge_CallsSaveChangesAsync()
         {
-            
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbMock, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbMock, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbMock, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbMock);
+            SetupVeilDataAccessWithWebOrders(dbMock, new List<WebOrder>());
+
+            dbMock.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>(). // Throw to end early
+                Verifiable();
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbMock.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () => 
+                    dbMock.Verify(db => db.SaveChangesAsync(), 
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
-        public async void PlaceOrder_SaveChangesThrows_CallsStripeServiceRefundCharge()
+        public async void PlaceOrder_SaveChangesThrows_CallsStripeServiceRefundChargeWithReturnedChargeId()
         {
-            
+            string stripeChargeId = "chargeToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>();
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Returns(stripeChargeId);
+            stripeServiceMock.
+                Setup(s => s.RefundCharge(It.IsAny<string>())).
+                Verifiable();
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    stripeServiceMock.Verify(s => s.RefundCharge(stripeChargeId),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_SaveChangesThrows_RedirectsToConfirmOrder()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>();
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            var result = await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.ConfirmOrder)));
+            Assert.That(result.RouteValues["Controller"], Is.Null);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_SaveSuccessful_RemovesOrderDetailsFromSession()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessUserStore(dbStub);
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1);
+
+            SetupViewEngineStub();
+            Mock<VeilUserManager> userManagerStub = GetUserManageStubWithSendEmailSetup(dbStub.Object);
+
+            Mock<ControllerContext> contextMock = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+            contextMock.
+                SetupGet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey]).
+                Returns(validSavedShippingBillingDetails);
+            contextMock.
+                Setup(c => c.HttpContext.Session.Remove(It.IsAny<string>())).
+                Verifiable();
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextMock.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object,
+                userManager: userManagerStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () => 
+                    contextMock.Verify(c => c.HttpContext.Session.Remove(CheckoutController.OrderCheckoutDetailsKey),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_SaveSuccessful_NullsCartQuantityInSession()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessUserStore(dbStub);
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1);
+
+            SetupViewEngineStub();
+            Mock<VeilUserManager> userManagerStub = GetUserManageStubWithSendEmailSetup(dbStub.Object);
+
+            Mock<ControllerContext> contextMock = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+            contextMock.
+                SetupGet(c => c.HttpContext.Session[CheckoutController.OrderCheckoutDetailsKey]).
+                Returns(validSavedShippingBillingDetails);
+            contextMock.
+                SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<object>()).
+                Verifiable();
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextMock.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object,
+                userManager: userManagerStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    contextMock.VerifySet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = null,
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_SaveSuccessful_CallsUserManageSendEmailAsync()
         {
-            
+            string viewStringResult = "The body";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessUserStore(dbStub);
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1);
+
+            SetupViewEngineStub(viewString: viewStringResult);
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerStub.
+                Setup(um => um.SendEmailAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>())).
+                Returns(Task.FromResult(0)).
+                Verifiable();
+
+            Mock<ControllerContext> contextMock = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextMock.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object,
+                userManager: userManagerStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(
+                () =>
+                    userManagerStub.Verify(um => um.SendEmailAsync(memberId, It.IsAny<string>(), viewStringResult),
+                    Times.Once),
+                Throws.Nothing);
         }
 
-        [Ignore("No implemented yet")]
         [Test]
         public async void PlaceOrder_SaveSuccessful_RedirectsToHomeIndex()
         {
-            
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessUserStore(dbStub);
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1);
+
+            SetupViewEngineStub();
+            Mock<VeilUserManager> userManagerStub = GetUserManageStubWithSendEmailSetup(dbStub.Object);
+            Mock<ControllerContext> contextMock = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextMock.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object,
+                userManager: userManagerStub.Object);
+
+            var result = await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(HomeController.Index)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo("Home"));
         }
     }
 }
