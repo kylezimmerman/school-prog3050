@@ -24,8 +24,9 @@
         <span><em>Optional Filter</em></span>
     </div>
     <div class="medium-3 columns">
-        <label for="start-date">From:</label>
-        <input type="date" id="start-date" name="start-date" />
+        <label for="startDate" class="prefix">From:</label>
+        <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true" name="start" placeholder="yyyy-mm-dd" />
+        @Html.ValidationMessage("start")
     </div>
     <div class="medium-3 columns">
         <label for="start-date">To:</label>
