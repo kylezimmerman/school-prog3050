@@ -143,7 +143,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\AccountControllerTests.cs" />
-    <Compile Include="Controllers\CheckoutControllerTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\BillingInfoTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\_CheckoutControllerTestsBase.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\ConfirmOrderTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\ExistingBillingInfoTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\ExistingShippingInfoTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\NewBillingInfoTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\NewShippingInfoTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\PlaceOrderTests.cs" />
+    <Compile Include="Controllers\CheckoutControllerTests\ShippingInfoTests.cs" />
     <Compile Include="Controllers\FriendListControllerTests.cs" />
     <Compile Include="Controllers\GameProductsControllerTests.cs" />
     <Compile Include="Controllers\EventsControllerTests.cs" />
