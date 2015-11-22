@@ -242,6 +242,7 @@
     <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
     <Compile Include="Models\Reports\GameListViewModel.cs" />
+    <Compile Include="Models\Reports\MemberListItemViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
     <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />

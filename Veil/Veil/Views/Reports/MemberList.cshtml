@@ -1,4 +1,6 @@
-﻿
+﻿@using Veil.Models.Reports
+@model IEnumerable<MemberListItemViewModel>
+
 @{
     ViewBag.Title = "Member List";
 }
@@ -6,71 +8,64 @@
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p><em>Generates a report of members' orders, favourite systems, and tags</em></p>
+        <p><em>Generates a report of members' orders.</em></p>
     </div>
 </div>
 
-<div class="row">
-    <div class="medium-2 columns">
-        <span><em>Optional Filter</em></span><br />
-    </div>
-    <div class="medium-3 columns">
-        <label for="start-date">From:</label>
-        <input type="date" id="start-date" name="start-date" />
-    </div>
-    <div class="medium-3 columns">
-        <label for="start-date">To:</label>
-        <input type="date" id="end-date" name="end-date" />
-    </div>
-    <div class="medium-3 end columns">
-        <button class="expand">Refresh Report</button>
-    </div>
-</div>
+@using (Html.BeginForm("MemberList", "Reports", FormMethod.Post))
+{
+    <div class="row">
+        <div class="medium-2 columns">
+            <span><em>Optional Filter</em></span><br/>
+        </div>
 
-<style>
-    table {
-        width: 100%;
-    }
+        <div class="medium-3 columns">
+            <label for="startDate" class="prefix">From:</label>
+            <input type="date" id="startDate" name="start" placeholder="yyyy-mm-dd"/>
+        </div>
+        <div class="medium-3 columns">
+            <label for="endDate" class="prefix">To (optional):</label>
+            <input type="date" id="endDate" name="end" value="@DateTime.Now.Year-@DateTime.Now.Month-@DateTime.Now.Day"/>
+        </div>
+        <div class="medium-3 end columns">
+            <button type="submit" class="expand">Refresh Report</button>
+        </div>
 
-    td.value-number {
-        text-align: right;
-    }
-</style>
+    </div>
+}
 
 <div class="row">
     <div class="columns">
-        <table>
+        <table class="report">
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Name</th>
-                    <th class="text-right">Number of Orders</th>
-                    <th class="text-right">Total Sales ($)</th>
-                    <th class="text-right">Average Sale ($)</th>
+                    <th>@Html.DisplayNameFor(m => m.UserName)</th>
+                    <th>@Html.DisplayNameFor(m => m.FullName)</th>
+                    <th class="text-right">@Html.DisplayNameFor(m => m.OrderCount)</th>
+                    <th class="text-right">@Html.DisplayNameFor(m => m.TotalSpentOnOrders)</th>
+                    <th class="text-right">@Html.DisplayNameFor(m => m.AverageOrderTotal)</th>
                 </tr>
             </thead>
             <tbody>
+            @if (!Model.Any())
+            {
                 <tr>
-                    <td><a href="#">dummyMan42</a></td>
-                    <td>Dennis Duffy</td>
-                    <td class="value-number">554</td>
-                    <td class="value-number">$1302.46</td>
-                    <td class="value-number">$2.35</td>
+                    <td colspan="5">No member's matching the search criteria.</td>
                 </tr>
-                <tr>
-                    <td><a href="#">rando184</a></td>
-                    <td>Sterling Archer</td>
-                    <td class="value-number">3</td>
-                    <td class="value-number">$300.88</td>
-                    <td class="value-number">$100.29</td>
-                </tr>
-                <tr>
-                    <td><a href="#">crime_princess420</a></td>
-                    <td>Harleen Quinzel</td>
-                    <td class="value-number">6</td>
-                    <td class="value-number">$30.00</td>
-                    <td class="value-number">$5.00</td>
-                </tr>
+            }
+            else
+            {
+                foreach (var member in Model)
+                {
+                    <tr>
+                        <td><a href="@Url.Action("MemberDetail", new { userName = @member.UserName })">@member.UserName</a></td>
+                        <td>@member.FullName</td>
+                        <td class="value-number">@($"{member.OrderCount}")</td>
+                        <td class="value-number">@($"{member.TotalSpentOnOrders:C}")</td>
+                        <td class="value-number">@($"{member.AverageOrderTotal:C}")</td>
+                    </tr>
+                }
+            }
             </tbody>
         </table>
     </div>

@@ -73,22 +73,74 @@ namespace Veil.Controllers
 
         //Member List report
         [HttpGet]
-        public ActionResult MemberList()
+        public async Task<ActionResult> MemberList()
         {
-            return View();
+            List<MemberListItemViewModel> members = await db.Users.
+                Where(u => u.Member != null).
+                Select(
+                    u =>
+                    new MemberListItemViewModel
+                    {
+                        UserName = u.UserName,
+                        FullName = u.FirstName + " " + u.LastName,
+                        OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
+                        TotalSpentOnOrders = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Sum(),
+                        AverageOrderTotal = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Average()
+                    }
+                ).
+                OrderByDescending(m => m.TotalSpentOnOrders).
+                ThenByDescending(m => m.AverageOrderTotal).
+                ThenByDescending(m => m.OrderCount).
+                ToListAsync();
+
+            return View(members);
         }
 
         [HttpPost]
-        public ActionResult MemberList(DateTime start, DateTime? end)
+        public async Task<ActionResult> MemberList(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            List<MemberListItemViewModel> members = await db.Users.
+                Where(u => u.Member != null).
+                Select(
+                    u =>
+                    new MemberListItemViewModel
+                    {
+                        UserName = u.UserName,
+                        FullName = u.FirstName + " " + u.LastName,
+                        OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end),
+                        TotalSpentOnOrders = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Sum(),
+                        AverageOrderTotal = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Average()
+                    }
+                ).
+                OrderByDescending(m => m.TotalSpentOnOrders).
+                ThenByDescending(m => m.AverageOrderTotal).
+                ThenByDescending(m => m.OrderCount).
+                ToListAsync();
+
+            return View(members);
         }
 
         //Member Detail report
         [HttpGet]
-        public ActionResult MemberDetail()
+        public ActionResult MemberDetail(string userName)
         {
             return View();
         }
