@@ -26,7 +26,7 @@
         </div>
         <div class="medium-3 columns">
             <label for="endDate" class="prefix">To (optional):</label>
-            <input type="date" id="endDate" name="end" value="@DateTime.Now.Year-@DateTime.Now.Month-@DateTime.Now.Day"/>
+            <input type="date" id="endDate" name="end" value="@DateTime.Now.ToShortDateString()"/>
         </div>
         <div class="medium-3 end columns">
             <button type="submit" class="expand">Refresh Report</button>
