@@ -1,4 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿/* MemberListItemViewModel.cs
+ * Purpose: View model for an item on the Member List report
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.11.21: Created
+ */ 
+
+using System.ComponentModel.DataAnnotations;
 
 namespace Veil.Models.Reports
 {
