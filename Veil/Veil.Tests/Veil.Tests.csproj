@@ -157,6 +157,8 @@
     <Compile Include="Controllers\EventsControllerTests.cs" />
     <Compile Include="Controllers\GamesControllerTests.cs" />
     <Compile Include="Controllers\CartControllerTests.cs" />
+    <Compile Include="Controllers\ReportsControllerTests\MemberListTests.cs" />
+    <Compile Include="Controllers\ReportsControllerTests\_ReportsControllerTestsBase.cs" />
     <Compile Include="Controllers\ReviewsControllerTests.cs" />
     <Compile Include="Controllers\WebOrdersControllerTests.cs" />
     <Compile Include="Controllers\WishlistControllerTests.cs" />
@@ -191,6 +193,7 @@
       <Name>Veil</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

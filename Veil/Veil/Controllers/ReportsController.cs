@@ -93,28 +93,26 @@ namespace Veil.Controllers
         {
             List<MemberListItemViewModel> listItems = await db.Users.
                 Where(u => u.Member != null).
-                Select(
-                    u =>
-                        new MemberListItemViewModel
-                        {
-                            UserName = u.UserName,
-                            FullName = u.FirstName + " " + u.LastName,
-                            OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
-                            TotalSpentOnOrders = db.WebOrders.
-                        Where(wo => wo.MemberId == u.Id).
-                        Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                        DefaultIfEmpty(0).
-                        Sum(),
-                            AverageOrderTotal = db.WebOrders.
-                        Where(wo => wo.MemberId == u.Id).
-                        Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                        DefaultIfEmpty(0).
-                        Average()
-                        }
+                Select(u =>
+                    new MemberListItemViewModel
+                    {
+                        UserName = u.UserName,
+                        FullName = u.FirstName + " " + u.LastName,
+                        OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
+                        TotalSpentOnOrders = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Sum(),
+                        AverageOrderTotal = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Average()
+                    }
                 ).
                 OrderByDescending(mli => mli.TotalSpentOnOrders).
                 ThenByDescending(mli => mli.AverageOrderTotal).
-                ThenByDescending(mli => mli.OrderCount).
                 ToListAsync();
 
             return View(listItems);
