@@ -101,16 +101,67 @@ namespace Veil.Controllers
             return View();
         }
 
-        //Wishlist report
+        /// <summary>
+        ///     Displays a report of games and how many times they have been wishlisted for each platform
+        /// </summary>
+        /// <returns>
+        ///     
+        /// </returns>
         [HttpGet]
-        public ActionResult Wishlist()
+        public async Task<ActionResult> Wishlist()
+        {
+            // TODO: Can we do this all in one db call?
+            var model = new WishlistViewModel
+            {
+                Games = await db.Games
+                    .Select(g =>
+                        new WishlistGameViewModel
+                        {
+                            Game = g,
+                            Platforms = db.Platforms
+                                .Select(p =>
+                                    new WishlistGamePlatformViewModel
+                                    {
+                                        GamePlatform = p,
+                                        WishlistCount = g.GameSKUs
+                                            .Where(gp => gp.Platform == p)
+                                            .Select(gp =>
+                                                db.Members
+                                                    .Count(m => m.Wishlist.Contains(gp))
+                                            ).DefaultIfEmpty(0)
+                                            .Sum()
+                                    }
+                                )
+                        }
+                    ).ToListAsync(),
+                Platforms = await db.Platforms
+                    .Select(p =>
+                        new WishlistPlatformViewModel
+                        {
+                            Platform = p,
+                            WishlistCount = p.GameProducts
+                                .Select(gp =>
+                                    db.Members
+                                        .Count(m => m.Wishlist.Contains(gp))
+                                ).DefaultIfEmpty(0)
+                                .Sum()
+                        }
+                    ).OrderBy(p => p.Platform.PlatformName)
+                    .ToListAsync()
+            };
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> WishlistDetail(Guid? gameId)
         {
             return View();
         }
 
         //Sales report
         [HttpGet]
-        public ActionResult Sales()
+        public async Task<ActionResult> Sales()
         {
             return View();
         }

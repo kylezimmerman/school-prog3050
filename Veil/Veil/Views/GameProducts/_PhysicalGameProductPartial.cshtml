@@ -26,19 +26,25 @@
     else
     {
         string buyNewClasses = "button expand small success margin-bottom-0";
+        string buyNewText = "Buy New";
+
+        if (Model.GameProduct.ReleaseDate > DateTime.Now)
+        {
+            buyNewText = "Pre-order";
+        }
 
         if (Model.NewIsInCart)
         {
-            <a class="@buyNewClasses disabled">Buy New @($"{Model.GameProduct.NewWebPrice:C} (in your cart)")</a>
+            <a class="@buyNewClasses disabled">@($"{buyNewText} {Model.GameProduct.NewWebPrice:C} (in your cart)")</a>
         }
         else if (Model.GameProduct.ProductAvailabilityStatus == AvailabilityStatus.DiscontinuedByManufacturer &&
             Model.GameProduct.NewInventory < 1)
         {
-            <a class="@buyNewClasses disabled">Buy New @($"{Model.GameProduct.NewWebPrice:C} (unavailable)")</a>
+            <a class="@buyNewClasses disabled">@($"{buyNewText} {Model.GameProduct.NewWebPrice:C} (unavailable)")</a>
         }
         else
         {
-            @Html.ActionLink($"Buy New {Model.GameProduct.NewWebPrice:C}", "AddItem", "Cart", 
+            @Html.ActionLink($"{buyNewText} {Model.GameProduct.NewWebPrice:C}", "AddItem", "Cart", 
                 new { productId = Model.GameProduct.Id, isNew = true }, 
                 new { @class = buyNewClasses })
         }
