@@ -10,14 +10,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web.Mvc;
 using System.Web.Routing;
-using JetBrains.Annotations;
 using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
@@ -552,7 +550,7 @@ namespace Veil.Controllers
             Guid memberId = GetUserId();
             Cart cart = await GetCartWithLoadedProductsAsync(memberId);
 
-            if (cart.Items.Count == 0)
+            if (cart == null || cart.Items.Count == 0)
             {
                 this.AddAlert(AlertType.Error, "You can't place an order with an empty cart.");
 
@@ -760,21 +758,32 @@ namespace Veil.Controllers
             return last4Digits;
         }
 
+        /// <summary>
+        ///     Loads the member's cart with all the items and items' products included.
+        ///     Sorts the cart items using <see cref="SortCartItems"/>
+        /// </summary>
+        /// <param name="memberId">
+        ///     The id of the member whose cart should be loaded
+        /// </param>
+        /// <returns></returns>
         private async Task<Cart> GetCartWithLoadedProductsAsync(Guid memberId)
         {
             Cart cart = await db.Carts.
-                Where(m => m.MemberId == memberId).
-                Include(c => c.Items).
                 Include(c => c.Items.Select(ci => ci.Product)).
+                Where(m => m.MemberId == memberId).
                 SingleOrDefaultAsync();
 
-            cart.Items = SortCartItems(cart.Items);
-
+            if (cart != null)
+            {
+                cart.Items = SortCartItems(cart.Items);
+            }
+            
             return cart;
         }
 
         /// <summary>
-        ///     Sorts the <see cref="cartItems"/> by <see cref="CartItem.ProductId"/>
+        ///     Sorts the <see cref="cartItems"/> by <see cref="CartItem.ProductId"/> descending
+        ///     then by <see cref="CartItem.IsNew"/> ascending
         /// </summary>
         /// <param name="cartItems">
         ///     The <see cref="IEnumerable{T}"/> of <see cref="CartItem"/>s to sort
@@ -786,6 +795,7 @@ namespace Veil.Controllers
         {
             return cartItems.
                 OrderByDescending(ci => ci.ProductId).
+                ThenBy(ci => ci.IsNew).
                 ToList();
         }
 
@@ -862,55 +872,62 @@ namespace Veil.Controllers
         /// </returns>
         private async Task DecreaseInventoryAndAddToOrder(Cart cart, WebOrder newOrder)
         {
-            foreach (var item in cart.Items)
+            foreach (var productGrouping in cart.Items.GroupBy(i => i.ProductId))
             {
                 ProductLocationInventory inventory = await db.ProductLocationInventories.
                     Where(
-                        pli => pli.ProductId == item.ProductId &&
+                        pli => pli.ProductId == productGrouping.Key &&
                             pli.Location.SiteName == Location.ONLINE_WAREHOUSE_NAME).
                     FirstOrDefaultAsync();
 
-                if (item.IsNew)
+                foreach (var lineItem in productGrouping)
                 {
-                    AvailabilityStatus itemStatus = item.Product.ProductAvailabilityStatus;
-
-                    if (itemStatus == AvailabilityStatus.Available ||
-                        itemStatus == AvailabilityStatus.PreOrder)
+                    if (lineItem.IsNew)
                     {
-                        inventory.NewOnHand -= item.Quantity;
-                    }
-                    else if ((itemStatus == AvailabilityStatus.DiscontinuedByManufacturer ||
+                        AvailabilityStatus itemStatus = lineItem.Product.ProductAvailabilityStatus;
+
+                        if (itemStatus == AvailabilityStatus.Available ||
+                            itemStatus == AvailabilityStatus.PreOrder)
+                        {
+                            inventory.NewOnHand -= lineItem.Quantity;
+                        }
+                        else if ((itemStatus == AvailabilityStatus.DiscontinuedByManufacturer ||
                             itemStatus == AvailabilityStatus.NotForSale) &&
-                        item.Quantity > inventory.NewOnHand)
-                    {
-                        throw new NotEnoughInventoryException(
-                            $"Not enough copies of {item.Product.Name}, which has been discontinued, to " +
-                                "guarantee we will be able to fulfill your order.",
-                            item.Product);
+                            lineItem.Quantity <= inventory.NewOnHand)
+                        {
+                            inventory.NewOnHand -= lineItem.Quantity;
+                        }
+                        else
+                        {
+                            throw new NotEnoughInventoryException(
+                                $"Not enough copies of {lineItem.Product.Name}, which has been discontinued, to " +
+                                    "guarantee we will be able to fulfill your order.",
+                                lineItem.Product);
+                        }
                     }
-                }
-                else
-                {
-                    if (inventory.UsedOnHand < item.Quantity)
+                    else
                     {
-                        throw new NotEnoughInventoryException(
-                            $"Not enough used copies of {item.Product.Name} to guarantee we " +
-                                "will be able to fulfill your order.",
-                            item.Product);
+                        if (inventory.UsedOnHand < lineItem.Quantity)
+                        {
+                            throw new NotEnoughInventoryException(
+                                $"Not enough used copies of {lineItem.Product.Name} to guarantee we " +
+                                    "will be able to fulfill your order.",
+                                lineItem.Product);
+                        }
+
+                        inventory.UsedOnHand -= lineItem.Quantity;
                     }
 
-                    inventory.UsedOnHand -= item.Quantity;
+                    newOrder.OrderItems.Add(
+                        new OrderItem
+                        {
+                            IsNew = lineItem.IsNew,
+                            ListPrice = lineItem.IsNew ? lineItem.Product.NewWebPrice : lineItem.Product.UsedWebPrice.Value,
+                            Product = lineItem.Product,
+                            ProductId = lineItem.ProductId,
+                            Quantity = lineItem.Quantity
+                        });
                 }
-
-                newOrder.OrderItems.Add(
-                    new OrderItem
-                    {
-                        IsNew = item.IsNew,
-                        ListPrice = item.IsNew ? item.Product.NewWebPrice : item.Product.UsedWebPrice.Value,
-                        Product = item.Product,
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity
-                    });
             }
         }
 

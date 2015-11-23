@@ -22,18 +22,18 @@
                     <option value="@game.Game.Id">@game.Game.Name</option>
                 }
             </select>
-        </div>
+    </div>
         <div class="small-6 medium-3 columns end">
             <button class="expand">View Detailed Report</button>
-        </div>
+    </div>
     }
-</div>
+    </div>
 
 <div class="row">
     <div class="column">
         <table class="width-100">
             <thead>
-            <tr>
+                <tr>
                 <th class="text-left">Game</th>
                 @foreach (var platform in Model.Platforms)
                 {
@@ -41,33 +41,33 @@
                         @platform.Platform.PlatformCode
                     </th>
                 }
-                <th class="text-right">Total</th>
-            </tr>
+                    <th class="text-right">Total</th>
+                </tr>
             </thead>
             <tbody>
                 @foreach (var game in Model.Games
                     .Where(g => g.WishlistCount > 0)
                     .OrderByDescending(g => g.WishlistCount))
                 {
-                    <tr>
+                <tr>
                         <td class="text-left">@game.Game.Name</td>
                         @foreach (var gamePlatform in game.Platforms.OrderBy(p => p.GamePlatform.PlatformName))
                         {
                             <td class="text-right">@gamePlatform.WishlistCount</td>
                         }
                         <td class="text-right">@game.WishlistCount</td>
-                    </tr>
+                </tr>
                 }
             </tbody>
             <tfoot>
-            <tr>
+                <tr>
                 <td>Totals</td>
                 @foreach (var platform in Model.Platforms)
                 {
                     <td class="text-right">@platform.WishlistCount</td>
                 }
                 <td class="text-right">@Model.WishlistCount</td>
-            </tr>
+                </tr>
             </tfoot>
         </table>
     </div>

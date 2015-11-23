@@ -244,6 +244,7 @@
     <Compile Include="Models\Reports\GameListViewModel.cs" />
     <Compile Include="Models\Reports\WishlistViewModel.cs" />
     <Compile Include="Models\Reports\SalesGameViewModel.cs" />
+    <Compile Include="Models\Reports\MemberListItemViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
     <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />

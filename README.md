@@ -2,9 +2,6 @@
 
 ### Project Timeline
 
-**Nov 13**
-- Team Design
-
 **Dec 18**
 - Final Project Presentation
 

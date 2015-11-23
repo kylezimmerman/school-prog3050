@@ -92,12 +92,12 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully added to your your cart.");
+                this.AddAlert(AlertType.Success, $"{name} for {platform} was succesfully added to your your cart.");
                 Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, $"An error occured while adding {platform}: {name} to your cart");
+                this.AddAlert(AlertType.Error, $"An error occured while adding {name} for {platform} to your cart");
             }
 
             return RedirectToAction("Details", "Games", new { id = gameId });
@@ -135,12 +135,12 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully removed for your cart");
+                this.AddAlert(AlertType.Success, $"{name} for {platform} was succesfully removed for your cart");
                 Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, $"An error occured while removing {platform}: {name} from your cart");
+                this.AddAlert(AlertType.Error, $"An error occured while removing {name} for {platform} from your cart");
             }
 
             return RedirectToAction("Index");
