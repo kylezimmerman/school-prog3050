@@ -10,9 +10,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
+using Veil.DataModels.Models;
 using Veil.Models.Reports;
 
 namespace Veil.Controllers
@@ -189,12 +191,11 @@ namespace Veil.Controllers
         ///     Displays a report of games and how many times they have been wishlisted for each platform
         /// </summary>
         /// <returns>
-        ///     
+        ///     A view presenting the wishlist counts for each game divided by platform
         /// </returns>
         [HttpGet]
         public async Task<ActionResult> Wishlist()
         {
-            // TODO: Can we do this all in one db call?
             var model = new WishlistViewModel
             {
                 Games = await db.Games.Select(g => new WishlistGameViewModel
@@ -225,9 +226,23 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        ///     Displays more detailed information about the number of members who have a game's various formats wishlisted
+        /// </summary>
+        /// <param name="gameId">
+        ///     The id of the Game to view the wishlist details of
+        /// </param>
+        /// <returns>
+        ///     A view presenting the wishlist counts for each GameProduct under the specified Game
+        /// </returns>
         [HttpGet]
         public async Task<ActionResult> WishlistDetail(Guid? gameId)
         {
+            if (gameId == null)
+            {
+                throw new HttpException(NotFound, nameof(Game));
+            }
+
             var model = await db.Games.Where(g => g.Id == gameId)
                 .Select(g => new WishlistDetailGameViewModel
                 {
@@ -241,6 +256,11 @@ namespace Veil.Controllers
                         .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
                         .DefaultIfEmpty(0).Sum()
                 }).FirstOrDefaultAsync();
+
+            if (model == null)
+            {
+                throw new HttpException(NotFound, nameof(Game));
+            }
 
             return View(model);
         }
