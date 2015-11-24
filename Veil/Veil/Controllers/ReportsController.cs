@@ -106,31 +106,34 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> MemberList()
         {
-            List<MemberListItemViewModel> listItems = await db.Users.
-                Where(u => u.Member != null).
-                Select(u =>
-                    new MemberListItemViewModel
-                    {
-                        UserName = u.UserName,
-                        FullName = u.FirstName + " " + u.LastName,
-                        OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
-                        TotalSpentOnOrders = db.WebOrders.
-                            Where(wo => wo.MemberId == u.Id).
-                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                            DefaultIfEmpty(0).
-                            Sum(),
-                        AverageOrderTotal = db.WebOrders.
-                            Where(wo => wo.MemberId == u.Id).
-                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                            DefaultIfEmpty(0).
-                            Average()
-                    }
-                ).
-                OrderByDescending(mli => mli.TotalSpentOnOrders).
-                ThenByDescending(mli => mli.AverageOrderTotal).
-                ToListAsync();
+            var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
+            {
+                Items = await db.Users.
+                    Where(u => u.Member != null).
+                    Select(u =>
+                        new MemberListItemViewModel
+                        {
+                            UserName = u.UserName,
+                            FullName = u.FirstName + " " + u.LastName,
+                            OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
+                            TotalSpentOnOrders = db.WebOrders.
+                                Where(wo => wo.MemberId == u.Id).
+                                Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                                DefaultIfEmpty(0).
+                                Sum(),
+                            AverageOrderTotal = db.WebOrders.
+                                Where(wo => wo.MemberId == u.Id).
+                                Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                                DefaultIfEmpty(0).
+                                Average()
+                        }
+                    ).
+                    OrderByDescending(mli => mli.TotalSpentOnOrders).
+                    ThenByDescending(mli => mli.AverageOrderTotal).
+                    ToListAsync()
+            };
 
-            return View(listItems);
+            return View(viewModel);
         }
 
         /// <summary>
@@ -153,36 +156,41 @@ namespace Veil.Controllers
         {
             end = end ?? DateTime.Now;
 
-            List<MemberListItemViewModel> listItems = await db.Users.
-                Where(u => u.Member != null).
-                Select(
-                    u =>
-                        new MemberListItemViewModel
-                        {
-                            UserName = u.UserName,
-                            FullName = u.FirstName + " " + u.LastName,
-                            OrderCount =
-                                db.WebOrders.Count(
-                                    wo =>
-                                        wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end),
-                            TotalSpentOnOrders = db.WebOrders.
-                        Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
-                        Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                        DefaultIfEmpty(0).
-                        Sum(),
-                            AverageOrderTotal = db.WebOrders.
-                        Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
-                        Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                        DefaultIfEmpty(0).
-                        Average()
-                        }
-                ).
-                OrderByDescending(mli => mli.TotalSpentOnOrders).
-                ThenByDescending(mli => mli.AverageOrderTotal).
-                ThenByDescending(mli => mli.OrderCount).
-                ToListAsync();
+            var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
+            {
+                StartDate = start,
+                EndDate = end,
+                Items = await db.Users.
+                    Where(u => u.Member != null).
+                    Select(
+                        u =>
+                            new MemberListItemViewModel
+                            {
+                                UserName = u.UserName,
+                                FullName = u.FirstName + " " + u.LastName,
+                                OrderCount =
+                                    db.WebOrders.Count(
+                                        wo =>
+                                            wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end),
+                                TotalSpentOnOrders = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Sum(),
+                                AverageOrderTotal = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Average()
+                            }
+                    ).
+                    OrderByDescending(mli => mli.TotalSpentOnOrders).
+                    ThenByDescending(mli => mli.AverageOrderTotal).
+                    ThenByDescending(mli => mli.OrderCount).
+                    ToListAsync()
+            };
 
-            return View(listItems);
+            return View(viewModel);
         }
 
         //Member Detail report

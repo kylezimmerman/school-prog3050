@@ -25,11 +25,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model, Has.Count.EqualTo(1));
+            Assert.That(items, Has.Count.EqualTo(1));
         }
 
         [Test]
@@ -44,11 +45,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>) result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
         }
 
         [Test]
@@ -63,11 +65,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().FullName, Is.EqualTo("John Doe"));
+            Assert.That(items.First().FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -82,11 +85,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().OrderCount, Is.EqualTo(0));
+            Assert.That(items.First().OrderCount, Is.EqualTo(0));
         }
 
         [Test]
@@ -101,11 +105,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(0));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(0));
         }
 
         [Test]
@@ -120,11 +125,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().AverageOrderTotal, Is.EqualTo(0));
+            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(0));
         }
 
         [Test]
@@ -146,11 +152,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().OrderCount, Is.EqualTo(5));
+            Assert.That(items.First().OrderCount, Is.EqualTo(5));
         }
 
         [Test]
@@ -172,11 +179,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(100m));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(100m));
         }
 
         [Test]
@@ -197,11 +205,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().AverageOrderTotal, Is.EqualTo(3m));
+            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(3m));
         }
 
         [Test]
@@ -220,13 +229,14 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThanOrEqualTo(model.Last().TotalSpentOnOrders));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
-            Assert.That(model.Last().UserName, Is.EqualTo(memberUser2.UserName));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThanOrEqualTo(items.Last().TotalSpentOnOrders));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.Last().UserName, Is.EqualTo(memberUser2.UserName));
         }
 
         [Test]
@@ -246,14 +256,15 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(model.Last().TotalSpentOnOrders));
-            Assert.That(model.First().AverageOrderTotal, Is.GreaterThanOrEqualTo(model.Last().AverageOrderTotal));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
-            Assert.That(model.Last().UserName, Is.EqualTo(memberUser2.UserName));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(items.Last().TotalSpentOnOrders));
+            Assert.That(items.First().AverageOrderTotal, Is.GreaterThanOrEqualTo(items.Last().AverageOrderTotal));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.Last().UserName, Is.EqualTo(memberUser2.UserName));
         }
 
         [Test]
@@ -268,11 +279,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model, Has.Count.EqualTo(1));
+            Assert.That(items, Has.Count.EqualTo(1));
         }
 
         [Test]
@@ -287,11 +299,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
         }
 
         [Test]
@@ -306,11 +319,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().FullName, Is.EqualTo("John Doe"));
+            Assert.That(items.First().FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -325,11 +339,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().OrderCount, Is.EqualTo(0));
+            Assert.That(items.First().OrderCount, Is.EqualTo(0));
         }
 
         [Test]
@@ -344,11 +359,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(0));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(0));
         }
 
         [Test]
@@ -363,11 +379,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().AverageOrderTotal, Is.EqualTo(0));
+            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(0));
         }
 
         [Test]
@@ -389,11 +406,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().OrderCount, Is.EqualTo(5));
+            Assert.That(items.First().OrderCount, Is.EqualTo(5));
         }
 
         [Test]
@@ -415,11 +433,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().OrderCount, Is.EqualTo(3));
+            Assert.That(items.First().OrderCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -441,11 +460,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(100m));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(100m));
         }
 
         [Test]
@@ -467,11 +487,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(60m));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(60m));
         }
 
         [Test]
@@ -492,11 +513,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().AverageOrderTotal, Is.EqualTo(3m));
+            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(3m));
         }
 
         [Test]
@@ -517,11 +539,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().AverageOrderTotal, Is.EqualTo(3m));
+            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(3m));
         }
 
         [Test]
@@ -540,14 +563,15 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThan(0));
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThanOrEqualTo(model.Last().TotalSpentOnOrders));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
-            Assert.That(model.Last().UserName, Is.EqualTo(memberUser2.UserName));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThan(0));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThanOrEqualTo(items.Last().TotalSpentOnOrders));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.Last().UserName, Is.EqualTo(memberUser2.UserName));
         }
 
         [Test]
@@ -568,14 +592,15 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThan(0));
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThanOrEqualTo(model.Last().TotalSpentOnOrders));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
-            Assert.That(model.Last().UserName, Is.EqualTo(memberUser2.UserName));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThan(0));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThanOrEqualTo(items.Last().TotalSpentOnOrders));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.Last().UserName, Is.EqualTo(memberUser2.UserName));
         }
 
         [Test]
@@ -595,15 +620,16 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThan(0));
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(model.Last().TotalSpentOnOrders));
-            Assert.That(model.First().AverageOrderTotal, Is.GreaterThanOrEqualTo(model.Last().AverageOrderTotal));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
-            Assert.That(model.Last().UserName, Is.EqualTo(memberUser2.UserName));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThan(0));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(items.Last().TotalSpentOnOrders));
+            Assert.That(items.First().AverageOrderTotal, Is.GreaterThanOrEqualTo(items.Last().AverageOrderTotal));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.Last().UserName, Is.EqualTo(memberUser2.UserName));
         }
 
         [Test]
@@ -625,15 +651,16 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+            var items = model.Items;
 
-            Assert.That(model.First().TotalSpentOnOrders, Is.GreaterThan(0));
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(model.Last().TotalSpentOnOrders));
-            Assert.That(model.First().AverageOrderTotal, Is.GreaterThanOrEqualTo(model.Last().AverageOrderTotal));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
-            Assert.That(model.Last().UserName, Is.EqualTo(memberUser2.UserName));
+            Assert.That(items.First().TotalSpentOnOrders, Is.GreaterThan(0));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(items.Last().TotalSpentOnOrders));
+            Assert.That(items.First().AverageOrderTotal, Is.GreaterThanOrEqualTo(items.Last().AverageOrderTotal));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(items.Last().UserName, Is.EqualTo(memberUser2.UserName));
         }
 
         [Test]
@@ -651,14 +678,20 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.MemberList(start: new DateTime(2015, 11, 21), end: null) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<List<MemberListItemViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
 
-            var model = (List<MemberListItemViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
 
-            Assert.That(model.First().OrderCount, Is.EqualTo(1));
-            Assert.That(model.First().TotalSpentOnOrders, Is.EqualTo(30));
-            Assert.That(model.First().AverageOrderTotal, Is.EqualTo(30));
-            Assert.That(model.First().UserName, Is.EqualTo(memberUser.UserName));
+            Assert.That(model.EndDate.Value, Is.EqualTo(DateTime.Now).Within(1).Minutes);
+
+            var items = model.Items;
+
+            Assert.That(items.First().OrderCount, Is.EqualTo(1));
+            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(30));
+            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(30));
+            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
         }
+
+        // TODO: Setting Start and end date
     }
 }
