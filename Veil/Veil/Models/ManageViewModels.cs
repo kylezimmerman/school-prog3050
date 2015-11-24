@@ -27,7 +27,6 @@ namespace Veil.Models
         [Display(Name = "Receive Promotional Emails?")]
         public bool ReceivePromotionalEmail { get; set; }
 
-        public string StatusMessage { get; set; }
         public string MemberFirstName { get; set; }
         public string MemberLastName { get; set; }
         public string MemberEmail { get; set; }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -422,60 +421,104 @@ namespace Veil.Controllers
             return View("ConfirmEmail");
         }
 
-        //
-        // GET: /Account/ForgotPassword
+        /// <summary>
+        ///     Displays a page allowing the user to have a password reset link emailed to them
+        /// </summary>
+        /// <returns>
+        ///     A page allowing the user to have a password reset link emailed to them
+        /// </returns>
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
             return View();
         }
 
-        //
-        // POST: /Account/ForgotPassword
+        /// <summary>
+        ///     Sends a password reset link to the provided email address if it is registered to a user
+        /// </summary>
+        /// <param name="model">
+        ///     The view model containing the email address to validate and send a reset link to
+        /// </param>
+        /// <returns>
+        ///     A redirection to ForgotPasswordConfirmation if successful
+        ///     A redirection to ForgotPasswordConfirmation if the email doesn't belong to a user
+        ///     Redisplays the view with errors if information is invalid
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await userManager.FindByNameAsync(model.Email);
-                if (user == null || !(await userManager.IsEmailConfirmedAsync(user.Id)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
-                }
-
-                // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                return View(model);
             }
 
-            // If we got this far, something failed, redisplay form
-            return View(model);
+            var user = await userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !(await userManager.IsEmailConfirmedAsync(user.Id)))
+            {
+                // Don't reveal that the user does not exist or is not confirmed
+                return RedirectToAction("ForgotPasswordConfirmation");
+            }
+
+            // Send an email with this link
+            string code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
+
+            var callbackUrl = Url.Action("ResetPassword", "Account",
+                new
+                {
+                    userId = user.Id,
+                    code = code
+                },
+                protocol: Request.Url.Scheme);	
+                	
+            await userManager.SendEmailAsync(user.Id,
+                "Veil Password Reset",
+                "Please reset your Veil account password by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+            return RedirectToAction("ForgotPasswordConfirmation");
         }
 
-        //
-        // GET: /Account/ForgotPasswordConfirmation
+        /// <summary>
+        ///     Displays a view informing the user that a password reset link has been sent
+        /// </summary>
+        /// <returns>
+        ///     A view informing the user that a password reset link has been sent
+        /// </returns>
         [AllowAnonymous]
         public ActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
 
-        //
-        // GET: /Account/ResetPassword
+        /// <summary>
+        ///     Displays a page allowing the user to reset their password
+        /// </summary>
+        /// <param name="code">
+        ///     The generated token for resetting the password
+        /// </param>
+        /// <returns>
+        ///     A view allowing the user to reset their password if a code is provided.
+        ///     An error view if no code is provided.
+        /// </returns>
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
             return code == null ? View("Error") : View();
         }
 
-        //
-        // POST: /Account/ResetPassword
+        /// <summary>
+        ///     Resets the user's password
+        /// </summary>
+        /// <param name="model">
+        ///     The view model containing the information to validate and reset the password for
+        /// </param>
+        /// <returns>
+        ///     Redirection to ResetPasswordConfirmation if successful
+        ///     Redirection to ResetPasswordConfirmation if the email doesn't belong to a user
+        ///     Redisplay the page with errors if the information is invalid
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -485,23 +528,35 @@ namespace Veil.Controllers
             {
                 return View(model);
             }
-            var user = await userManager.FindByNameAsync(model.Email);
+
+            var user = await userManager.FindByEmailAsync(model.Email);
+
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
+
             var result = await userManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
-            if (result.Succeeded)
+
+            if (!result.Succeeded)
             {
-                return RedirectToAction("ResetPasswordConfirmation", "Account");
+                AddErrors(result, "");
+                return View("Error");
             }
-            AddErrors(result, "");
-            return View();
+
+            // Update the security stamp to invalidate the reset link
+            await userManager.UpdateSecurityStampAsync(user.Id);
+
+            return RedirectToAction("ResetPasswordConfirmation", "Account");
         }
 
-        //
-        // GET: /Account/ResetPasswordConfirmation
+        /// <summary>
+        ///     Displays a page informing the user their password has been changed
+        /// </summary>
+        /// <returns>
+        ///     A page informing the user their password has been changed
+        /// </returns>
         [AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
         {
