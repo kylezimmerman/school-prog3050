@@ -1,4 +1,10 @@
-﻿@model Veil.DataModels.Models.WebOrder
+﻿@using Veil.Extensions
+@model Veil.DataModels.Models.WebOrder
+
+@{
+    const string TH_TD_STYLE = "padding: 0.5625rem 0.625rem; font-size: 0.875rem; color: #222; text-align: left;";
+    const string TH_TD_NUMBER_STYLE = "padding: 0.5625rem 0.625rem; font-size: 0.875rem; color: #222; text-align: right;";
+}
 
 <h1>Veil Order Confirmation - #@Model.Id</h1>
 <p>
@@ -7,37 +13,83 @@
 </p>
 <h2>Order Details</h2>
 
-<table>
-    @foreach (var orderItem in Model.OrderItems)
-    {
-        <tr>
-            <td style="padding-right: 2em;">@orderItem.Product.Name</td>
-            <td>@($"{orderItem.ListPrice:C}")</td>
+<p>Placed on @Model.OrderDate.ToLongDateString()</p>
+
+<div style="background-color: #F9F9F9; margin-bottom: 2em; padding: 1em 1em; display: inline-block;">
+    <dl style="padding-right: 1em; border-right: solid 1px #E9E9E9; display: inline-block;">
+        <dt><strong>Shipping Info</strong></dt>
+        <dd style="margin-left:0.5em">@Model.Address.StreetAddress</dd>
+        @if (Model.Address.POBoxNumber != null)
+        {
+            <dd style="margin-left:0.5em">PO Box: @Model.Address.POBoxNumber</dd>
+        }
+        <dd style="margin-left:0.5em">@Model.Address.City, @Model.Province.Name @Model.Address.PostalCode</dd>
+        <dd style="margin-left:0.5em">@Model.Country.CountryName</dd>
+    </dl>
+    <dl style="padding-left: 1em; display: inline-block;">
+        <dt><strong>Billing Info</strong></dt>
+        <dd style="margin-left:0.5em">@Model.CreditCardLast4Digits.FormatLast4Digits()</dd>
+        <dd>&nbsp;</dd>
+        <dd>&nbsp;</dd>
+        @if (Model.Address.POBoxNumber != null)
+        {
+            <dd>&nbsp;</dd>
+        }
+    </dl>
+</div>
+
+@{
+    int i = 0;
+    string evenStyle = "";
+    string oddStyle = "background-color: #F9F9F9;";
+}
+
+<table style="border-collapse: collapse; border-spacing: 0; border: solid 1px #E9E9E9;">
+    <thead>
+        <tr style="@oddStyle">
+            <th style="@TH_TD_STYLE">Product</th>
+            <th style="@TH_TD_STYLE">New/Used</th>
+            <th style="@TH_TD_STYLE">Quantity</th>
+            <th style="@TH_TD_STYLE">Product Cost</th>
         </tr>
-    }
-    <tr>
-        <td colspan="2">
-            <hr />
-        </td>
-    </tr>
-    <tr>
-        <td>Subtotal:</td>
-        <td>@($"{Model.OrderSubtotal:C}")</td>
-    </tr>
-    <tr>
-        <td>Shipping:</td>
-        <td>@($"{Model.ShippingCost:C}")</td>
-    </tr>
-    <tr>
-        <td>Tax:</td>
-        <td>@($"{Model.TaxAmount:C}")</td>
-    </tr>
-    <tr>
-        <td>
-            <strong>Total:</strong>
-        </td>
-        <td>
-            <strong>@($"{(Model.OrderSubtotal + Model.ShippingCost + Model.TaxAmount):C}")</strong>
-        </td>
-    </tr>
+    </thead>
+    <tbody>
+        @foreach (var orderItem in Model.OrderItems)
+        {
+            var style = i++ % 2 == 1 ? oddStyle : evenStyle;
+
+            <tr style="@style">
+                <td style="@TH_TD_STYLE">@orderItem.Product.Name</td>
+                <td style="text-align: center !important; @TH_TD_STYLE">@(orderItem.IsNew ? "New" : "Used")</td>
+                <td style="@TH_TD_NUMBER_STYLE">@orderItem.Quantity</td>
+                <td style="@TH_TD_NUMBER_STYLE">@($"{orderItem.ListPrice:C}")</td>
+            </tr>
+        }
+
+        <tr>
+            <td colspan="4">
+                <hr style="border: solid 1px #E9E9E9;"/>
+            </td>
+        </tr>
+        <tr style="border-top: solid 1px #E9E9E9; padding-top: 2em; @oddStyle">
+            <td colspan="3" style="@TH_TD_STYLE">Subtotal:</td>
+            <td style="@TH_TD_NUMBER_STYLE">@($"{Model.OrderSubtotal:C}")</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="@TH_TD_STYLE">Shipping:</td>
+            <td style="@TH_TD_NUMBER_STYLE">@($"{Model.ShippingCost:C}")</td>
+        </tr>
+        <tr style="@oddStyle">
+            <td colspan="3" style="@TH_TD_STYLE">Tax:</td>
+            <td style="@TH_TD_NUMBER_STYLE">@($"{Model.TaxAmount:C}")</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="@TH_TD_STYLE">
+                <strong>Total:</strong>
+            </td>
+            <td style="@TH_TD_NUMBER_STYLE">
+                <strong>@($"{(Model.OrderSubtotal + Model.ShippingCost + Model.TaxAmount):C}")</strong>
+            </td>
+        </tr>
+    </tbody>
 </table>
