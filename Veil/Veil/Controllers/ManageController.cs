@@ -138,7 +138,7 @@ namespace Veil.Controllers
             user.LastName = viewModel.MemberLastName;
             user.PhoneNumber = viewModel.PhoneNumber;
             user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
-
+            
             
             try
             {
