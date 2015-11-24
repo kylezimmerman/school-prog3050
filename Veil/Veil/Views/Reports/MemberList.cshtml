@@ -1,5 +1,5 @@
 ﻿@using Veil.Models.Reports
-@model IEnumerable<MemberListItemViewModel>
+@model DateFilteredListViewModel<MemberListItemViewModel>
 
 @{
     ViewBag.Title = "All Members' Order Summary Report";
@@ -12,43 +12,22 @@
     </div>
 </div>
 
-@using (Html.BeginForm("MemberList", "Reports", FormMethod.Post))
-{
-    <div class="row">
-        <div class="medium-2 columns">
-            <span><em>Optional Filter</em></span><br/>
-        </div>
-
-        <div class="medium-3 columns">
-            <label for="startDate" class="prefix">From:</label>
-            <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true"  name="start" placeholder="yyyy-mm-dd"/>
-            @Html.ValidationMessage("start")
-        </div>
-        <div class="medium-3 columns">
-            <label for="endDate" class="prefix">To (optional):</label>
-            <input type="date" id="endDate" name="end" value="@DateTime.Now.ToShortDateString()"/>
-        </div>
-        <div class="medium-3 end columns">
-            <button type="submit" class="expand">Refresh Report</button>
-        </div>
-
-    </div>
-}
+@{ Html.RenderPartial("_DateFilteringForm", Model); }
 
 <div class="row">
     <div class="columns">
         <table class="report">
             <thead>
                 <tr>
-                    <th>@Html.DisplayNameFor(m => m.UserName)</th>
-                    <th>@Html.DisplayNameFor(m => m.FullName)</th>
-                    <th class="text-right">@Html.DisplayNameFor(m => m.OrderCount)</th>
-                    <th class="text-right">@Html.DisplayNameFor(m => m.TotalSpentOnOrders)</th>
-                    <th class="text-right">@Html.DisplayNameFor(m => m.AverageOrderTotal)</th>
+                    <th>@Html.DisplayNameFor(m => m.Items[0].UserName)</th>
+                    <th>@Html.DisplayNameFor(m => m.Items[0].FullName)</th>
+                    <th class="text-right">@Html.DisplayNameFor(m => m.Items[0].OrderCount)</th>
+                    <th class="text-right">@Html.DisplayNameFor(m => m.Items[0].TotalSpentOnOrders)</th>
+                    <th class="text-right">@Html.DisplayNameFor(m => m.Items[0].AverageOrderTotal)</th>
                 </tr>
             </thead>
             <tbody>
-            @if (!Model.Any())
+            @if (!Model.Items.Any())
             {
                 <tr>
                     <td colspan="5">No member's matching the search criteria.</td>
@@ -56,7 +35,7 @@
             }
             else
             {
-                foreach (var member in Model)
+                foreach (var member in Model.Items)
                 {
                     <tr>
                         <td><a href="@Url.Action("MemberDetail", new { userName = @member.UserName })">@member.UserName</a></td>

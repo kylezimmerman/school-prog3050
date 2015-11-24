@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Antlr.Runtime;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -39,33 +40,54 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> GameList()
         {
-            // TODO: Remove these comments upon testing the query more
-            //var blerg = db.Games.Select(g => g.GameSKUs.SelectMany(gs => db.WebOrders.Select(wo => wo.OrderItems.Where(oi => oi.ProductId == gs.Id).Select(oi => oi.Quantity).DefaultIfEmpty(0).Sum()))).ToList();
-            // Potential solution to the blerg above
-            var gameList = await db.Games
+            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            {
+                Items = await db.Games
                 .Select(
                     g =>
                         new GameListViewModel
                         {
                             Game = g,
                             QuantitySold = db.WebOrders
-                        .SelectMany(
-                            wo => wo.OrderItems
-                                .Where(oi => g.GameSKUs.Contains(oi.Product)))
-                        .Select(oi => oi.Quantity)
-                        .DefaultIfEmpty(0).Sum()
+                                .SelectMany(
+                                    wo => wo.OrderItems
+                                        .Where(oi => g.GameSKUs.Contains(oi.Product)))
+                                .Select(oi => oi.Quantity)
+                                .DefaultIfEmpty(0).Sum()
                         }
-                ).ToListAsync();
+                ).OrderByDescending(g => g.QuantitySold).ToListAsync()
+            };
 
-            return View(gameList);
+            return View(viewModel);
         }
 
         [HttpPost]
-        public ActionResult GameList(DateTime start, DateTime? end)
+        public async Task<ActionResult> GameList(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            {
+                StartDate = start,
+                EndDate = end,
+                Items = await db.Games
+                    .Select(
+                        g =>
+                            new GameListViewModel
+                            {
+                                Game = g,
+                                QuantitySold = db.WebOrders
+                                    .Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                                    .SelectMany(
+                                        wo => wo.OrderItems
+                                            .Where(oi => g.GameSKUs.Contains(oi.Product)))
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).OrderByDescending(g => g.QuantitySold).ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
         //Game Detail report
@@ -93,31 +115,34 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> MemberList()
         {
-            List<MemberListItemViewModel> listItems = await db.Users.
-                Where(u => u.Member != null).
-                Select(u =>
-                    new MemberListItemViewModel
-                    {
-                        UserName = u.UserName,
-                        FullName = u.FirstName + " " + u.LastName,
-                        OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
-                        TotalSpentOnOrders = db.WebOrders.
-                            Where(wo => wo.MemberId == u.Id).
-                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                            DefaultIfEmpty(0).
-                            Sum(),
-                        AverageOrderTotal = db.WebOrders.
-                            Where(wo => wo.MemberId == u.Id).
-                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                            DefaultIfEmpty(0).
-                            Average()
-                    }
-                ).
-                OrderByDescending(mli => mli.TotalSpentOnOrders).
-                ThenByDescending(mli => mli.AverageOrderTotal).
-                ToListAsync();
+            var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
+            {
+                Items = await db.Users.
+                    Where(u => u.Member != null).
+                    Select(u =>
+                        new MemberListItemViewModel
+                        {
+                            UserName = u.UserName,
+                            FullName = u.FirstName + " " + u.LastName,
+                            OrderCount = db.WebOrders.Count(wo => wo.MemberId == u.Id),
+                            TotalSpentOnOrders = db.WebOrders.
+                                Where(wo => wo.MemberId == u.Id).
+                                Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                                DefaultIfEmpty(0).
+                                Sum(),
+                            AverageOrderTotal = db.WebOrders.
+                                Where(wo => wo.MemberId == u.Id).
+                                Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                                DefaultIfEmpty(0).
+                                Average()
+                        }
+                    ).
+                    OrderByDescending(mli => mli.TotalSpentOnOrders).
+                    ThenByDescending(mli => mli.AverageOrderTotal).
+                    ToListAsync()
+            };
 
-            return View(listItems);
+            return View(viewModel);
         }
 
         /// <summary>
@@ -140,36 +165,41 @@ namespace Veil.Controllers
         {
             end = end ?? DateTime.Now;
 
-            List<MemberListItemViewModel> listItems = await db.Users.
-                Where(u => u.Member != null).
-                Select(
-                    u =>
-                        new MemberListItemViewModel
-                        {
-                            UserName = u.UserName,
-                            FullName = u.FirstName + " " + u.LastName,
-                            OrderCount =
-                                db.WebOrders.Count(
-                                    wo =>
-                                        wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end),
-                            TotalSpentOnOrders = db.WebOrders.
-                        Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
-                        Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                        DefaultIfEmpty(0).
-                        Sum(),
-                            AverageOrderTotal = db.WebOrders.
-                        Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
-                        Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
-                        DefaultIfEmpty(0).
-                        Average()
-                        }
-                ).
-                OrderByDescending(mli => mli.TotalSpentOnOrders).
-                ThenByDescending(mli => mli.AverageOrderTotal).
-                ThenByDescending(mli => mli.OrderCount).
-                ToListAsync();
+            var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
+            {
+                StartDate = start,
+                EndDate = end,
+                Items = await db.Users.
+                    Where(u => u.Member != null).
+                    Select(
+                        u =>
+                            new MemberListItemViewModel
+                            {
+                                UserName = u.UserName,
+                                FullName = u.FirstName + " " + u.LastName,
+                                OrderCount =
+                                    db.WebOrders.Count(
+                                        wo =>
+                                            wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end),
+                                TotalSpentOnOrders = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Sum(),
+                                AverageOrderTotal = db.WebOrders.
+                            Where(wo => wo.MemberId == u.Id && wo.OrderDate >= start && wo.OrderDate <= end).
+                            Select(wo => wo.OrderSubtotal + wo.ShippingCost + wo.TaxAmount).
+                            DefaultIfEmpty(0).
+                            Average()
+                            }
+                    ).
+                    OrderByDescending(mli => mli.TotalSpentOnOrders).
+                    ThenByDescending(mli => mli.AverageOrderTotal).
+                    ThenByDescending(mli => mli.OrderCount).
+                    ToListAsync()
+            };
 
-            return View(listItems);
+            return View(viewModel);
         }
 
         //Member Detail report
