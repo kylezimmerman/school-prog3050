@@ -1,77 +1,72 @@
-﻿
+﻿@model Veil.Models.Reports.WishlistViewModel
+
 @{
-    ViewBag.Title = "Wishlist";
+    ViewBag.Title = "Wishlist Report";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p><em>Generates report of games by how many wishlists each appears on</em></p>
+        <p><em>A report of games by how many wishlists each appears on.</em></p>
     </div>
 </div>
 
-<style>
-    .game-information p {
-        margin-left: 2em;
+<div class="row hide-for-print">
+    @using (Html.BeginForm("WishlistDetail", "Reports", FormMethod.Get))
+    {
+        <div class="small-6 medium-3 columns">
+            <label for="gameId">Game</label>
+            <select id="gameId" name="gameId">
+                @foreach (var game in Model.Games.OrderBy(g => g.Game.Name))
+                {
+                    <option value="@game.Game.Id">@game.Game.Name</option>
+                }
+            </select>
+        </div>
+        <div class="small-6 medium-3 columns end">
+            <button class="expand">View Detailed Report</button>
+        </div>
     }
-</style>
-
-<div class="row">
-    <div class="medium-2 columns">
-        <span><em>Optional Filter</em></span><br />
-    </div>
-    <div class="medium-3 columns">
-        <label for="game-name">Game Name:</label>
-        <input type="text" id="game-name" name="game-name" list="games" />
-    </div>
-    <div class="medium-3 end columns">
-        <button class="expand">Refresh Report</button>
-    </div>
-    <datalist id="games">
-        <option value="Star Wars: Battlefront" />
-        <option value="The Last of Us" />
-    </datalist>
 </div>
 
 <div class="row">
-    <div class="columns">
-        <table class="report">
+    <div class="column">
+        <table class="width-100">
             <thead>
                 <tr>
-                    <th>Game</th>
-                    <th class="text-right">PC</th>
-                    <th class="text-right">Xbox One</th>
-                    <th class="text-right">PS4</th>
-                    <th class="text-right">WiiU</th>
+                    <th class="text-left">Game</th>
+                    @foreach (var platform in Model.Platforms)
+                    {
+                        <th class="text-right">
+                            @platform.Platform.PlatformCode
+                        </th>
+                    }
                     <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
+                @foreach (var game in Model.Games)
+                {
                 <tr>
-                    <td>Star Wars: Battlefront</td>
-                    <td class="value-number">50</td>
-                    <td class="value-number">40</td>
-                    <td class="value-number">35</td>
-                    <td class="value-number">0</td>
-                    <td class="value-number">147</td>
+                    <td class="text-left">
+                        @Html.ActionLink(game.Game.Name, "WishlistDetail", new { gameId = game.Game.Id })
+                    </td>
+                    @foreach (var gamePlatform in game.Platforms)
+                    {
+                        <td class="text-right">@gamePlatform.WishlistCount</td>
+                    }
+                    <td class="text-right">@game.WishlistCount</td>
                 </tr>
-                <tr>
-                    <td>The Last of Us</td>
-                    <td class="value-number">0</td>
-                    <td class="value-number">0</td>
-                    <td class="value-number">15</td>
-                    <td class="value-number">0</td>
-                    <td class="value-number">16</td>
-                </tr>
+                }
             </tbody>
             <tfoot>
                 <tr>
-                    <td class="text-right">Totals:</td>
-                    <td class="value-number">50</td>
-                    <td class="value-number">40</td>
-                    <td class="value-number">50</td>
-                    <td class="value-number">0</td>
-                    <td class="value-number">163</td>
+                    <td class="text-left">Totals</td>
+                    @foreach (var platform in Model.Platforms)
+                    {
+                        <td class="text-right">@platform.WishlistCount</td>
+                    }
+                    <td class="text-right">@Model.WishlistCount</td>
                 </tr>
             </tfoot>
         </table>

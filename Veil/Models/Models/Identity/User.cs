@@ -49,6 +49,16 @@ namespace Veil.DataModels.Models.Identity
         public override string Email { get; set; }
 
         /// <summary>
+        ///     The User's new email address before confirming it
+        /// <br/>
+        /// <br/>
+        ///     This must be unique in the system.
+        /// </summary>
+        [Required]
+        [EmailAddress]
+        public  string NewEmail { get; set; }
+
+        /// <summary>
         ///     The User's Username
         /// <br/>
         /// <br/>

@@ -10,9 +10,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
+using Veil.DataModels.Models;
 using Veil.Models.Reports;
 
 namespace Veil.Controllers
@@ -193,16 +195,87 @@ namespace Veil.Controllers
             return View();
         }
 
-        //Wishlist report
+        /// <summary>
+        ///     Displays a report of games and how many times they have been wishlisted for each platform
+        /// </summary>
+        /// <returns>
+        ///     A view presenting the wishlist counts for each game divided by platform
+        /// </returns>
         [HttpGet]
-        public ActionResult Wishlist()
+        public async Task<ActionResult> Wishlist()
         {
-            return View();
+            var model = new WishlistViewModel
+            {
+                Games = await db.Games.Select(g => new WishlistGameViewModel
+                    {
+                        Game = g,
+                        Platforms = db.Platforms.Select(p => new WishlistGamePlatformViewModel
+                            {
+                                GamePlatform = p,
+                                WishlistCount = g.GameSKUs
+                                    .Where(gp => gp.Platform == p)
+                                    .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                                    .DefaultIfEmpty(0).Sum()
+                            }).OrderBy(m => m.GamePlatform.PlatformName),
+                        WishlistCount = g.GameSKUs
+                            .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                            .DefaultIfEmpty(0).Sum()
+                    }).Where(m => m.WishlistCount > 0)
+                    .OrderByDescending(m => m.WishlistCount).ToListAsync(),
+                Platforms = await db.Platforms.Select(p => new WishlistPlatformViewModel
+                    {
+                        Platform = p,
+                        WishlistCount = p.GameProducts
+                            .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                            .DefaultIfEmpty(0).Sum()
+                    }).OrderBy(p => p.Platform.PlatformName).ToListAsync()
+            };
+
+            return View(model);
+        }
+
+        /// <summary>
+        ///     Displays more detailed information about the number of members who have a game's various formats wishlisted
+        /// </summary>
+        /// <param name="gameId">
+        ///     The id of the Game to view the wishlist details of
+        /// </param>
+        /// <returns>
+        ///     A view presenting the wishlist counts for each GameProduct under the specified Game
+        /// </returns>
+        [HttpGet]
+        public async Task<ActionResult> WishlistDetail(Guid? gameId)
+        {
+            if (gameId == null)
+            {
+                throw new HttpException(NotFound, nameof(Game));
+            }
+
+            var model = await db.Games.Where(g => g.Id == gameId)
+                .Select(g => new WishlistDetailGameViewModel
+                {
+                    Game = g,
+                    GameProducts = g.GameSKUs.Select(gp => new WishlistDetailGameProductViewModel
+                        {
+                            GameProduct = gp,
+                            WishlistCount = db.Members.Count(m => m.Wishlist.Contains(gp))
+                        }).OrderByDescending(m => m.WishlistCount),
+                    WishlistCount = g.GameSKUs
+                        .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                        .DefaultIfEmpty(0).Sum()
+                }).FirstOrDefaultAsync();
+
+            if (model == null)
+            {
+                throw new HttpException(NotFound, nameof(Game));
+            }
+
+            return View(model);
         }
 
         //Sales report
         [HttpGet]
-        public ActionResult Sales()
+        public async Task<ActionResult> Sales()
         {
             return View();
         }

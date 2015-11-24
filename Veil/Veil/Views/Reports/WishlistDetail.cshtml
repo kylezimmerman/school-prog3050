@@ -1,0 +1,43 @@
+﻿@model Veil.Models.Reports.WishlistDetailGameViewModel
+
+@{
+    ViewBag.Title = $"Wishlist Report for {Model.Game.Name}";
+}
+
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+        <p><em>A report of a game by how many wishlists each format appears on.</em>
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column">
+        <table class="width-100">
+            <thead>
+                <tr>
+                    <th class="text-left">Game</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gameProduct in Model.GameProducts)
+                {
+                    <tr>
+                        <td class="text-left">@gameProduct.GameProduct.NamePlatformDistinct</td>
+                        <td class="text-right">@gameProduct.WishlistCount</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="text-left">
+                        @Html.ActionLink(Model.Game.Name, "Details", "Games", new { id = Model.Game.Id }, null)
+                    </td>
+                    <td class="text-right">@Model.WishlistCount</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
