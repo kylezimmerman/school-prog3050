@@ -148,6 +148,14 @@ namespace Veil.Tests
             return contextFake;
         }
 
+        public static IReturnsResult<ControllerContext> SetupUserAuthenticated(this Mock<ControllerContext> contextFake, bool isAuthenticated)
+        {
+            Mock<IIdentity> identityStub = new Mock<IIdentity>();
+            identityStub.Setup(i => i.IsAuthenticated).Returns(isAuthenticated);
+
+            return contextFake.Setup(c => c.HttpContext.User.Identity).Returns(identityStub.Object);
+        }
+
         /// <summary>
         ///     Sets up the user as in any role
         /// </summary>

@@ -242,9 +242,9 @@
     <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
     <Compile Include="Models\Reports\GameListViewModel.cs" />
+    <Compile Include="Models\Reports\SalesGameViewModel.cs" />
     <Compile Include="Models\Reports\WishlistDetailViewModel.cs" />
     <Compile Include="Models\Reports\WishlistViewModel.cs" />
-    <Compile Include="Models\Reports\SalesGameViewModel.cs" />
     <Compile Include="Models\Reports\MemberListItemViewModel.cs" />
     <Compile Include="Models\Reports\DateFilteredListViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
