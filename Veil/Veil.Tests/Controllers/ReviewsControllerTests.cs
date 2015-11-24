@@ -21,7 +21,7 @@ namespace Veil.Tests.Controllers
         private Guid memberGuid;
         private Guid gameProductGuid;
         private GameReview pendinGameReview;
-        private GameReview approGameReview;
+        private GameReview approvedGameReview;
         private GameReview deniedGameReview;
         private Game game;
         private Guid memberId;
@@ -43,7 +43,7 @@ namespace Veil.Tests.Controllers
                 ReviewStatus = ReviewStatus.Pending
             };
 
-            approGameReview = new GameReview()
+            approvedGameReview = new GameReview()
             {
                 MemberId = memberGuid,
                 ProductReviewedId = gameProductGuid,
@@ -194,7 +194,7 @@ namespace Veil.Tests.Controllers
         public async void Pending_DisplaysPendingReviews_AllReviewsPending()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameReview>> gameReviewsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameReview> { pendinGameReview, approGameReview, deniedGameReview }.AsQueryable());
+            Mock<DbSet<GameReview>> gameReviewsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameReview> { pendinGameReview, approvedGameReview, deniedGameReview }.AsQueryable());
             dbStub.Setup(db => db.GameReviews).Returns(gameReviewsDbSetStub.Object);
             gameReviewsDbSetStub.SetupForInclude();
 
