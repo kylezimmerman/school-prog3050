@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Antlr.Runtime;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -39,7 +40,9 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> GameList()
         {
-            var gameList = await db.Games
+            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            {
+                Items = await db.Games
                 .Select(
                     g =>
                         new GameListViewModel
@@ -52,9 +55,10 @@ namespace Veil.Controllers
                                 .Select(oi => oi.Quantity)
                                 .DefaultIfEmpty(0).Sum()
                         }
-                ).OrderByDescending(g => g.QuantitySold).ToListAsync();
+                ).OrderByDescending(g => g.QuantitySold).ToListAsync()
+            };
 
-            return View(gameList);
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -62,23 +66,28 @@ namespace Veil.Controllers
         {
             end = end ?? DateTime.Now;
 
-            var gameList = await db.Games
-                .Select(
-                    g =>
-                        new GameListViewModel
-                        {
-                            Game = g,
-                            QuantitySold = db.WebOrders
-                                .Where(o => o.OrderDate >= start && o.OrderDate <= end)
-                                .SelectMany(
-                                    wo => wo.OrderItems
-                                        .Where(oi => g.GameSKUs.Contains(oi.Product)))
-                                .Select(oi => oi.Quantity)
-                                .DefaultIfEmpty(0).Sum()
-                        }
-                ).OrderByDescending(g => g.QuantitySold).ToListAsync();
+            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            {
+                StartDate = start,
+                EndDate = end,
+                Items = await db.Games
+                    .Select(
+                        g =>
+                            new GameListViewModel
+                            {
+                                Game = g,
+                                QuantitySold = db.WebOrders
+                                    .Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                                    .SelectMany(
+                                        wo => wo.OrderItems
+                                            .Where(oi => g.GameSKUs.Contains(oi.Product)))
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).OrderByDescending(g => g.QuantitySold).ToListAsync()
+            };
 
-            return View(gameList);
+            return View(viewModel);
         }
 
         //Game Detail report

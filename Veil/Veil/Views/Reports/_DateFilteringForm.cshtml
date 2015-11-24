@@ -1,7 +1,7 @@
 ﻿@using Veil.Models.Reports
 @model DateFilteredViewModel
 
-@using (Html.BeginForm("MemberList", "Reports", FormMethod.Post))
+@using (Html.BeginForm(ViewContext.RouteData.Values["action"].ToString(), "Reports", FormMethod.Post))
 {
     <div class="row">
         <div class="medium-2 columns">
