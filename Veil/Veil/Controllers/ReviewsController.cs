@@ -17,19 +17,21 @@ namespace Veil.Controllers
     public class ReviewsController : BaseController
     {
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public ReviewsController(IVeilDataAccess veilDataAccess)
+        public ReviewsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         [ChildActionOnly]
         public PartialViewResult CreateReviewForGame([NotNull]Game game)
         {
-            if (!(User?.Identity?.IsAuthenticated ?? false))
+            if (!(HttpContext?.User?.Identity?.IsAuthenticated ?? false))
                 return null;
 
-            var memberId = Guid.Parse(User.Identity.GetUserId());
+            var memberId = idGetter.GetUserId(HttpContext.User.Identity);
             var previousReview = game.AllReviews.FirstOrDefault(r => r.MemberId == memberId);
 
             ReviewViewModel viewModel = new ReviewViewModel
@@ -48,10 +50,9 @@ namespace Veil.Controllers
         {
             var review = reviewViewModel.Review;
 
-            review.MemberId = Guid.Parse(User.Identity.GetUserId());
+            review.MemberId = idGetter.GetUserId(HttpContext.User.Identity);
 
             var previousReview = await db.GameReviews.FindAsync(review.MemberId, review.ProductReviewedId);
-
 
             if (ModelState.IsValid)
             {

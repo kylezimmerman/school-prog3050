@@ -48,7 +48,7 @@ namespace Veil.Tests
             contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
 
             return contextStub;;
-        } 
+        }
 
         public static Mock<IGuidUserIdGetter> GetSetupIUserIdGetterFake(Guid returnedId)
         {
@@ -146,6 +146,14 @@ namespace Veil.Tests
         public static Mock<ControllerContext> SetupUser(this Mock<ControllerContext> contextFake)
         {
             return contextFake;
+        }
+
+        public static IReturnsResult<ControllerContext> SetupUserAuthenticated(this Mock<ControllerContext> contextFake, bool isAuthenticated)
+        {
+            Mock<IIdentity> identityStub = new Mock<IIdentity>();
+            identityStub.Setup(i => i.IsAuthenticated).Returns(isAuthenticated);
+
+            return contextFake.Setup(c => c.HttpContext.User.Identity).Returns(identityStub.Object);
         }
 
         /// <summary>
