@@ -197,41 +197,29 @@ namespace Veil.Controllers
             // TODO: Can we do this all in one db call?
             var model = new WishlistViewModel
             {
-                Games = await db.Games
-                    .Select(g =>
-                        new WishlistGameViewModel
-                        {
-                            Game = g,
-                            Platforms = db.Platforms
-                                .Select(p =>
-                                    new WishlistGamePlatformViewModel
-                                    {
-                                        GamePlatform = p,
-                                        WishlistCount = g.GameSKUs
-                                            .Where(gp => gp.Platform == p)
-                                            .Select(gp =>
-                                                db.Members
-                                                    .Count(m => m.Wishlist.Contains(gp))
-                                            ).DefaultIfEmpty(0)
-                                            .Sum()
-                                    }
-                                )
-                        }
-                    ).ToListAsync(),
-                Platforms = await db.Platforms
-                    .Select(p =>
-                        new WishlistPlatformViewModel
-                        {
-                            Platform = p,
-                            WishlistCount = p.GameProducts
-                                .Select(gp =>
-                                    db.Members
-                                        .Count(m => m.Wishlist.Contains(gp))
-                                ).DefaultIfEmpty(0)
-                                .Sum()
-                        }
-                    ).OrderBy(p => p.Platform.PlatformName)
-                    .ToListAsync()
+                Games = await db.Games.Select(g => new WishlistGameViewModel
+                    {
+                        Game = g,
+                        Platforms = db.Platforms.Select(p => new WishlistGamePlatformViewModel
+                            {
+                                GamePlatform = p,
+                                WishlistCount = g.GameSKUs
+                                    .Where(gp => gp.Platform == p)
+                                    .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                                    .DefaultIfEmpty(0).Sum()
+                            }).OrderBy(m => m.GamePlatform.PlatformName),
+                        WishlistCount = g.GameSKUs
+                            .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                            .DefaultIfEmpty(0).Sum()
+                    }).Where(m => m.WishlistCount > 0)
+                    .OrderByDescending(m => m.WishlistCount).ToListAsync(),
+                Platforms = await db.Platforms.Select(p => new WishlistPlatformViewModel
+                    {
+                        Platform = p,
+                        WishlistCount = p.GameProducts
+                            .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                            .DefaultIfEmpty(0).Sum()
+                    }).OrderBy(p => p.Platform.PlatformName).ToListAsync()
             };
 
             return View(model);
@@ -240,7 +228,21 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> WishlistDetail(Guid? gameId)
         {
-            return View();
+            var model = await db.Games.Where(g => g.Id == gameId)
+                .Select(g => new WishlistDetailGameViewModel
+                {
+                    Game = g,
+                    GameProducts = g.GameSKUs.Select(gp => new WishlistDetailGameProductViewModel
+                        {
+                            GameProduct = gp,
+                            WishlistCount = db.Members.Count(m => m.Wishlist.Contains(gp))
+                        }).OrderByDescending(m => m.WishlistCount),
+                    WishlistCount = g.GameSKUs
+                        .Select(gp => db.Members.Count(m => m.Wishlist.Contains(gp)))
+                        .DefaultIfEmpty(0).Sum()
+                }).FirstOrDefaultAsync();
+
+            return View(model);
         }
 
         //Sales report

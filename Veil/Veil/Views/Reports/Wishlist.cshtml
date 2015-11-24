@@ -7,7 +7,7 @@
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p><em>A report of games by how many wishlists each appears on</em></p>
+        <p><em>A report of games by how many wishlists each appears on.</em></p>
     </div>
 </div>
 
@@ -22,51 +22,51 @@
                     <option value="@game.Game.Id">@game.Game.Name</option>
                 }
             </select>
-    </div>
+        </div>
         <div class="small-6 medium-3 columns end">
             <button class="expand">View Detailed Report</button>
-    </div>
+        </div>
     }
-    </div>
+</div>
 
 <div class="row">
     <div class="column">
         <table class="width-100">
             <thead>
                 <tr>
-                <th class="text-left">Game</th>
-                @foreach (var platform in Model.Platforms)
-                {
-                    <th class="text-right">
-                        @platform.Platform.PlatformCode
-                    </th>
-                }
+                    <th class="text-left">Game</th>
+                    @foreach (var platform in Model.Platforms)
+                    {
+                        <th class="text-right">
+                            @platform.Platform.PlatformCode
+                        </th>
+                    }
                     <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var game in Model.Games
-                    .Where(g => g.WishlistCount > 0)
-                    .OrderByDescending(g => g.WishlistCount))
+                @foreach (var game in Model.Games)
                 {
                 <tr>
-                        <td class="text-left">@game.Game.Name</td>
-                        @foreach (var gamePlatform in game.Platforms.OrderBy(p => p.GamePlatform.PlatformName))
-                        {
-                            <td class="text-right">@gamePlatform.WishlistCount</td>
-                        }
-                        <td class="text-right">@game.WishlistCount</td>
+                    <td class="text-left">
+                        @Html.ActionLink(game.Game.Name, "WishlistDetail", new { gameId = game.Game.Id })
+                    </td>
+                    @foreach (var gamePlatform in game.Platforms)
+                    {
+                        <td class="text-right">@gamePlatform.WishlistCount</td>
+                    }
+                    <td class="text-right">@game.WishlistCount</td>
                 </tr>
                 }
             </tbody>
             <tfoot>
                 <tr>
-                <td>Totals</td>
-                @foreach (var platform in Model.Platforms)
-                {
-                    <td class="text-right">@platform.WishlistCount</td>
-                }
-                <td class="text-right">@Model.WishlistCount</td>
+                    <td class="text-left">Totals</td>
+                    @foreach (var platform in Model.Platforms)
+                    {
+                        <td class="text-right">@platform.WishlistCount</td>
+                    }
+                    <td class="text-right">@Model.WishlistCount</td>
                 </tr>
             </tfoot>
         </table>

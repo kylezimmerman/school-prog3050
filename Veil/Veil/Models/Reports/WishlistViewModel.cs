@@ -8,14 +8,14 @@ namespace Veil.Models.Reports
     {
         public IEnumerable<WishlistGameViewModel> Games { get; set; }
         public IEnumerable<WishlistPlatformViewModel> Platforms { get; set; }
-        public int WishlistCount => Games.Sum(g => g.WishlistCount);
+        public int WishlistCount => Games.Sum(g => g.WishlistCount) ?? 0;
     }
 
     public class WishlistGameViewModel
     {
         public Game Game { get; set; }
         public IEnumerable<WishlistGamePlatformViewModel> Platforms { get; set; }
-        public int WishlistCount => Platforms.Sum(p => p.WishlistCount) ?? 0;
+        public int? WishlistCount { get; set; }
     }
 
     public class WishlistGamePlatformViewModel
