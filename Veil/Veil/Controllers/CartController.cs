@@ -11,7 +11,6 @@ using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services.Interfaces;
-using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
 {
@@ -51,6 +50,14 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        ///     Adds item to cart
+        /// </summary>
+        /// <param name="productId">the id of the product thats being added</param>
+        /// <param name="isNew">bool representing if product is new or used</param>
+        /// <returns>
+        ///     game details  page
+        /// </returns>
         public async Task<ActionResult> AddItem(Guid? productId, bool? isNew)
         {
             if (productId == null || isNew == null)
@@ -85,17 +92,25 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully added to your your cart.");
+                this.AddAlert(AlertType.Success, $"{name} for {platform} was succesfully added to your your cart.");
                 Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, $"An error occured while adding {platform}: {name} to your cart");
+                this.AddAlert(AlertType.Error, $"An error occured while adding {name} for {platform} to your cart");
             }
 
             return RedirectToAction("Details", "Games", new { id = gameId });
         }
 
+        /// <summary>
+        ///     removed selected item from the cart
+        /// </summary>
+        /// <param name="productId">the id of product being removed</param>
+        /// <param name="isNew">represents if the product is used or new</param>
+        /// <returns>
+        ///     The index of the car controller
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemoveItem(Guid? productId, bool? isNew)
@@ -120,12 +135,12 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, $"{platform}: {name} was succesfully removed for your cart");
+                this.AddAlert(AlertType.Success, $"{name} for {platform} was succesfully removed for your cart");
                 Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, $"An error occured while removing {platform}: {name} from your cart");
+                this.AddAlert(AlertType.Error, $"An error occured while removing {name} for {platform} from your cart");
             }
 
             return RedirectToAction("Index");

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
+using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.Helpers;
 using Veil.Models;
@@ -37,7 +37,7 @@ namespace Veil.Controllers
             ReviewViewModel viewModel = new ReviewViewModel
             {
                 GameId = game.Id,
-                GameSKUSelectList = new SelectList(game.GameSKUs, "Id", "Name"),
+                GameSKUSelectList = new SelectList(game.GameSKUs, "Id", "NamePlatformDistinct"),
                 Review = previousReview
             };
 
@@ -104,6 +104,7 @@ namespace Veil.Controllers
         /// </summary>
         /// <returns>View for Pending reviews</returns>
         [HttpGet]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Pending()
         {
             var pendingReviews = await db.GameReviews
@@ -120,11 +121,17 @@ namespace Veil.Controllers
         /// <param name="productReviewedId">The GUID of the product that was reviewed.</param>
         /// <returns>Redirect to Pending action to display reviews awaiting approval.</returns>
         [HttpGet]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Approve(Guid memberId, Guid productReviewedId)
         {
             var review = await db.GameReviews
                 .FirstOrDefaultAsync(gr => gr.MemberId == memberId
                                             && gr.ProductReviewedId == productReviewedId);
+
+            if (review == null)
+            {
+                throw new HttpException(NotFound, nameof(GameReview));
+            }
 
             review.ReviewStatus = ReviewStatus.Approved;
 
@@ -142,11 +149,17 @@ namespace Veil.Controllers
         /// <param name="productReviewedId">The GUID of the product that was reviewed.</param>
         /// <returns>Redirect to Pending action to display reviews awaiting approval.</returns>
         [HttpGet]
+        [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Deny(Guid memberId, Guid productReviewedId)
         {
             var review = await db.GameReviews
                 .FirstOrDefaultAsync(gr => gr.MemberId == memberId
                                             && gr.ProductReviewedId == productReviewedId);
+
+            if (review == null)
+            {
+                throw new HttpException(NotFound, nameof(GameReview));
+            }
 
             review.ReviewStatus = ReviewStatus.Denied;
 

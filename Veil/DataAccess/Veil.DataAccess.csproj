@@ -164,6 +164,10 @@
     <Compile Include="Migrations\201511181352200_Added_Costs_ToWebOrder.Designer.cs">
       <DependentUpon>201511181352200_Added_Costs_ToWebOrder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511241728533_AddedNewEmailToUser.cs" />
+    <Compile Include="Migrations\201511241728533_AddedNewEmailToUser.Designer.cs">
+      <DependentUpon>201511241728533_AddedNewEmailToUser.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -217,6 +221,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511181352200_Added_Costs_ToWebOrder.resx">
       <DependentUpon>201511181352200_Added_Costs_ToWebOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511241728533_AddedNewEmailToUser.resx">
+      <DependentUpon>201511241728533_AddedNewEmailToUser.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

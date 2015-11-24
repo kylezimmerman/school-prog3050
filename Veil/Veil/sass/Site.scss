@@ -44,6 +44,10 @@
     margin-bottom: 1rem;
 }
 
+.panel .light {
+    background-color: white;
+}
+
 // Form groups
 //
 // Designed to help with the organization and spacing of vertical forms. For
@@ -254,4 +258,13 @@ div.alert-box {
     > a {
         text-decoration: underline;
     }
+}
+
+/* Styles for the Report Pages */
+table.report {
+    width: 100%;
+}
+
+td.value-number {
+    text-align: right;
 }

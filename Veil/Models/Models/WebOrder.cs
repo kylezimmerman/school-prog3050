@@ -138,6 +138,7 @@ namespace Veil.DataModels.Models
         ///     A message explaining why the order was cancelled by an employee
         /// </summary>
         [MaxLength(512)]
+        [DisplayName("Reason For Cancellation")]
         public string ReasonForCancellationMessage { get; set; }
 
         /// <summary>

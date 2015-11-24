@@ -1,4 +1,5 @@
-﻿@model Veil.Models.IndexViewModel
+﻿@using Veil.DataModels.Models
+@model Veil.Models.IndexViewModel
 
 @{
     ViewBag.Title = "Account Settings";
@@ -18,52 +19,53 @@
 {
     @Html.AntiForgeryToken()
 
+    @Html.HiddenFor(model => model.UserId);
     <div class="row panel">
         <div class="column">
             <h4>Your Profile</h4>
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">First Name</span>
+                    @Html.LabelFor(model => model.MemberFirstName, htmlAttributes: new {@class = "prefix"})
                 </div>
                 <div class="medium-9 columns">
-                    <input type="text" value="Joe"/>
+                    @Html.EditorFor(model => model.MemberFirstName, new { htmlAttributes = new { @class = "expand" } })
+                    @Html.ValidationMessageFor(model => model.MemberFirstName, "", new {@class=""})
                 </div>
             </div>
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Last Name</span>
+                    @Html.LabelFor(model => model.MemberLastName, htmlAttributes: new { @class = "prefix" })
                 </div>
                 <div class="medium-9 columns">
-                    <input type="text" value="Danger"/>
+                    @Html.EditorFor(model => model.MemberLastName, new { htmlAttributes = new { @class = "expand" } })
+                    @Html.ValidationMessageFor(model => model.MemberLastName, "", new { @class = "" })
                 </div>
             </div>
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Email</span>
+                    @Html.LabelFor(model => model.MemberEmail, htmlAttributes: new { @class = "prefix" })
                 </div>
                 <div class="medium-9 columns">
-                    <input type="text" value="example@veil.com"/>
+                    @Html.EditorFor(model => model.MemberEmail, new { htmlAttributes = new { @class = "expand" } })
+                    @Html.ValidationMessageFor(model => model.MemberEmail, "", new { @class = "" })
                 </div>
             </div>
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    @Html.LabelFor(m => m.PhoneNumber, new { @class = "prefix" })
+                    @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "prefix" })
                 </div>
                 <div class="medium-9 columns">
-                    @Html.EditorFor(m => m.PhoneNumber)
-                    @Html.ValidationMessageFor(m => m.PhoneNumber)
+                    @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "expand" } })
+                    @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "" })
                 </div>
             </div>
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Wishlist Visibility</span>
+                    @Html.LabelFor(model => model.MemberVisibility, htmlAttributes: new { @class = "prefix" })
                 </div>
                 <div class="medium-9 columns">
-                    <select>
-                        <option>Private</option>
-                        <option>Friends Only</option>
-                        <option>Public</option>
-                    </select>
+                    @Html.EnumDropDownListFor(model => model.MemberVisibility, htmlAttributes: new {@class = "expand"})
+                    @Html.ValidationMessageFor( model => model.MemberVisibility, "", new {@class = ""})
                 </div>
             </div>
 

@@ -47,8 +47,8 @@ namespace Veil.Tests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
 
-            return contextStub;;
-        }
+            return contextStub;
+        } 
 
         public static Mock<IGuidUserIdGetter> GetSetupIUserIdGetterFake(Guid returnedId)
         {

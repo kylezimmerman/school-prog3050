@@ -1,0 +1,40 @@
+﻿@using Veil.Models.Reports
+@model DateFilteredViewModel
+
+@using (Html.BeginForm(ViewContext.RouteData.Values["action"].ToString(), "Reports", FormMethod.Post))
+{
+    <div class="row">
+        <div class="medium-2 columns">
+            <span><em>Optional Filter</em></span><br />
+        </div>
+
+        <div class="medium-3 columns">
+            <label for="startDate" class="prefix">From:</label>
+            <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true" name="start" placeholder="yyyy-mm-dd" />
+            @Html.ValidationMessage("start")
+        </div>
+        <div class="medium-3 columns">
+            <label for="endDate" class="prefix">To (optional):</label>
+            <input type="date" id="endDate" name="end" value="@DateTime.Now.ToShortDateString()"/>
+        </div>
+
+        <div class="medium-3 end columns">
+            <button type="submit" class="expand">Refresh Report</button>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="columns padding-bottom-1">
+        <strong>
+        @if (Model.StartDate.HasValue)
+        {
+            @:Date Range: @Model.StartDate.Value.ToShortDateString() - @Model.EndDate.Value.ToShortDateString()
+        }
+        else
+        {
+            @:Date Range: All Time
+        }
+        </strong>
+    </div>
+</div>

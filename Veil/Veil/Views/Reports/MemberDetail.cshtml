@@ -23,8 +23,9 @@
         <span><em>Optional Filter</em></span><br />
     </div>
     <div class="medium-3 columns">
-        <label for="start-date">From:</label>
-        <input type="date" id="start-date" name="start-date" />
+        <label for="startDate" class="prefix">From:</label>
+        <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true" name="start" placeholder="yyyy-mm-dd" />
+        @Html.ValidationMessage("start")
     </div>
     <div class="medium-3 columns">
         <label for="start-date">To:</label>
@@ -36,16 +37,8 @@
 </div>
 
 <style>
-    table {
-        width: 100%;
-    }
-
     .game-information p {
         margin-left: 2em;
-    }
-
-    td.value-number {
-        text-align: right;
     }
 </style>
 
@@ -56,7 +49,7 @@
 </div>
 <div class="row">
     <div class="columns">
-        <table>
+        <table class="report">
             <thead>
                 <tr>
                     <th>Item</th>

@@ -1,0 +1,26 @@
+﻿@using Veil.DataModels.Models
+@model String
+
+@{
+    ViewBag.Title = "SetEmail";
+}
+
+<div class="row">
+    <div class="columns">
+        <p>You Have entered a new email address. A verfication email will be sent to the new email address and you will be logged out. To regain access to your account you must verify the email address and login in using the new address</p>
+
+        
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model);
+            
+
+            @Html.ActionLink("Cancel", "Index", null, new { @class = "button" })
+            <input type="submit" value="Confirm" class="button alert right" />
+        }
+
+    </div>
+</div>

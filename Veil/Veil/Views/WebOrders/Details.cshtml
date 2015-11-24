@@ -65,9 +65,10 @@
                     {
                         <tr>
                             <td>@item.Product.Name</td>
-                            <td>@(item.Product is PhysicalGameProduct
-                                ? ((PhysicalGameProduct)item.Product).Platform.PlatformName
-                                : "")
+                            <td>
+                                @(item.Product is PhysicalGameProduct
+                                      ? ((PhysicalGameProduct) item.Product).Platform.PlatformName
+                                      : "")
                             </td>
                             <td>@(item.IsNew ? "New" : "Used")</td>
                             <td>@item.Quantity</td>
@@ -84,18 +85,78 @@
                 </table>
             </dd>
         </dl>
-        @{
-            if (User.IsInRole(VeilRoles.MEMBER_ROLE) &&
-                Model.OrderStatus == OrderStatus.PendingProcessing)
-            {
-                using (Html.BeginForm("Cancel", "WebOrders", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
-                    @Html.HiddenFor(m => m.Id)
-                    <button type="submit" class="alert">Cancel Order</button>
-                }
-            }
+        @if (User.IsInRole(VeilRoles.MEMBER_ROLE) &&
+                        Model.OrderStatus == OrderStatus.PendingProcessing)
+        {
+            <div class="row">
+                <div class="column">
+                    @using (Html.BeginForm("Cancel", "WebOrders", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.Id)
+                        <button type="submit" class="small alert">Cancel Order</button>
+                    }
+                </div>
+            </div>
         }
-        @* TODO: Put order processing stuff here *@
+        @if (User.IsEmployeeOrAdmin())
+        {
+            <div class="row">
+                <div class="medium-8 columns">
+                    @if (Model.OrderStatus == OrderStatus.PendingProcessing ||
+                            Model.OrderStatus == OrderStatus.BeingProcessed)
+                    {
+                        using (Html.BeginForm("SetStatusCancelled", "WebOrders", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.Id)
+                            <div class="row">
+                                
+                                <div class="small-8 columns">
+                                    @Html.LabelFor(m => m.ReasonForCancellationMessage)
+                                    @Html.EditorFor(m => m.ReasonForCancellationMessage)
+                                </div>
+                                <div class="small-4 columns">
+                                    <input id="confirmCancelCheckbox" name="confirmed" value="true" type="checkbox"/>
+                                    <label for="confirmCancelCheckbox">Confirm Cancellation</label>
+                                    <input type="hidden" name="confirmed" value="false" />
+                                    <button type="submit" class="small expand alert">Cancel Order</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="small-4 columns">
+                    @if (Model.OrderStatus == OrderStatus.PendingProcessing)
+                    {
+                        using (Html.BeginForm("SetStatusProcessing", "WebOrders", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.Id)
+                            <div class="right">
+                                <input id="confirmCheckbox" name="confirmed" value="true" type="checkbox"/>
+                                <label for="confirmCheckbox">Confirm Processing</label>
+                                <input type="hidden" name="confirmed" value="false" />
+                            </div>
+                            <button type="submit" class="small expand">Begin Processing</button>
+                        }
+                    }
+                    @if (Model.OrderStatus == OrderStatus.BeingProcessed)
+                    {
+                        using (Html.BeginForm("SetStatusProcessed", "WebOrders", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.Id)
+                            <div class="right">
+                                <input id="confirmCheckbox" name="confirmed" value="true" type="checkbox"/>
+                                <label for="confirmCheckbox">Confirm Processed</label>
+                                <input type="hidden" name="confirmed" value="false" />
+                            </div>
+                            <button type="submit" class="small expand success">Complete Processing</button>
+                        }
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>
