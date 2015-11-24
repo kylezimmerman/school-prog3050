@@ -6,18 +6,22 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Transactions;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.Ajax.Utilities;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.DataModels.Models.Identity;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
+using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
 {
@@ -135,6 +139,7 @@ namespace Veil.Controllers
             user.PhoneNumber = viewModel.PhoneNumber;
             user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
 
+            
             try
             {
                 db.MarkAsModified(user);
@@ -146,7 +151,89 @@ namespace Veil.Controllers
                 this.AddAlert(AlertType.Error, e.ToString());
             }
 
+            if (user.Email != viewModel.MemberEmail)
+            {
+                //TODO redirect to a view to warn user
+                return RedirectToAction("ChangeEmail", new { NewEmail = viewModel.MemberEmail });
+                
+            }
+
             return RedirectToAction("Index", new { Message = message });
+        }
+
+        public async Task<ActionResult> ChangeEmail(string  newEmail)
+        {
+
+            if (String.IsNullOrWhiteSpace(newEmail))
+            {
+                throw new HttpException(NotFound, "No email was supplied");    
+            }
+
+            return View(newEmail);
+        }
+
+
+        [HttpPost, ActionName("ChangeEmail")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ChangeEmailConfirmed(string newEmail)
+        {
+            if (String.IsNullOrWhiteSpace(newEmail))
+            {
+                throw new HttpException(NotFound, "New email was null or empty");
+            }
+
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == GetUserId());
+
+            if (user == null)
+            {
+                throw new HttpException(NotFound, "No user with supplied Id found");
+            }
+
+            user.Email = newEmail;
+            user.EmailConfirmed = false;
+
+            using (TransactionScope newEmailScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    db.MarkAsModified(user);
+                    await db.SaveChangesAsync();
+                    await SendConfirmationEmail(user);
+                    signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                    newEmailScope.Complete();
+                }
+                catch (Exception)
+                {
+                    throw new HttpException(NotFound, "Error changing email address");
+                }
+
+                
+            }
+           
+            return RedirectToAction("Index", "Home");
+
+            //TODO send confirmation email to new address
+            //TODO logout user'
+        }
+
+
+        private async Task SendConfirmationEmail(User user)
+        {
+            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+            // Send an email with this link
+            string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
+            var callbackUrl = Url.Action("ConfirmEmail", "Account",
+                new
+                {
+                    userId = user.Id,
+                    code = code
+                },
+                protocol: Request.Url.Scheme);
+
+            await userManager.SendEmailAsync(user.Id,
+                "Veil - Email change request",
+                "<h1>Confirm this email to rejoin us at Veil</h1>" +
+                "Please confirm your new email address by clicking <a href=\"" + callbackUrl + "\">here</a>");
         }
 
         //
