@@ -1,4 +1,5 @@
-﻿
+﻿@model List<Veil.Models.Reports.GameListViewModel>
+
 @{
     ViewBag.Title = "Game List";
 }
@@ -10,48 +11,28 @@
     </div>
 </div>
 
-<style>
-    .rank-col {
-        width: 6em;
-        text-align: center;
-    }
-
-    .qty-sold-col {
-        width: 10em;
-    }
-
-    th.qty-sold-col {
-        text-align: center;
-    }
-
-    td.qty-sold-col {
-        text-align: right;
-    }
-</style>
-
 <div class="row">
     <div class="small-12 medium-8 medium-centered columns">
         <table class="report">
             <thead>
                 <tr>
-                    <th class="rank-col">Rank</th>
-                    <th colspan="2">Game</th>
-                    <th class="qty-sold-col">Qty Sold</th>
+                    <th>Rank</th>
+                    <th>Game</th>
+                    <th class="text-right">Qty Sold</th>
                 </tr>
             </thead>
             <tbody>
+            @{
+                int rankCounter = 0;
+            }
+            @foreach (var gameItem in Model)
+            {
                 <tr>
-                    <td class="rank-col">1</td>
-                    <td><a href="#"><img src="https://eaassets-a.akamaihd.net/origin-com-store-final-assets-prod/192140/231.0x326.0/1030897_LB_231x326_en_US_%5E_2015-04-28-11-47-22_d5e1ae356894059158059186d1a1aa842cae8563.jpg" height="85" width="64" /></a></td>
-                    <td><a href="#">Star Wars: Battlefront</a></td>
-                    <td class="qty-sold-col">3x10^231</td>
+                    <td>@(++rankCounter)</td>
+                    <td><a href="@Url.Action("GameDetail", "Reports", new { gameGuid = gameItem.Game.Id })">@gameItem.Game.Name</a></td>
+                    <td class="text-right">@gameItem.QuantitySold</td>
                 </tr>
-                <tr>
-                    <td class="rank-col">2</td>
-                    <td width="75px"><a href="#"><img src="https://upload.wikimedia.org/wikipedia/en/4/46/Video_Game_Cover_-_The_Last_of_Us.jpg" height="85" width="64" /></a></td>
-                    <td><a href="#">The Last Of Us</a></td>
-                    <td class="qty-sold-col">33212124</td>
-                </tr>
+            }
             </tbody>
         </table>
     </div>
