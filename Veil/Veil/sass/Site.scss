@@ -212,7 +212,6 @@ strong.label {
     ul > li:before {
         content: "\002022";
         font-size:1.4em;
-        color: #000;
         padding-right:0.3em;
         vertical-align:middle;
     }
@@ -267,4 +266,10 @@ table.report {
 
 td.value-number {
     text-align: right;
+}
+
+/* Style to make a paragraph appear visually equal to an H3 */
+p.h3-font-style {
+    font-size: $h3-font-size;
+    margin-bottom: auto;
 }

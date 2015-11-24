@@ -12,9 +12,6 @@
     </div>
 </div>
 
-@* TODO: This was just copy pasted from the Manage/Index view and should be styled *@
-<p class="text-success">@Model.StatusMessage</p>
-
 @using (Html.BeginForm("UpdateProfile", "Manage", FormMethod.Post, new { Role = "form" }))
 {
     @Html.AntiForgeryToken()
