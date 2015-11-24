@@ -36,7 +36,10 @@ namespace Veil.Controllers
             return View();
         }
 
-        //Game List report
+        /// <summary>
+        /// Generates a report showing the number of sales of each Game object.
+        /// </summary>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpGet]
         public async Task<ActionResult> GameList()
         {
@@ -61,6 +64,12 @@ namespace Veil.Controllers
             return View(viewModel);
         }
 
+        /// <summary>
+        /// Generates a report showing the number of sales of each Game object, filtered by a date range.
+        /// </summary>
+        /// <param name="start">The date to start the filter range (inclusive).</param>
+        /// <param name="end">The date to end the filter range (inclusive).</param>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpPost]
         public async Task<ActionResult> GameList(DateTime start, DateTime? end)
         {
