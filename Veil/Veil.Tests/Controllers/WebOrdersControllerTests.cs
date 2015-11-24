@@ -148,7 +148,7 @@ namespace Veil.Tests.Controllers
 
             var model = (List<WebOrder>)result.Model;
 
-            Assert.That(model.Count, Is.EqualTo(1));
+            Assert.That(model.Count, Is.EqualTo(2));
         }
 
         [Test]

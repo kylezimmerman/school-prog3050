@@ -16,8 +16,9 @@
         <table style="width:100%;">
             <tr>
                 <th>Order Number</th>
-                <th>Date</th>
+                <th>Order Placed</th>
                 <th>Status</th>
+                <th>Order Processed</th>
                 <th class="text-right">Order Total</th>
                 <td></td>
             </tr>
@@ -37,7 +38,15 @@
                          <td>@item.Id</td>
                          <td>@item.OrderDate</td>
                          <td>@Html.DisplayFor(m => item.OrderStatus)</td>
-                         <td class="text-right">@item.OrderItems.Sum(i => i.ListPrice*i.Quantity).ToString("C")</td>
+                         @if (item.ProcessedDate != null)
+                         {
+                            <td>@item.ProcessedDate.Value</td>
+                         }
+                         else
+                         {
+                             <td>Not Processed</td>
+                         }
+                         <td class="text-right">@((item.OrderSubtotal + item.ShippingCost + item.TaxAmount).ToString("C"))</td>
                          <td>
                              @Html.ActionLink("Order Details", "Details", new {id = item.Id})
                          </td>

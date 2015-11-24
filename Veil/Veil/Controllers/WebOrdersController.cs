@@ -51,7 +51,8 @@ namespace Veil.Controllers
             if (User.IsEmployeeOrAdmin())
             {
                 model = await db.WebOrders
-                    .Where(wo => wo.OrderStatus == OrderStatus.PendingProcessing)
+                    .Where(wo => wo.OrderStatus == OrderStatus.PendingProcessing ||
+                        wo.OrderStatus == OrderStatus.BeingProcessed)
                     .OrderBy(wo => wo.OrderDate).ToListAsync();
                 return View("Index_Employee", model);
             }
