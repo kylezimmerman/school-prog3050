@@ -668,10 +668,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithUser(dbStub, memberUser, memberUser2);
-            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>
-            {
-                new WebOrder { MemberId = memberId, OrderSubtotal = 10m, TaxAmount = 10m, ShippingCost = 10m, OrderDate = new DateTime(2015, 11, 22) }
-            });
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
@@ -682,16 +679,33 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
 
+            Assert.That(model.EndDate.HasValue);
             Assert.That(model.EndDate.Value, Is.EqualTo(DateTime.Now).Within(1).Minutes);
-
-            var items = model.Items;
-
-            Assert.That(items.First().OrderCount, Is.EqualTo(1));
-            Assert.That(items.First().TotalSpentOnOrders, Is.EqualTo(30));
-            Assert.That(items.First().AverageOrderTotal, Is.EqualTo(30));
-            Assert.That(items.First().UserName, Is.EqualTo(memberUser.UserName));
         }
 
-        // TODO: Setting Start and end date
+        [Test]
+        public async void DateFilter_StartAndEndDate_SetsDatesInViewModel()
+        {
+            DateTime start = new DateTime(2015, 11, 21);
+            DateTime end = new DateTime(2015, 11, 22);
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithUser(dbStub, memberUser, memberUser2);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            ReportsController controller = new ReportsController(dbStub.Object);
+
+            var result = await controller.MemberList(start, end) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
+
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+
+            Assert.That(model.StartDate.HasValue);
+            Assert.That(model.StartDate.Value, Is.EqualTo(start));
+            Assert.That(model.EndDate.HasValue);
+            Assert.That(model.EndDate.Value, Is.EqualTo(end));
+        }
     }
 }
