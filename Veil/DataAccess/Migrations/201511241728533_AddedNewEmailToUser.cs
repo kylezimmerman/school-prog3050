@@ -7,7 +7,7 @@ namespace Veil.DataAccess.Migrations
     {
         public override void Up()
         {
-            AddColumn("dbo.User", "NewEmail", c => c.String(nullable: false));
+            AddColumn("dbo.User", "NewEmail", c => c.String());
         }
         
         public override void Down()
