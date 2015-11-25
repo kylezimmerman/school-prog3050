@@ -2,6 +2,7 @@
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations;
+using System.Data.Entity.Validation;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -49,33 +50,28 @@ namespace Veil.Controllers
         // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
-            string statusMessage;
-
             switch (message)
             {
                 case ManageMessageId.AddPhoneSuccess:
-                    statusMessage = "Your phone number was added.";
+                    this.AddAlert(AlertType.Success, "Your phone number was added.");
                     break;
                 case ManageMessageId.ChangePasswordSuccess:
-                    statusMessage = "Your password has been changed.";
+                    this.AddAlert(AlertType.Success, "Your password has been changed.");
                     break;
                 case ManageMessageId.SetTwoFactorSuccess:
-                    statusMessage = "Your two-factor authentication provider has been set.";
+                    this.AddAlert(AlertType.Success, "Your two-factor authentication provider has been set.");
                     break;
                 case ManageMessageId.SetPasswordSuccess:
-                    statusMessage = "Your password has been set.";
+                    this.AddAlert(AlertType.Success, "Your password has been set.");
                     break;
                 case ManageMessageId.RemoveLoginSuccess:
-                    statusMessage = "A login has been removed.";
+                    this.AddAlert(AlertType.Success,  "A login has been removed.");
                     break;
                 case ManageMessageId.RemovePhoneSuccess:
-                    statusMessage = "Your phone number was removed.";
+                    this.AddAlert(AlertType.Success, "Your phone number was removed.");
                     break;
                 case ManageMessageId.Error:
-                    statusMessage = "An error has occurred.";
-                    break;
-                default:
-                    statusMessage = "";
+                    this.AddAlert(AlertType.Error, "An error has occurred.");
                     break;
             }
 
@@ -104,7 +100,6 @@ namespace Veil.Controllers
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
                 BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
-                StatusMessage = statusMessage,
                 MemberFirstName = user.FirstName,
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
@@ -311,17 +306,34 @@ namespace Veil.Controllers
             {
                 return View(model);
             }
-            var result = await userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
+
+            IdentityResult result = null; 
+
+            try
+            {
+                result = await userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                this.AddAlert(AlertType.Error, ex.Message);
+
+                return View(model);
+            }
+
             if (result.Succeeded)
             {
                 var user = await userManager.FindByIdAsync(GetUserId());
+
                 if (user != null)
                 {
                     await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                 }
+
                 return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
             }
+
             AddErrors(result);
+
             return View(model);
         }
 

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Antlr.Runtime;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -35,37 +36,67 @@ namespace Veil.Controllers
             return View();
         }
 
-        //Game List report
+        /// <summary>
+        /// Generates a report showing the number of sales of each Game object.
+        /// </summary>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpGet]
         public async Task<ActionResult> GameList()
         {
-            // TODO: Remove these comments upon testing the query more
-            //var blerg = db.Games.Select(g => g.GameSKUs.SelectMany(gs => db.WebOrders.Select(wo => wo.OrderItems.Where(oi => oi.ProductId == gs.Id).Select(oi => oi.Quantity).DefaultIfEmpty(0).Sum()))).ToList();
-            // Potential solution to the blerg above
-            var gameList = await db.Games
+            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            {
+                Items = await db.Games
                 .Select(
                     g =>
                         new GameListViewModel
                         {
                             Game = g,
                             QuantitySold = db.WebOrders
-                        .SelectMany(
-                            wo => wo.OrderItems
-                                .Where(oi => g.GameSKUs.Contains(oi.Product)))
-                        .Select(oi => oi.Quantity)
-                        .DefaultIfEmpty(0).Sum()
+                                .SelectMany(
+                                    wo => wo.OrderItems
+                                        .Where(oi => g.GameSKUs.Contains(oi.Product)))
+                                .Select(oi => oi.Quantity)
+                                .DefaultIfEmpty(0).Sum()
                         }
-                ).ToListAsync();
+                ).OrderByDescending(g => g.QuantitySold).ToListAsync()
+            };
 
-            return View(gameList);
+            return View(viewModel);
         }
 
+        /// <summary>
+        /// Generates a report showing the number of sales of each Game object, filtered by a date range.
+        /// </summary>
+        /// <param name="start">The date to start the filter range (inclusive).</param>
+        /// <param name="end">The date to end the filter range (inclusive).</param>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpPost]
-        public ActionResult GameList(DateTime start, DateTime? end)
+        public async Task<ActionResult> GameList(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            {
+                StartDate = start,
+                EndDate = end,
+                Items = await db.Games
+                    .Select(
+                        g =>
+                            new GameListViewModel
+                            {
+                                Game = g,
+                                QuantitySold = db.WebOrders
+                                    .Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                                    .SelectMany(
+                                        wo => wo.OrderItems
+                                            .Where(oi => g.GameSKUs.Contains(oi.Product)))
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).OrderByDescending(g => g.QuantitySold).ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
         //Game Detail report
@@ -277,15 +308,51 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> Sales()
         {
-            return View();
+            var model = new SalesViewModel
+            {
+                Orders = await db.WebOrders.Select(o =>
+                    new SalesOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        Username = o.Member.UserAccount.UserName,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        Shipping = o.ShippingCost,
+                        Tax = o.TaxAmount,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).ToListAsync(),
+                DateFilter = new DateFilteredViewModel()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
-        public ActionResult Sales(DateTime start, DateTime? end)
+        public async Task<ActionResult> Sales(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            var model = new SalesViewModel
+            {
+                DateFilter = new DateFilteredViewModel
+                {
+                    StartDate = start,
+                    EndDate = end
+                },
+                Orders = await db.WebOrders.Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                    .Select(o => new SalesOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        Username = o.Member.UserAccount.UserName,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        Shipping = o.ShippingCost,
+                        Tax = o.TaxAmount,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).ToListAsync()
+            };
+
+            return View(model);
         }
     }
 }
