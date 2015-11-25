@@ -430,6 +430,11 @@ namespace Veil.Controllers
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("ChangePassword", "Manage");
+            }
+
             return View();
         }
 
@@ -474,7 +479,7 @@ namespace Veil.Controllers
                 protocol: Request.Url.Scheme);	
                 	
             await userManager.SendEmailAsync(user.Id,
-                "Veil Password Reset",
+                "Veil - Password Reset",
                 "Please reset your Veil account password by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
             return RedirectToAction("ForgotPasswordConfirmation");
@@ -505,7 +510,7 @@ namespace Veil.Controllers
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
-            return code == null ? View("Error") : View();
+            return string.IsNullOrWhiteSpace(code) ? View("Error") : View();
         }
 
         /// <summary>
@@ -541,8 +546,8 @@ namespace Veil.Controllers
 
             if (!result.Succeeded)
             {
-                AddErrors(result, "");
-                return View("Error");
+                AddErrors(result, string.Empty);
+                return View(model);
             }
 
             // Update the security stamp to invalidate the reset link
