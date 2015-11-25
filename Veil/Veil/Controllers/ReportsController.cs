@@ -215,6 +215,18 @@ namespace Veil.Controllers
         [HttpGet]
         public ActionResult MemberDetail(string userName)
         {
+            if (userName == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
+
+            Member member = null;
+
+            if (member == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
+
             return View();
         }
 
