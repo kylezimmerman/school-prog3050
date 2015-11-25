@@ -160,12 +160,11 @@ namespace Veil.Controllers
                 {
                     db.MarkAsModified(user);
                     await db.SaveChangesAsync();
-                    this.AddAlert(AlertType.Success, "Updates made");
                     if (isNewEmail)
                     {
                         await SendConfirmationEmail(user);
-                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to the newly entered email, " +
-                            "you can continue logging into your Veil account using your previous email address to until you confirm the new email address");
+                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to" + user.NewEmail + 
+                            ", you can continue logging into your Veil account using "+ user.Email +" to login until you confirm the new email address");
                     }
                 }
                 catch (Exception e)
