@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Veil.Models.Reports.SalesGameViewModel>
+﻿@model Veil.Models.Reports.SalesViewModel
 
 @{
     ViewBag.Title = "Report of Sales";
@@ -7,57 +7,52 @@
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p><em>Generates a report of orders</em></p>
+        <p><em>Generates a report of orders</em>
+        </p>
     </div>
 </div>
 
-<div class="row">
-    <div class="medium-2 columns">
-        <span><em>Optional Filter</em></span><br />
-    </div>
-    <div class="medium-3 columns">
-        <label for="startDate" class="prefix">From:</label>
-        <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true" name="start" placeholder="yyyy-mm-dd" />
-        @Html.ValidationMessage("start")
-    </div>
-    <div class="medium-3 end columns">
-        <label for="start-date">To:</label>
-        <input type="date" id="end-date" name="end-date" />
-    </div>
-</div>
-<div class="row">
-    <div class="medium-push-2 medium-3 columns">
-        <label for="cost-lower-bound">Between:</label>
-        <input type="number" id="cost-lower-bound" name="cost-lower-bound" />
-    </div>
-    <div class="medium-push-2 medium-3 columns">
-        <label for="cost-upper-bound">And:</label>
-        <input type="number" id="cost-upper-bound" name="cost-upper-bound" />
-    </div>
-    <div class="medium-push-2 medium-3 end columns">
-        <button class="expand">Refresh Report</button>
-    </div>
-</div>
+@{ Html.RenderPartial("_DateFilteringForm", Model.DateFilter); }
 
 <div class="row">
     <div class="columns">
         <table class="report">
             <thead>
                 <tr>
-                    <th>Order #</th>
+                    <th>Order Number</th>
                     <th>User</th>
                     <th class="text-right">Order Qty</th>
-                    <th class="text-right">Order Sale ($)</th>
+                    <th class="text-right">Subtotal</th>
+                    <th class="text-right">Shipping</th>
+                    <th class="text-right">Tax</th>
+                    <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
+            @foreach (var order in Model.Orders)
+            {
                 <tr>
-                    <td><a href="#">00054212358</a></td>
-                    <td><a href="#">dngr_zn</a></td>
-                    <td class="value-number">2</td>
-                    <td class="value-number">$139.98</td>
+                    <td>@Html.ActionLink(order.OrderNumber.ToString(), "Details", "WebOrders", new {id = order.OrderNumber}, null)</td>
+                    <td>@Html.ActionLink(order.Username, "MemberDetail", new {userName = order.Username})</td>
+                    <td class="value-number">@order.Quantity</td>
+                    <td class="value-number">@order.Subtotal.ToString("C")</td>
+                    <td class="value-number">@order.Shipping.ToString("C")</td>
+                    <td class="value-number">@order.Tax.ToString("C")</td>
+                    <td class="value-number">@order.OrderTotal.ToString("C")</td>
                 </tr>
+            }
             </tbody>
+            <tfoot>
+            <tr>
+                <td>Totals</td>
+                <td>@Model.OrderCount Orders</td>
+                <td class="value-number">@Model.TotalQuantity</td>
+                <td class="value-number">@Model.ItemsSum.ToString("C")</td>
+                <td class="value-number">@Model.ShippingSum.ToString("C")</td>
+                <td class="value-number">@Model.TaxSum.ToString("C")</td>
+                <td class="value-number">@Model.Total.ToString("C")</td>
+            </tr>
+            </tfoot>
         </table>
     </div>
 </div>

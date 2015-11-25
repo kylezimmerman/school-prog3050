@@ -1,4 +1,5 @@
-﻿@using Veil.Extensions
+﻿@using Veil.DataModels.Models
+@using Veil.Extensions
 @model IEnumerable<Veil.DataModels.Models.WebOrder>
 
 @{
@@ -18,7 +19,7 @@
                 <th>Order Number</th>
                 <th>Order Placed</th>
                 <th>Status</th>
-                <th>Order Processed</th>
+                <th class="text-right">Subtotal</th>
                 <th class="text-right">Order Total</th>
                 <td></td>
             </tr>
@@ -33,25 +34,24 @@
             else
             {
                 foreach (var item in Model)
-                 {
-                     <tr>
-                         <td>@item.Id</td>
-                         <td>@item.OrderDate</td>
-                         <td>@Html.DisplayFor(m => item.OrderStatus)</td>
-                         @if (item.ProcessedDate != null)
-                         {
-                            <td>@item.ProcessedDate.Value</td>
-                         }
-                         else
-                         {
-                             <td>Not Processed</td>
-                         }
-                         <td class="text-right">@((item.OrderSubtotal + item.ShippingCost + item.TaxAmount).ToString("C"))</td>
-                         <td>
-                             @Html.ActionLink("Order Details", "Details", new {id = item.Id})
-                         </td>
-                     </tr>
-                 }
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.OrderDate</td>
+                        <td>
+                            @Html.DisplayFor(m => item.OrderStatus)
+                            @if (item.OrderStatus == OrderStatus.Processed && item.ProcessedDate != null)
+                            {
+                                <span>(@item.ProcessedDate.Value.ToShortDateString())</span>
+                            }
+                        </td>
+                        <td class="text-right">@item.OrderSubtotal.ToString("C")</td>
+                        <td class="text-right">@((item.OrderSubtotal + item.ShippingCost + item.TaxAmount).ToString("C"))</td>
+                        <td>
+                            @Html.ActionLink("Order Details", "Details", new {id = item.Id})
+                        </td>
+                    </tr>
+                }
             }
         </table>
     </div>

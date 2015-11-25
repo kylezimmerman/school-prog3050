@@ -308,15 +308,51 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> Sales()
         {
-            return View();
+            var model = new SalesViewModel
+            {
+                Orders = await db.WebOrders.Select(o =>
+                    new SalesOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        Username = o.Member.UserAccount.UserName,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        Shipping = o.ShippingCost,
+                        Tax = o.TaxAmount,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).ToListAsync(),
+                DateFilter = new DateFilteredViewModel()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
-        public ActionResult Sales(DateTime start, DateTime? end)
+        public async Task<ActionResult> Sales(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            var model = new SalesViewModel
+            {
+                DateFilter = new DateFilteredViewModel
+                {
+                    StartDate = start,
+                    EndDate = end
+                },
+                Orders = await db.WebOrders.Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                    .Select(o => new SalesOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        Username = o.Member.UserAccount.UserName,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        Shipping = o.ShippingCost,
+                        Tax = o.TaxAmount,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).ToListAsync()
+            };
+
+            return View(model);
         }
     }
 }
