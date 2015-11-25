@@ -27,12 +27,19 @@ namespace Veil.Models
         [Display(Name = "Receive Promotional Emails?")]
         public bool ReceivePromotionalEmail { get; set; }
 
+        public string StatusMessage { get; set; }
+        [Required]
+        [StringLength(maximumLength: 64, MinimumLength = 1)]
         public string MemberFirstName { get; set; }
+        [Required]
+        [StringLength(maximumLength: 64, MinimumLength = 1)]
         public string MemberLastName { get; set; }
+
+        [Required]
+        [EmailAddress]
         public string MemberEmail { get; set; }
         public WishListVisibility MemberVisibility { get; set; }
         public bool ReceivePromotionalEmals { get; set; }
-        public Guid UserId { get; set; }
     }
 
     public class ManageLoginsViewModel
