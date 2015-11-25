@@ -244,7 +244,6 @@
     <Compile Include="Models\Reports\GameListViewModel.cs" />
     <Compile Include="Models\Reports\WishlistDetailViewModel.cs" />
     <Compile Include="Models\Reports\WishlistViewModel.cs" />
-    <Compile Include="Models\Reports\SalesGameViewModel.cs" />
     <Compile Include="Models\Reports\MemberListItemViewModel.cs" />
     <Compile Include="Models\Reports\DateFilteredListViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
@@ -513,6 +512,7 @@
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />
+    <Content Include="Views\Manage\ConfirmNewEmail.cshtml" />
     <None Include="Views\Manage\ManageAddresses.cshtml" />
     <None Include="Views\Manage\ManageCreditCards.cshtml" />
     <Content Include="Views\Shared\_AlertPartial.cshtml" />
@@ -525,7 +525,6 @@
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
     <Content Include="Views\Reviews\Pending.cshtml" />
     <Content Include="Views\Reviews\RenderReviewsForGame.cshtml" />
-    <Content Include="Views\Manage\ChangeEmail.cshtml" />
     <Content Include="Views\Reports\WishlistDetail.cshtml" />
     <Content Include="Views\Reports\_DateFilteringForm.cshtml" />
     <None Include="Views\WebOrders\Index_Employee.cshtml" />

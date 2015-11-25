@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
@@ -66,6 +67,19 @@ namespace Veil.Services
                 UserTokenProvider = userTokenProvider;
                 
             }
+        }
+
+        public Task SendNewEmailConfirmationEmail(string address, string title, string body)
+        {
+            IdentityMessage message = new IdentityMessage();
+
+            message.Body = body;
+            message.Subject = title;
+            message.Destination = address;
+
+            return EmailService.SendAsync(message);
+
+            
         }
     }
 }

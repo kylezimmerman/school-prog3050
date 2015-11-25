@@ -109,8 +109,7 @@ namespace Veil.Controllers
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
                 MemberVisibility = user.Member.WishListVisibility,
-                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails,
-                UserId = userId
+                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails
             };
 
             return View(model);
@@ -120,101 +119,70 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UpdateProfile(IndexViewModel viewModel)
         {
+            Guid userId = GetUserId();
             ManageMessageId? message = null;
-
-            if (viewModel.UserId == null)
-            {
-                throw new HttpException(NotFound, "error");
-            }
-
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == viewModel.UserId);
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
-                throw new HttpException(NotFound, "error");
+                throw new HttpException(NotFound, "No user found with that ID");
             }
-
-            user.FirstName = viewModel.MemberFirstName;
-            user.LastName = viewModel.MemberLastName;
-            user.PhoneNumber = viewModel.PhoneNumber;
-            user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
-            
-            
-            try
+         
+            if (ModelState.IsValid)
             {
-                db.MarkAsModified(user);
-                await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, "Updates made"); 
-            }
-            catch (Exception e)
-            {
-                this.AddAlert(AlertType.Error, e.ToString());
-            }
+                user.FirstName = viewModel.MemberFirstName;
+                user.LastName = viewModel.MemberLastName;
+                user.PhoneNumber = viewModel.PhoneNumber;    
 
-            if (user.Email != viewModel.MemberEmail)
-            {
-                //TODO redirect to a view to warn user
-                return RedirectToAction("ChangeEmail", new { NewEmail = viewModel.MemberEmail });
-                
-            }
+                if (user.Member != null)
+                {
+                    user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
+                    user.Member.WishListVisibility = viewModel.MemberVisibility;
+                }
 
-            return RedirectToAction("Index", new { Message = message });
-        }
+                bool isNewEmail = false;
 
-        public async Task<ActionResult> ChangeEmail(string  newEmail)
-        {
+                //runs if the entered email is different than the current on
+                if (user.Email != viewModel.MemberEmail)
+                {
+                    //runs if the newemail is null or empty on the user object
+                    if (String.IsNullOrWhiteSpace(user.NewEmail))
+                    {
+                        user.NewEmail = viewModel.MemberEmail;
+                        isNewEmail = true; 
+                    }
+                    //runs if newEmail was not null or empty and and the new email property is different than the one being set
+                    else if (!String.IsNullOrWhiteSpace(user.NewEmail) && user.NewEmail != viewModel.MemberEmail)
+                    {
+                        user.NewEmail = viewModel.MemberEmail;
+                        isNewEmail = true;
+                        //invalidates confirmation email stamp
+                        await userManager.UpdateSecurityStampAsync(userId);
+                    }  
+                }
 
-            if (String.IsNullOrWhiteSpace(newEmail))
-            {
-                throw new HttpException(NotFound, "No email was supplied");    
-            }
-
-            return View(newEmail);
-        }
-
-
-        [HttpPost, ActionName("ChangeEmail")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ChangeEmailConfirmed(string newEmail)
-        {
-            if (String.IsNullOrWhiteSpace(newEmail))
-            {
-                throw new HttpException(NotFound, "New email was null or empty");
-            }
-
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == GetUserId());
-
-            if (user == null)
-            {
-                throw new HttpException(NotFound, "No user with supplied Id found");
-            }
-
-            user.Email = newEmail;
-            user.EmailConfirmed = false;
-
-            using (TransactionScope newEmailScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
                 try
                 {
                     db.MarkAsModified(user);
                     await db.SaveChangesAsync();
-                    await SendConfirmationEmail(user);
-                    signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-                    newEmailScope.Complete();
+                    this.AddAlert(AlertType.Success, "Updates made");
+                    if (isNewEmail)
+                    {
+                        await SendConfirmationEmail(user);
+                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to the newly entered email, " +
+                            "you can continue logging into your Veil account using your previous email address to until you confirm the new email address");
+                    }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    throw new HttpException(NotFound, "Error changing email address");
+                    this.AddAlert(AlertType.Error, e.ToString());
                 }
-
-                
-            }
-           
-            return RedirectToAction("Index", "Home");
-
-            //TODO send confirmation email to new address
-            //TODO logout user'
+            }          
+     
+            return RedirectToAction("Index", new { Message = message });
         }
+
+       
 
 
         private async Task SendConfirmationEmail(User user)
@@ -222,7 +190,7 @@ namespace Veil.Controllers
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
             // Send an email with this link
             string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ConfirmEmail", "Account",
+            var callbackUrl = Url.Action("ConfirmNewEmail", "Manage",
                 new
                 {
                     userId = user.Id,
@@ -230,10 +198,46 @@ namespace Veil.Controllers
                 },
                 protocol: Request.Url.Scheme);
 
-            await userManager.SendEmailAsync(user.Id,
+            await userManager.SendNewEmailConfirmationEmail(user.NewEmail,
                 "Veil - Email change request",
                 "<h1>Confirm this email to rejoin us at Veil</h1>" +
-                "Please confirm your new email address by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                "An email change request has been made for this address if you requested this please click <a href=\"" + callbackUrl + "\">here</a>" +
+                "</br> **Note once you click this link you need to use this email address to log in to Veil");
+        }
+
+        [AllowAnonymous]
+        public async Task<ActionResult> ConfirmNewEmail(Guid userId, string code)
+        {
+            if (userId == Guid.Empty || string.IsNullOrWhiteSpace(code))
+            {
+                return View("Error");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(userId, code);
+           
+            if (!result.Succeeded)
+            {
+
+                return View("Error");
+            }
+             var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            user.Email = user.NewEmail;
+            user.NewEmail = String.Empty;
+            try
+            {
+                db.MarkAsModified(user);
+                await db.SaveChangesAsync();
+
+                // Update the security stamp to invalidate the email link
+                await userManager.UpdateSecurityStampAsync(userId);
+            }
+            catch (Exception)
+            {
+                this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
+                return View("Error");
+            }
+
+            return View("ConfirmNewEmail");
         }
 
         //
