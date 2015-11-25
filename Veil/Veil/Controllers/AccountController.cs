@@ -479,7 +479,7 @@ namespace Veil.Controllers
                 protocol: Request.Url.Scheme);	
                 	
             await userManager.SendEmailAsync(user.Id,
-                "Veil Password Reset",
+                "Veil - Password Reset",
                 "Please reset your Veil account password by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
             return RedirectToAction("ForgotPasswordConfirmation");
