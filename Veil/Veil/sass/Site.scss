@@ -130,6 +130,11 @@ textarea {
     .small-12 .prefix {
         border-right: $input-prefix-border-size $input-prefix-border-type $input-prefix-border-color;
     }
+
+    /* Currently used to add padding above the Review summary on GameDetail in small mode */
+    .small-padding-top-1 {
+        padding-top: 1rem;
+    }
 }
 
 /* Formatting Header Logo/Name positioning */
@@ -146,13 +151,16 @@ nav .title-area img {
 }
 
 /* Transformation for the platform text beside game SKUs */
-.platform-transform {
-    text-align: center;
-    vertical-align: central;
-    transform:rotate(-90deg)translateX(-50%)translateX(-3.25rem);
-    transform-origin: left top 0;
-    float: left;
+@media #{$medium-up} {
+    .platform-transform {
+        text-align: center;
+        vertical-align: central;
+        transform:rotate(-90deg)translateX(-50%)translateX(-3.25rem);
+        transform-origin: left top 0;
+        float: left;
+    }
 }
+
 
 strong.label {
     font-size: 1em;
@@ -197,6 +205,7 @@ strong.label {
 /* Make the validation summary stand out more and be more consistent with field validation errors*/
 .validation-summary-errors {
     @extend .field-validation-error;
+
     ul {
         list-style: none;
         padding: 0;
