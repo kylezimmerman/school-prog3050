@@ -660,14 +660,29 @@ namespace Veil.Controllers
         {
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
-            return View();
+            return View(currentMember.FavoritePlatforms.ToList());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ManagePlatforms(List<string> platforms)
         {
-            return View();
+            if (platforms == null)
+            {
+                platforms = new List<string>();
+            }
+
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            currentMember.FavoritePlatforms.Clear();
+            currentMember.FavoritePlatforms = await db.Platforms.Where(p => platforms.Contains(p.PlatformCode)).ToListAsync();
+
+            db.MarkAsModified(currentMember);
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Favorite platforms updated.");
+
+            return RedirectToAction("Index");
         }
 
         public async Task<ActionResult> ManageTags()
@@ -681,6 +696,11 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ManageTags(List<string> tags)
         {
+            if (tags == null)
+            {
+                tags = new List<string>();
+            }
+
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             currentMember.FavoriteTags.Clear();
@@ -688,6 +708,8 @@ namespace Veil.Controllers
 
             db.MarkAsModified(currentMember);
             await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Favorite tags updated.");
 
             return RedirectToAction("Index");
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -80,19 +81,13 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(Guid id = default(Guid))
+        public async Task<ActionResult> DeleteConfirmed(Guid id)
         {
-            if (id == Guid.Empty)
-            {
-                throw new HttpException(NotFound, "There was an error");
-            }
-
             GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
 
             if (gameProduct == null)
             {
-                // TODO: Actually give this a message. Cmon Sean!
-                throw new HttpException(NotFound, "some message");
+                throw new HttpException(NotFound, "Game SKU");
             }
 
             string gameName = gameProduct.Game.Name;
@@ -101,7 +96,6 @@ namespace Veil.Controllers
             try
             {
                 // TODO: This is new untested code.
-                // TODO: We might want a specific message for failing to delete due to existing inventory
                 db.ProductLocationInventories.RemoveRange(
                     await db.ProductLocationInventories.Where(
                             pli =>
@@ -116,14 +110,35 @@ namespace Veil.Controllers
 
                 await db.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                // TODO: This fails due to the platform and game being null
-                this.AddAlert(AlertType.Error, $"There was an error deleting {platform}: {gameName}.");
-                return View(gameProduct);
+                // Get the exception which states if a foreign key constraint was violated
+                SqlException innermostException = ex.GetBaseException() as SqlException;
+
+                bool errorWasProvinceForeignKeyConstraint = false;
+
+                if (innermostException != null)
+                {
+                    errorWasProvinceForeignKeyConstraint =
+                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
+                }
+
+                if (errorWasProvinceForeignKeyConstraint)
+                {
+                    this.AddAlert(
+                        AlertType.Error,
+                        "Other portions of our system depend on this Game SKU's data." +
+                            " Consider marking it as not for sale instead.");
+                }
+                else
+                {
+                    this.AddAlert(AlertType.Error, $"There was an error deleting {gameName} for {platform}.");
+                }
+                
+                return RedirectToAction("Delete", new { id = id });
             }
 
-            this.AddAlert(AlertType.Success, $"{platform}: {gameName} was deleted succesfully.");
+            this.AddAlert(AlertType.Success, $"{gameName} for {platform} was deleted succesfully.");
 
             return RedirectToAction("Index", "Games");
         }

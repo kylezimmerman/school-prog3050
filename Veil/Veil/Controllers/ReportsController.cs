@@ -251,6 +251,11 @@ namespace Veil.Controllers
                 }).OrderByDescending(o => o.OrderDate).ToList()
             }).FirstOrDefaultAsync(m => m.UserName == username);
 
+            if (model == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
+
             return View(model);
         }
 

@@ -29,11 +29,9 @@
         {
             @Html.AntiForgeryToken()
 
-            <div class="form-actions no-color">
-                @Html.ActionLink("Cancel", "Details", new { Id = Model.Id }, new { @class = "button"})
+            @Html.ActionLink("Cancel", "Details", new { Id = Model.Id }, new { @class = "button"})
 
-                <button type="submit" class="alert right">Delete</button>
-            </div>
+            <button type="submit" class="alert right">Delete</button>
         }
     </div>
 </div>
