@@ -215,8 +215,10 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\ESRBDescriptionController.cs" />
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\ReviewsController.cs" />
+    <Compile Include="Controllers\PlatformsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Exceptions\NotEnoughInventoryException.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
@@ -229,6 +231,7 @@
     <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\CartViewModel.cs" />
+    <Compile Include="Models\ESRBDescriptionViewModel.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
     <Compile Include="Models\EventListViewModel.cs" />
@@ -248,6 +251,7 @@
     <Compile Include="Models\Reports\WishlistViewModel.cs" />
     <Compile Include="Models\Reports\MemberListItemViewModel.cs" />
     <Compile Include="Models\Reports\DateFilteredListViewModel.cs" />
+    <Compile Include="Models\PlatformViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
     <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
@@ -511,6 +515,7 @@
     <Content Include="Views\GameProducts\CreateDownloadSKU.cshtml" />
     <Content Include="Views\GameProducts\CreatePhysicalSKU.cshtml" />
     <Content Include="Views\GameProducts\Delete.cshtml" />
+    <Content Include="Views\ESRBDescription\Index.cshtml" />
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />
@@ -535,6 +540,7 @@
     <Content Include="Views\WebOrders\Index_Employee.cshtml" />
     <Content Include="Views\Manage\ManagePlatforms.cshtml" />
     <Content Include="Views\Manage\ManageTags.cshtml" />
+    <Content Include="Views\Platforms\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
