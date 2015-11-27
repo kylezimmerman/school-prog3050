@@ -215,6 +215,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\ESRBDescriptionController.cs" />
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
@@ -229,6 +230,7 @@
     <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\CartViewModel.cs" />
+    <Compile Include="Models\ESRBDescriptionViewModel.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
     <Compile Include="Models\EventListViewModel.cs" />
@@ -510,6 +512,7 @@
     <Content Include="Views\GameProducts\CreateDownloadSKU.cshtml" />
     <Content Include="Views\GameProducts\CreatePhysicalSKU.cshtml" />
     <Content Include="Views\GameProducts\Delete.cshtml" />
+    <Content Include="Views\ESRBDescription\Index.cshtml" />
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />

@@ -121,8 +121,18 @@
                     @Html.LabelFor(model => model.Tags, new {@class = "prefix"})
                 </div>
                 <div class="medium-8 large-10 columns panel">
-                    @{ Html.RenderAction("Index", "Tags", new { selected = Model.Tags.ToList() }); }
-                    @Html.ValidationMessageFor(model => model.Tags, "", new { @class = "" })
+                    @{ Html.RenderAction("Index", "Tags", new {selected = Model.Tags.ToList()}); }
+                    @Html.ValidationMessageFor(model => model.Tags, "", new {@class = ""})
+                </div>
+            </div>
+
+            <div class="row collapse">
+                <div class="medium-4 large-2 columns">
+                    @Html.LabelFor(model => model.ContentDescriptors, new { @class = "prefix" })
+                </div>
+                <div class="medium-8 large-10 columns panel">
+                    @{ Html.RenderAction("Index", "ESRBDescription", new { selected = Model.ContentDescriptors.ToList() }); }
+                    @Html.ValidationMessageFor(model => model.ContentDescriptors, "", new { @class = "" })
                 </div>
             </div>
 
