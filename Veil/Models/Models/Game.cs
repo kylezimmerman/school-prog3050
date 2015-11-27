@@ -136,6 +136,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// Collection navigation property for the Game's ESRB content descriptors
         /// </summary>
+        [DisplayName("ESRB Descriptors")]
         public virtual ICollection<ESRBContentDescriptor> ContentDescriptors { get; set; }
 
         /// <summary>
