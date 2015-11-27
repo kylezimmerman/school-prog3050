@@ -79,7 +79,7 @@ namespace Veil.Controllers
 
             string phoneNumber;
 
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             try
             {
@@ -116,7 +116,7 @@ namespace Veil.Controllers
         {
             Guid userId = GetUserId();
             ManageMessageId? message = null;
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
@@ -163,7 +163,7 @@ namespace Veil.Controllers
                     if (isNewEmail)
                     {
                         await SendConfirmationEmail(user);
-                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to" + user.NewEmail + 
+                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to " + user.NewEmail + 
                             ", you can continue logging into your Veil account using "+ user.Email +" to login until you confirm the new email address");
                     }
                 }
@@ -196,7 +196,7 @@ namespace Veil.Controllers
                 "Veil - Email change request",
                 "<h1>Confirm this email to rejoin us at Veil</h1>" +
                 "An email change request has been made for this address if you requested this please click <a href=\"" + callbackUrl + "\">here</a>" +
-                "</br> **Note once you click this link you need to use this email address to log in to Veil");
+                "<br/> **Note once you click this link you need to use this email address to log in to Veil");
         }
 
         [AllowAnonymous]
@@ -214,9 +214,11 @@ namespace Veil.Controllers
 
                 return View("Error");
             }
-             var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
             user.Email = user.NewEmail;
-            user.NewEmail = String.Empty;
+            user.NewEmail = null;
             try
             {
                 db.MarkAsModified(user);
@@ -225,9 +227,10 @@ namespace Veil.Controllers
                 // Update the security stamp to invalidate the email link
                 await userManager.UpdateSecurityStampAsync(userId);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
+                //this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
+                this.AddAlert(AlertType.Error, e.ToString());
                 return View("Error");
             }
 
