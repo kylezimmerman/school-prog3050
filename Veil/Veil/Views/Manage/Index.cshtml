@@ -63,7 +63,21 @@
                     @Html.ValidationMessageFor( model => model.MemberVisibility, "", new {@class = ""})
                 </div>
             </div>
-
+            <div class="row collapse">
+                <div class="medium-3 columns">
+                    <span class="prefix"><strong>Favorites</strong></span>
+                </div>
+                <div class="medium-9 columns">
+                    <div class="row">
+                        <div class="medium-6 columns">
+                            @Html.ActionLink($"Platforms ({Model.FavoritePlatformCount})", "ManagePlatforms", null, new { @class = "button expand postfix border-right-white" })
+                        </div>
+                        <div class="medium-6 columns">
+                            @Html.ActionLink($"Tags ({Model.FavoriteTagCount})", "ManageTags", null, new { @class = "button expand postfix" })
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row collapse">
                 <div class="medium-3 columns">
                     <span class="prefix"><strong>Addresses</strong></span>

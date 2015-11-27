@@ -2,15 +2,15 @@
 @model GameProduct
 
 
-<div class="small-1 columns" data-equalizer-watch>
+<div class="medium-1 columns" data-equalizer-watch>
     <h4 class="platform-transform">@Model.Platform.PlatformName</h4>
 </div>
 
-<div class="small-2 columns" data-equalizer-watch>
+<div class="medium-2 columns" data-equalizer-watch>
     <img src="@Model.BoxArtImageURL" alt="@Model.PlatformCode Box Art"/>
 </div>
 
-<div class="small-6 columns" data-equalizer-watch>
+<div class="medium-6 columns" data-equalizer-watch>
     <h5>@Model.Name</h5>
     <p class="margin-bottom-0 padding-bottom-half-em">@Model.SKUDescription</p>
     @if (Model.ReleaseDate > DateTime.Now)

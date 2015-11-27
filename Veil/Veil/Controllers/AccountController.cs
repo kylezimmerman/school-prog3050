@@ -623,7 +623,7 @@ namespace Veil.Controllers
                     return View("Lockout");
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Invalid code.");
+                    ModelState.AddModelError(string.Empty, "Invalid code.");
                     return View(model);
             }
         }

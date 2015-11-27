@@ -1,6 +1,6 @@
 ﻿@model Veil.Models.HomePageViewModel
 
-@{ 
+@{
     ViewBag.Title = "Home";
 }
 
@@ -11,14 +11,19 @@
             <h2>Coming Soon</h2>
         </div>
     </div>
-    <div class="row" data-equalizer>
+    <div class="row" data-equalizer data-equalizer-mq="medium-up">
         @foreach (var item in Model.ComingSoon)
         {
             <div class="medium-6 columns">
                 <div class="panel" data-equalizer-watch>
-                    <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image">
-                    <h4><a href="@Url.Action("Details", "Games", new { id = item.Id })">@item.Name</a></h4>
-                    <p class="margin-bottom-0"><strong>@item.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong>
+                    <a href="@Url.Action("Details", "Games", new { id = item.Id })">
+                        <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image">
+                    </a>
+                    <h4>
+                        @Html.ActionLink(item.Name, "Details", new { Controller = "Games", id = item.Id })
+                    </h4>
+                    <p class="margin-bottom-0">
+                        <strong>@item.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong>
                     </p>
                     <p>@item.ShortDescription</p>
                 </div>
@@ -31,19 +36,40 @@
         <h2>Hot New Releases</h2>
     </div>
 </div>
-<div class="row">
-    <div class="column" data-equalizer>
-        <ul class="medium-block-grid-3 small-block-grid-2">
-            @foreach (var item in Model.NewReleases)
-            {
-                <li>
-                    <div class="panel" data-equalizer-watch>
-                        <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image">
-                        <h4><a href="@Url.Action("Details", "Games", new { id = item.Id })">@item.Name</a></h4>
-                        <p>@item.ShortDescription</p>
-                    </div>
-                </li>
-            }
-        </ul>
-    </div>
-</div>
+
+@{ int i = 0;}
+
+@foreach (var item in Model.NewReleases)
+{
+    if (i % 3 == 0)
+    {
+        @:<div class="row" data-equalizer data-equalizer-mq="medium-up">
+    }
+            <div class="medium-4 columns">
+                <div class="panel"  data-equalizer-watch>
+                    <a href="@Url.Action("Details", "Games", new { id = item.Id })">
+                        <img src="@item.PrimaryImageURL" class="width-100" alt="@item.Name Image"/>
+                    </a>
+                    <h4>
+                        @Html.ActionLink(item.Name, "Details", new { Controller = "Games", id = item.Id })
+                    </h4>
+                    <p>@item.ShortDescription</p>
+                </div>
+            </div>
+    if (++i % 3 == 0)
+    {
+        @:</div>  
+    }
+}
+
+@* Ensure we didn't leave an unclosed div tag if we had a 2, 5, 8, etc. games *@
+@if (i % 3 != 0)
+{
+    // If only 1 is in the row, it automatically goes to the left. So we only care about 2.
+    if (i % 3 == 2)
+    {
+        @:<div></div>
+    }
+
+    @:</div>    
+}

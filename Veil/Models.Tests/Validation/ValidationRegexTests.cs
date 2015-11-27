@@ -199,5 +199,34 @@ namespace Veil.DataModels.Tests.Validation
         {
             Assert.That(postalZipCode, Is.Not.StringMatching(ValidationRegex.STORED_POSTAL_CODE));
         }
+        
+        [TestCase("https://www.youtube.com/embed/KxTaQmhztVQ&hello")]
+        [TestCase("httpS://www.youtube.com/embed/KxTaQmhztVQ&hello")]
+        [TestCase("http://www.youtube.com/embed/KxTaQmhztV")]
+        [TestCase("http://www.youtube.com/embed/KxTaQmhztV")]
+        [TestCase("http://youtube.com/embed/KxTaQ")]
+        [TestCase("HTTP://youtube.com/embed/KxTaQ")]
+        [TestCase("hTtP://wWw.youtube.com/embed/KxTaQ")]
+        public void YoutubeEmbedLink_ValidInput_PassesRegex(string embedLink)
+        {
+            Assert.That(embedLink, Is.StringMatching(ValidationRegex.YOUTUBE_EMBED_LINK));
+        }
+
+        [TestCase("https://wwwyoutube.com/embed/KxTaQmhztVQ&hello")]
+        [TestCase("https:/www.youtube.com/embed/KxTaQmhztVQ&hello")]
+        [TestCase("http//www.youtube.com/embed/KxTaQmhztV")]
+        [TestCase("http/www.youtube.com/embed/KxTaQmhztV")]
+        [TestCase("https//youtube.com/embed/KxTaQ")]
+        [TestCase("http:/youtube.com/embed/KxTaQ")]
+        [TestCase("http://www.youtube.com/embed/")]
+        [TestCase("http://youtube.com/embed/")]
+        [TestCase("http://www.youtube.com/embed/")]
+        [TestCase("youtube.com/embed/")]
+        [TestCase("youtube.com/embed/KxTaQ")]
+        [TestCase("https://www.badspoof.com/embed/KxTaQmhztVQ&hello")]
+        public void YoutubeEmbedLink_InvalidInput_FailsRegex(string embedLink)
+        {
+            Assert.That(embedLink, Is.Not.StringMatching(ValidationRegex.YOUTUBE_EMBED_LINK));
+        }
     }
 }

@@ -242,6 +242,7 @@
     <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
     <Compile Include="Models\Reports\GameListViewModel.cs" />
+    <Compile Include="Models\Reports\MemberDetailViewModel.cs" />
     <Compile Include="Models\Reports\SalesViewModel.cs" />
     <Compile Include="Models\Reports\WishlistDetailViewModel.cs" />
     <Compile Include="Models\Reports\WishlistViewModel.cs" />
@@ -532,6 +533,8 @@
     <Content Include="Views\WebOrders\_OrderCancellationEmail.cshtml" />
     <Content Include="Views\WebOrders\_OrderProcessedEmail.cshtml" />
     <Content Include="Views\WebOrders\Index_Employee.cshtml" />
+    <Content Include="Views\Manage\ManagePlatforms.cshtml" />
+    <Content Include="Views\Manage\ManageTags.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

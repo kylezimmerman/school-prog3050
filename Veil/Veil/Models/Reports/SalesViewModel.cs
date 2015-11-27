@@ -1,19 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Veil.DataModels.Models;
+﻿using System.Linq;
 
 namespace Veil.Models.Reports
 {
-    public class SalesViewModel
+    public class SalesViewModel : DateFilteredListViewModel<SalesOrderViewModel>
     {
-        public DateFilteredViewModel DateFilter { get; set; }
-        public IEnumerable<SalesOrderViewModel> Orders { get; set; }
-        public int OrderCount => Orders.Count();
-        public int TotalQuantity => Orders.Sum(o => o.Quantity);
-        public decimal ItemsSum => Orders.Sum(o => o.Subtotal);
-        public decimal ShippingSum => Orders.Sum(o => o.Shipping);
-        public decimal TaxSum => Orders.Sum(o => o.Tax);
-        public decimal Total => Orders.Sum(o => o.OrderTotal);
+        public int OrderCount => Items.Count();
+        public int TotalQuantity => Items.Sum(o => o.Quantity);
+        public decimal ItemsSum => Items.Sum(o => o.Subtotal);
+        public decimal ShippingSum => Items.Sum(o => o.Shipping);
+        public decimal TaxSum => Items.Sum(o => o.Tax);
+        public decimal Total => Items.Sum(o => o.OrderTotal);
     }
 
     public class SalesOrderViewModel
