@@ -4,14 +4,17 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
+using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.AspNet.Identity;
 using Moq;
 using NUnit.Framework;
 using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.DataModels.Models.Identity;
 using Veil.DataModels.Validation;
 using Veil.Helpers;
 using Veil.Models;
@@ -1626,6 +1629,53 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(controller.ManageCreditCards)));
+        }
+
+        [Test]
+        public async void UpdaterUserInformation_NoEmailChange()
+        {      
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberEmail = "person@email.com",
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmals = true
+            };
+
+            Member member = new Member()
+            {
+                UserId = memberId,
+                WishListVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmails = true
+            };
+
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com",
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();   
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object
+            };
+
         }
     }
 }
