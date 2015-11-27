@@ -54,9 +54,8 @@ namespace Veil.DataModels.Models.Identity
         /// <br/>
         ///     This must be unique in the system.
         /// </summary>
-        [Required]
         [EmailAddress]
-        public  string NewEmail { get; set; }
+        public string NewEmail { get; set; }
 
         /// <summary>
         ///     The User's Username

@@ -26,12 +26,13 @@
             </thead>
             <tbody>
             @{
-                int rankCounter = 0;
+                int rankCounter = 1;
+                int previousQuantitySold = 0;
             }
             @foreach (var gameItem in Model.Items)
             {
                 <tr>
-                    <td>@(++rankCounter)</td>
+                    <td>@(gameItem.QuantitySold != previousQuantitySold ? rankCounter++ : rankCounter)</td>
                     <td><a href="@Url.Action("GameDetail", "Reports", new { gameGuid = gameItem.Game.Id })">@gameItem.Game.Name</a></td>
                     <td class="text-right">@gameItem.QuantitySold</td>
                 </tr>
