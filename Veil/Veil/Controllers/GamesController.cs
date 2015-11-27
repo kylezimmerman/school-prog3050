@@ -17,9 +17,11 @@ using Veil.Helpers;
 using Veil.Models;
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Transactions;
 using System.Web;
 using LinqKit;
+using Microsoft.Ajax.Utilities;
 using Veil.Extensions;
 using Veil.DataModels;
 
@@ -349,6 +351,7 @@ namespace Veil.Controllers
 
                 //'Tag logic'
                 //Get the game we just saved, including the tags this time
+                // ReSharper disable once AccessToModifiedClosure
                 game = await db.Games.Include(g => g.Tags).FirstAsync(g => g.Id == game.Id);
 
                 await SetTags(game, tags);
@@ -370,14 +373,14 @@ namespace Veil.Controllers
         {
             if (id == null)
             {
-                throw new HttpException(NotFound, "some message");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             Game game = await db.Games.FindAsync(id);
 
             if (game == null)
             {
-                throw new HttpException(NotFound, "some message");
+                throw new HttpException(NotFound, nameof(Game));
             }
 
             return View(game);
@@ -386,13 +389,8 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteGameConfirmed(Guid id = default(Guid))
+        public async Task<ActionResult> DeleteGameConfirmed(Guid id)
         {
-            if (id == Guid.Empty)
-            {
-                throw new HttpException(NotFound, nameof(Game));
-            }
-
             Game game = await db.Games.FindAsync(id);
 
             if (game == null)
@@ -409,7 +407,6 @@ namespace Veil.Controllers
                         foreach (var gameSKU in game.GameSKUs)
                         {
                             // TODO: This is new untested code.
-                            // TODO: We might want a specific message for failing to delete due to existing inventory
                             db.ProductLocationInventories.RemoveRange(
                                 await db.ProductLocationInventories.Where(
                                         pli =>
@@ -429,10 +426,35 @@ namespace Veil.Controllers
                     this.AddAlert(AlertType.Success, game.Name + " deleted succesfully");
                     deleteScope.Complete();
                 }
-                catch (DbUpdateException)
+                catch (DbUpdateException ex)
                 {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
-                    return View(game);
+                    // Get the exception which states if a foreign key constraint was violated
+                    SqlException innermostException = ex.GetBaseException() as SqlException;
+
+                    bool errorWasProvinceForeignKeyConstraint = false;
+
+                    if (innermostException != null)
+                    {
+                        string exMessage = innermostException.Message;
+
+                        errorWasProvinceForeignKeyConstraint =
+                            innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
+                    }
+
+                    if (errorWasProvinceForeignKeyConstraint)
+                    {
+                        this.AddAlert(
+                            AlertType.Error,
+                            "Other portions of our system depend on this Game SKU's data." +
+                                " Consider marking all of its SKUs as not for sale instead.");
+                    }
+                    else
+                    {
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
+                    }
+
+                    
+                    return RedirectToAction("Delete", new { id = id });
                 }
             }
 
