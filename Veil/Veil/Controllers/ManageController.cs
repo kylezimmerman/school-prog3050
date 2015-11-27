@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations;
@@ -9,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
+using System.Web.Caching;
 using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
 using Microsoft.AspNet.Identity;
@@ -104,7 +106,9 @@ namespace Veil.Controllers
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
                 MemberVisibility = user.Member.WishListVisibility,
-                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails
+                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails,
+                FavoritePlatformCount = user.Member.FavoritePlatforms.Count,
+                FavoriteTagCount = user.Member.FavoriteTags.Count
             };
 
             return View(model);
@@ -649,6 +653,42 @@ namespace Veil.Controllers
             this.AddAlert(AlertType.Success, "Successfully added a new Credit Card.");
 
             return RedirectToAction("ManageCreditCards");
+        }
+
+        public async Task<ActionResult> ManagePlatforms()
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ManagePlatforms(List<string> platforms)
+        {
+            return View();
+        }
+
+        public async Task<ActionResult> ManageTags()
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            return View(currentMember.FavoriteTags.ToList());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ManageTags(List<string> tags)
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            currentMember.FavoriteTags.Clear();
+            currentMember.FavoriteTags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync();
+
+            db.MarkAsModified(currentMember);
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Index");
         }
 
         //

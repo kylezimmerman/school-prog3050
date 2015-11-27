@@ -39,6 +39,8 @@ namespace Veil.Models
         [EmailAddress]
         public string MemberEmail { get; set; }
         public WishListVisibility MemberVisibility { get; set; }
+        public int FavoritePlatformCount { get; set; }
+        public int FavoriteTagCount { get; set; }
         public bool ReceivePromotionalEmals { get; set; }
     }
 
