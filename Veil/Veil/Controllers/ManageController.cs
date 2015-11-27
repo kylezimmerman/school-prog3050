@@ -81,14 +81,12 @@ namespace Veil.Controllers
             {
                 // If this happens, the user has been deleted in the database but still has a valid login cookie
                 signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-
                 return RedirectToAction("Index", "Home");
             }
 
             if (user.Member == null)
             {
                 this.AddAlert(AlertType.Error, "Employees do not have profiles to view you have been redirected to the home page");
-
                 return RedirectToAction("Index", "Home");
             }
 
@@ -125,7 +123,6 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, "No user found with that ID");
             }
          
-
             if (ModelState.IsValid)
             {
                 user.FirstName = viewModel.MemberFirstName;
@@ -137,25 +134,18 @@ namespace Veil.Controllers
                     user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
                     user.Member.WishListVisibility = viewModel.MemberVisibility;
                 }
-
-                
-                //runs if the entered email is different than the current on
+              
                 if (user.Email != viewModel.MemberEmail)
                 {
-                    //runs if the newemail is null or empty on the user object
-                    if (String.IsNullOrWhiteSpace(user.NewEmail))
-                    {
-                        user.NewEmail = viewModel.MemberEmail;
-                        isNewEmail = true; 
-                    }
                     //runs if newEmail was not null or empty and and the new email property is different than the one being set
-                    else if (!String.IsNullOrWhiteSpace(user.NewEmail) && user.NewEmail != viewModel.MemberEmail)
+                    if (!String.IsNullOrWhiteSpace(user.NewEmail) && user.NewEmail != viewModel.MemberEmail)
                     {
-                        user.NewEmail = viewModel.MemberEmail;
-                        isNewEmail = true;
                         //invalidates confirmation email stamp
                         await userManager.UpdateSecurityStampAsync(userId);
-                    }  
+                    }
+
+                    user.NewEmail = viewModel.MemberEmail;
+                    isNewEmail = true;
                 }
 
                 try
@@ -168,20 +158,16 @@ namespace Veil.Controllers
                         this.AddAlert(AlertType.Info, "A confirmation email has been sent to " + user.NewEmail + 
                             ", you can continue logging into your Veil account using "+ user.Email +" to login until you confirm the new email address");
                     }
+                    this.AddAlert(AlertType.Success, "Your Profile has been updated");
                 }
                 catch (Exception e)
                 {
                     this.AddAlert(AlertType.Error, e.ToString());
                 }
-            }          
-            
-            this.AddAlert(AlertType.Success, "Your Profile has been updated");
+            }                 
             return RedirectToAction("Index", new { Message = message });
         }
-
-       
-
-
+    
         private async Task SendConfirmationEmail(User user)
         {
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
