@@ -1,0 +1,15 @@
+﻿@model Veil.Models.PlatformViewModel
+
+<ul class="small-block-grid-1 medium-block-grid-2 large-block-grid-4" style="padding: 1em;">
+    @foreach (var platform in Model.AllPlatforms)
+    {
+        var isChecked = Model.Selected?.Contains(platform) ?? false ? "checked" : "";
+
+        <li>
+            <label>
+                <input type="checkbox" name="Platforms" value="@platform.PlatformCode" @isChecked>
+                @platform.PlatformName
+            </label>
+        </li>
+    }
+</ul>

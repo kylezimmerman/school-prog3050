@@ -10,6 +10,25 @@
     </div>
 </div>
 
+<div class="row panel">
+    <div class="medium-5 columns">
+        <h4>Member Details</h4>
+        <p class="margin-bottom-0">Generates a report of orders made by a member.</p>
+    </div>
+    <div class="medium-7 columns text-right" style="padding-top: 0.8em;">
+        @using (Html.BeginForm("MemberDetail", "Reports", FormMethod.Get))
+        {
+            <div class="row collapse">
+                <div class="small-8 columns">
+                    <input type="text" id="username" name="username" placeholder="Username" />
+                </div>
+                <div class="small-4 columns">
+                    <button class="expand postfix">View Report</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
 
 <div class="row">
     <a href="@Url.Action("GameList")" class="button secondary text-left columns">
@@ -25,19 +44,6 @@
 </div>
 
 <div class="row">
-    <a href="@Url.Action("GameDetail")" class="button secondary text-left columns">
-        <div class="row">
-            <div class="medium-5 columns">
-                <h4>Game Detail</h4>
-            </div>
-            <div class="medium-7 columns text-right" style="padding-top:0.8em;">
-                <span>Generates a report of sales for a game by format.</span>
-            </div>
-        </div>
-    </a>
-</div>
-
-<div class="row">
     <a href="@Url.Action("MemberList")" class="button secondary text-left columns">
         <div class="row">
             <div class="medium-5 columns">
@@ -45,19 +51,6 @@
             </div>
             <div class="medium-7 columns text-right" style="padding-top:0.8em;">
                 <span>Generates a summary report of all members' orders.</span>
-            </div>
-        </div>
-    </a>
-</div>
-
-<div class="row">
-    <a href="@Url.Action("MemberDetail")" class="button secondary text-left columns">
-        <div class="row">
-            <div class="medium-5 columns">
-                <h4>Member's Orders</h4>
-            </div>
-            <div class="medium-7 columns text-right" style="padding-top:0.8em;">
-                <span>Generates a report of orders made by a member.</span>
             </div>
         </div>
     </a>

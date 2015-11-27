@@ -1978,15 +1978,6 @@ namespace Veil.Tests.Controllers
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeleteGameConfirmed_EmptyGuid(string role)
-        {
-            GamesController controller = new GamesController(veilDataAccess: null);
-
-            Assert.That(async () => await controller.DeleteGameConfirmed(Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
-        }
-
-        [TestCase(VeilRoles.MEMBER_ROLE)]
-        [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_IdNotInDb(string role)
         {
             List<GameProduct> emptyList = new List<GameProduct>();
@@ -2036,7 +2027,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = contextStub.Object
             };
 
-            var result = await controller.DeleteGameConfirmed(aGame.Id) as ViewResult;
+            var result = await controller.DeleteGameConfirmed(aGame.Id) as RedirectToRouteResult;
 
             Assert.That(result != null);
         }

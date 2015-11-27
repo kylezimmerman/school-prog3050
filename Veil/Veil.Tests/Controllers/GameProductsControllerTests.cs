@@ -409,24 +409,6 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void DeletePhysicalGameProductConfirmed_EmptyGuid()
-        {
-            GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
-            gameSku.Id = GameSKUId;
-
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
-
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
-            dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
-
-            GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
-
-            Assert.That(async () => await controller.DeleteConfirmed(Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
-        }
-
-        [Test]
         public async void DeletePhysicalGameProductConfirmed_CatchesOnSaveDelete()
         {
             GameProduct aGameProduct = new PhysicalGameProduct();
@@ -451,7 +433,7 @@ namespace Veil.Tests.Controllers
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
 
-            var result = await controller.DeleteConfirmed(aGameProduct.Id) as ViewResult;
+            var result = await controller.DeleteConfirmed(aGameProduct.Id) as RedirectToRouteResult;
 
             Assert.That(result != null);
         }

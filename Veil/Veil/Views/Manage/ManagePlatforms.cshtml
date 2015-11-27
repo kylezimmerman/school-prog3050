@@ -1,1 +1,36 @@
-﻿
+﻿@using Veil.DataModels.Models
+@model IEnumerable<Platform>
+
+@{
+    ViewBag.Title = "Favorite Platforms";
+}
+
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column">
+        @using (Html.BeginForm("ManagePlatforms", "Manage", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <div class="row collapse">
+                <div class="medium-4 large-2 columns">
+                    @Html.Label($"{nameof(Platform)}s", new { @class = "prefix" })
+                </div>
+                <div class="medium-8 large-10 columns panel">
+                    @{ Html.RenderAction("Index", "Platforms", new { selected = Model }); }
+                </div>
+            </div>
+
+            <div class="row collapse">
+                <div class="medium-8 medium-offset-4 large-10 large-offset-2 columns end">
+                    @Html.ActionLink("Cancel", "Index", null, new { @class = "button" })
+                    <button class="right">Save Platforms</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

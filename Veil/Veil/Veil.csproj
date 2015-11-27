@@ -218,6 +218,7 @@
     <Compile Include="Controllers\ESRBDescriptionController.cs" />
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\ReviewsController.cs" />
+    <Compile Include="Controllers\PlatformsController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Exceptions\NotEnoughInventoryException.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
@@ -250,6 +251,7 @@
     <Compile Include="Models\Reports\WishlistViewModel.cs" />
     <Compile Include="Models\Reports\MemberListItemViewModel.cs" />
     <Compile Include="Models\Reports\DateFilteredListViewModel.cs" />
+    <Compile Include="Models\PlatformViewModel.cs" />
     <Compile Include="Models\WebOrderCheckoutDetails.cs" />
     <Compile Include="Models\ReviewViewModel.cs" />
     <Compile Include="Models\WishlistPhysicalGameProductViewModel.cs" />
@@ -538,6 +540,7 @@
     <Content Include="Views\WebOrders\Index_Employee.cshtml" />
     <Content Include="Views\Manage\ManagePlatforms.cshtml" />
     <Content Include="Views\Manage\ManageTags.cshtml" />
+    <Content Include="Views\Platforms\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
