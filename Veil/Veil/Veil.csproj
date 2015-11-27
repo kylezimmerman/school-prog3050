@@ -244,6 +244,7 @@
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
+    <Compile Include="Models\Reports\GameDetailViewModel.cs" />
     <Compile Include="Models\Reports\GameListViewModel.cs" />
     <Compile Include="Models\Reports\MemberDetailViewModel.cs" />
     <Compile Include="Models\Reports\SalesViewModel.cs" />
@@ -593,7 +594,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>2700</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>

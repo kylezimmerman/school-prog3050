@@ -74,6 +74,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> GameList(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
+            end = end.Value.AddDays(1).AddTicks(-1);
 
             var viewModel = new DateFilteredListViewModel<GameListViewModel>
             {
@@ -101,17 +102,132 @@ namespace Veil.Controllers
 
         //Game Detail report
         [HttpGet]
-        public ActionResult GameDetail(Guid gameGuid)
+        public async Task<ActionResult> GameDetail(Guid gameGuid)
         {
-            return View();
+            var viewModel = new GameDetailViewModel
+            {
+                Game = await db.Games.FirstOrDefaultAsync(g => g.Id == gameGuid),
+                Items = await db.GameProducts
+                    .Where(gp => gp.GameId == gameGuid)
+                    .Select(
+                        gp =>
+                            new GameDetailRowViewModel
+                            {
+                                GameProduct = gp,
+                                NewQuantity = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                NewSales = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedQuantity = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedSales = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
-        public ActionResult GameDetail(DateTime start, DateTime? end)
+        public async Task<ActionResult> GameDetail(Guid gameGuid, DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
+            end = end ?? DateTime.Today;
+            end = end.Value.AddDays(1).AddTicks(-1);
 
-            return View();
+            var viewModel = new GameDetailViewModel
+            {
+                StartDate = start,
+                EndDate = end,
+                Game = await db.Games.FirstOrDefaultAsync(g => g.Id == gameGuid),
+                Items = await db.GameProducts
+                    .Where(gp => gp.GameId == gameGuid)
+                    .Select(
+                        gp =>
+                            new GameDetailRowViewModel
+                            {
+                                GameProduct = gp,
+                                NewQuantity = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                NewSales = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedQuantity = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedSales = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
         /// <summary>
@@ -173,6 +289,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> MemberList(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
+            end = end.Value.AddDays(1).AddTicks(-1);
 
             var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
             {
@@ -263,6 +380,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> MemberDetail(string username, DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
+            end = end.Value.AddDays(1).AddTicks(-1);
 
             if (username == null)
             {
@@ -423,6 +541,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> Sales(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
+            end = end.Value.AddDays(1).AddTicks(-1);
 
             var model = new SalesViewModel
             {
