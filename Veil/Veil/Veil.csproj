@@ -348,6 +348,7 @@
     <Content Include="ConnectionStrings.config">
       <SubType>Designer</SubType>
     </Content>
+    <None Include="Properties\PublishProfiles\Local_IIS.pubxml" />
     <None Include="Scripts\Library\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\AddStripeCard.js" />
     <Content Include="Scripts\Library\foundation\fastclick.js" />
@@ -501,7 +502,6 @@
     <Content Include="Views\Account\ResendConfimationEmail.cshtml" />
     <Content Include="Views\Account\RegisterComplete.cshtml" />
     <Content Include="Views\Account\ConfirmResendConfirmationEmail.cshtml" />
-    <Content Include="Views\Games\Search.cshtml" />
     <Content Include="Views\Games\AdvancedSearch.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Events\_EventListItem.cshtml" />
