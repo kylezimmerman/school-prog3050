@@ -1602,7 +1602,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Edit_GET_Invalid_NullId()
+        public void Edit_GET_Invalid_NullId()
         {
             GamesController controller = new GamesController(veilDataAccess: null);
            
@@ -1610,7 +1610,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Edit_GET_Invalid_NonExistantId()
+        public void Edit_GET_Invalid_NonExistantId()
         {
             var games = new List<Game>()
             {
@@ -1663,7 +1663,6 @@ namespace Veil.Tests.Controllers
         public async void Edit_POST_Valid_NoTags()
         {
             var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
-            var tagNames = new List<string>();
 
             var games = new List<Game>()
             {
@@ -1675,8 +1674,6 @@ namespace Veil.Tests.Controllers
                 new ESRBRating { RatingId = "E", Description = "Everyone" }
             };
 
-            var tags = new List<Tag>();
-
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
             gameDbSetStub.SetupForInclude();
@@ -1685,7 +1682,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<ESRBRating>> esrbRatingDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRating.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbRatingDbSetStub.Object);
 
-            Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
+            Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Tag>().AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagsDbSetStub.Object);
 
             Mock<DbSet<ESRBContentDescriptor>> contentDescriptorStub = TestHelpers.GetFakeAsyncDbSet(new List<ESRBContentDescriptor>().AsQueryable());
@@ -1705,7 +1702,6 @@ namespace Veil.Tests.Controllers
         public async void Edit_POST_Valid_ConfirmSaveChangesAsyncCalled()
         {
             var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>()};
-            var tagNames = new List<string>();
 
             var games = new List<Game>()
             {
@@ -1717,8 +1713,6 @@ namespace Veil.Tests.Controllers
                 new ESRBRating { RatingId = "E", Description = "Everyone" }
             };
 
-            var tags = new List<Tag>();
-
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
             gameDbSetStub.SetupForInclude();
@@ -1729,7 +1723,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<ESRBRating>> esrbRatingDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRating.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbRatingDbSetStub.Object);
 
-            Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
+            Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Tag>().AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagsDbSetStub.Object);
 
             Mock<DbSet<ESRBContentDescriptor>> contentDescriptorStub = TestHelpers.GetFakeAsyncDbSet(new List<ESRBContentDescriptor>().AsQueryable());
@@ -1737,7 +1731,7 @@ namespace Veil.Tests.Controllers
 
             GamesController controller = new GamesController(dbStub.Object);
 
-            var result = await controller.Edit(game, null, contentDescriptors: null) as RedirectToRouteResult;
+            await controller.Edit(game, null, contentDescriptors: null);
 
             //Note: this is called exactly 2 times instead of once due to the Tag saving workaround.
             Assert.That(() => dbStub.Verify(db => db.SaveChangesAsync(), Times.Exactly(2)), Throws.Nothing);
@@ -1747,8 +1741,7 @@ namespace Veil.Tests.Controllers
         public async void Edit_POST_Valid_WithTags()
         {
             var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
-            var tag = new Tag {Name = "Test"};
-            var tagNames = new List<string> {tag.Name};
+            var tagNames = new List<string> { tag.Name };
 
             var games = new List<Game>()
             {
@@ -1789,6 +1782,52 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public async void Edit_POST_Valid_WithContentDescriptors()
+        {
+            var contentDescriptor = new ESRBContentDescriptor {Id = 1, DescriptorName = "Test Descriptor"};
+            var contentDescriptors = new List<ESRBContentDescriptor> {contentDescriptor};
+
+            var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
+
+            var contentDescriptorIds = new List<int> {contentDescriptor.Id};
+
+            var games = new List<Game>()
+            {
+                game,
+            };
+
+            var esrbRating = new List<ESRBRating>
+            {
+                new ESRBRating { RatingId = "E", Description = "Everyone" }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
+            gameDbSetStub.SetupForInclude();
+            dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
+
+            Mock<DbSet<ESRBRating>> esrbRatingDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRating.AsQueryable());
+            dbStub.Setup(db => db.ESRBRatings).Returns(esrbRatingDbSetStub.Object);
+
+            Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Tag>().AsQueryable());
+            dbStub.Setup(db => db.Tags).Returns(tagsDbSetStub.Object);
+
+            Mock<DbSet<ESRBContentDescriptor>> contentDescriptorStub = TestHelpers.GetFakeAsyncDbSet(contentDescriptors.AsQueryable());
+            dbStub.Setup(db => db.ESRBContentDescriptors).Returns(contentDescriptorStub.Object);
+
+            GamesController controller = new GamesController(dbStub.Object);
+
+            var result = await controller.Edit(game, tags: null, contentDescriptors: contentDescriptorIds) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(game.ContentDescriptors != null);
+            Assert.That(game.ContentDescriptors.Count, Is.EqualTo(1));
+            Assert.That(game.ContentDescriptors, Contains.Item(contentDescriptor));
+            Assert.That(result.RouteValues["Action"], Is.EqualTo("Details"));
+            Assert.That(result.RouteValues["Id"], Is.EqualTo(game.Id));
+        }
+
+        [Test]
         public async void Edit_POST_Invalid_ModelState_IsValid_False()
         {
             var game = new Game();
@@ -1813,8 +1852,10 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGame_ValidDeleteWithGameProduct(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
+            Game aGame = new Game
+            {
+                Id = Id
+            };
 
             GameProduct aGameProduct = new PhysicalGameProduct();
             aGameProduct.GameId = aGame.Id;
@@ -1850,9 +1891,11 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGame_ValidDeleteNoGameProduct(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.GameSKUs = new List<GameProduct>();
+            Game aGame = new Game
+            {
+                Id = Id,
+                GameSKUs = new List<GameProduct>()
+            };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
@@ -1877,7 +1920,7 @@ namespace Veil.Tests.Controllers
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeleteGame_NullId(string role)
+        public void DeleteGame_NullId(string role)
         {
             GamesController controller = new GamesController(veilDataAccess: null);
 
@@ -1886,10 +1929,12 @@ namespace Veil.Tests.Controllers
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeleteGame_IdNotInDb(string role)
+        public void DeleteGame_IdNotInDb(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
+            Game aGame = new Game
+            {
+                Id = Id
+            };
 
             Guid nonMatch = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");
 
@@ -1914,9 +1959,11 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_ValidDeleteWithGameProduct(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.GameSKUs = new List<GameProduct>();
+            Game aGame = new Game()
+            {
+                Id = Id,
+                GameSKUs = new List<GameProduct>()
+            };
 
             GameProduct aGameProduct = new PhysicalGameProduct();
             aGameProduct.GameId = aGame.Id;
@@ -1952,9 +1999,11 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_ValidDeleteNoGameProduct(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.GameSKUs = new List<GameProduct>();
+            Game aGame = new Game
+            {
+                Id = Id,
+                GameSKUs = new List<GameProduct>()
+            };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
@@ -1978,13 +2027,13 @@ namespace Veil.Tests.Controllers
 
         [TestCase(VeilRoles.MEMBER_ROLE)]
         [TestCase(VeilRoles.ADMIN_ROLE)]
-        public async void DeleteGameConfirmed_IdNotInDb(string role)
+        public void DeleteGameConfirmed_IdNotInDb(string role)
         {
-            List<GameProduct> emptyList = new List<GameProduct>();
-
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.GameSKUs = new List<GameProduct>();
+            Game aGame = new Game
+            {
+                Id = Id,
+                GameSKUs = new List<GameProduct>()
+            };
 
             Guid nonMatch = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");
 
@@ -2008,9 +2057,11 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_CatchesOnSaveDelete(string role)
         {
-            Game aGame = new Game();
-            aGame.Id = Id;
-            aGame.GameSKUs = new List<GameProduct>();
+            Game aGame = new Game
+            {
+                Id = Id,
+                GameSKUs = new List<GameProduct>()
+            };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
