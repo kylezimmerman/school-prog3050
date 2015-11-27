@@ -7,24 +7,24 @@
 }
 
 <div class="row">
-    <div class="small-12 columns">
+    <div class="column">
         <h2>@ViewBag.Title</h2>
     </div>
 </div>
-<div class="row padding-bottom-1" data-equalizer>
-    <div class="small-12 medium-6 columns" data-equalizer-watch>
-        @{
-            if (!string.IsNullOrWhiteSpace(Model.TrailerURL))
-            {
-                <embed class="width-100 height-100 min-height-14" src="@Model.TrailerURL" />
-            }
-            else
-            {
-                <img class="width-100" src="@Model.PrimaryImageURL" alt="Game Image" />
-            }
-        }
+
+<div class="row padding-bottom-1" data-equalizer data-equalizer-mq="medium-up">
+    <div class="medium-6 columns" data-equalizer-watch>
+    @if (!string.IsNullOrWhiteSpace(Model.TrailerURL))
+    {
+        <iframe class="width-100 height-100 min-height-14" src="@Model.TrailerURL" frameborder="0" allowfullscreen></iframe>
+    }
+    else
+    {
+        <img class="width-100" src="@Model.PrimaryImageURL" alt="Game Image"/>
+    }
     </div>
-    <div class="small-10 medium-5 columns" data-equalizer-watch>
+
+    <div class="medium-5 columns small-padding-top-1" data-equalizer-watch>
         @if (Model.GameSKUs.Any())
         {
             var gameRating = Model.AverageRating;
@@ -39,7 +39,9 @@
                     </div>
                 </div>
             }
-            <p class="margin-bottom-0"><strong>Release Date: @Model.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong></p>
+            <p class="margin-bottom-0">
+                <strong>Release Date: @Model.GameSKUs.Min(gp => gp.ReleaseDate).ToString("MMM dd, yyyy")</strong>
+            </p>
         }
         <p class="margin-bottom-0">
             <strong>Players: @Model.MinimumPlayerCount</strong>
@@ -48,18 +50,21 @@
                 <strong> - @Model.MaximumPlayerCount</strong>
             }
         </p>
+
         <h4>Tags</h4>
         <ul class="inline-list">
-            @foreach (var tag in Model.Tags)
-            {
-                <li><a href="@Url.Action("AdvancedSearch", new { tags = tag.Name })" class="button tiny secondary">@tag.Name</a></li>
-            }
+        @foreach (var tag in Model.Tags)
+        {
+            <li>@Html.ActionLink(tag.Name, "AdvancedSearch", new { tags = tag.Name }, new { @class = "button tiny secondary" })</li>
+        }
         </ul>
     </div>
-    <div class="small-2 medium-1 columns" data-equalizer-watch>
-        <img class="right width-100" src="@Model.Rating.ImageURL" alt="@Model.Rating.Description" />
+
+    <div class="medium-1 columns medium-right" data-equalizer-watch>
+        <img width="60" src="@Model.Rating.ImageURL" alt="@Model.Rating.Description" />
     </div>
 </div>
+
 <div class="row">
     <div class="column">
         <p class="indent">@Model.LongDescription</p>
@@ -69,19 +74,19 @@
 @if (User.IsEmployeeOrAdmin())
 {
     <div class="row">
-        <div class="small-4 medium-2 columns">
+        <div class="medium-3 large-2 columns">
             @Html.ActionLink("Delete Game", "Delete", new { id = Model.Id }, new { @class = "button expand small alert" })
         </div>
 
-        <div class="small-4 medium-2 medium-offset-2 columns">
+        <div class="medium-3 large-2 large-offset-2 columns">
             @Html.ActionLink("Edit Game", "Edit", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
 
-        <div class="small-4 medium-3 columns">
+        <div class="medium-3 columns">
             @Html.ActionLink("Add Physical SKU", "CreatePhysicalSKU", "GameProducts", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
 
-        <div class="small-4 medium-3 columns">
+        <div class="medium-3 columns">
             @Html.ActionLink("Add Download SKU", "CreateDownloadSKU", "GameProducts", new { id = Model.Id }, new { @class = "button expand small" })
         </div>
     </div>
@@ -89,7 +94,7 @@
 
 @foreach (var physicalGameProduct in Model.GameSKUs.OfType<PhysicalGameProduct>())
 {
-    <div class="row panel" data-equalizer>
+    <div class="row panel" data-equalizer data-equalizer-mq="medium-up">
         @{ Html.RenderPartial("~/Views/GameProducts/_GameProductPartial.cshtml", physicalGameProduct); }
         @{ Html.RenderAction("RenderPhysicalGameProductPartial", "GameProducts", physicalGameProduct); }
     </div>
@@ -97,13 +102,14 @@
 
 @foreach (var downloadGameProduct in Model.GameSKUs.OfType<DownloadGameProduct>())
 {
-    <div class="row panel" data-equalizer>
+    <div class="row panel" data-equalizer data-equalizer-mq="medium-up">
         @{ Html.RenderPartial("~/Views/GameProducts/_GameProductPartial.cshtml", downloadGameProduct); }
         @{ Html.RenderPartial("~/Views/GameProducts/_DownloadGameProduct.cshtml", downloadGameProduct); }
     </div>
 }
+
 <div class="row">
-    <div class="Column">
+    <div class="column">
         <h3>Reviews</h3>
     </div>
 </div>

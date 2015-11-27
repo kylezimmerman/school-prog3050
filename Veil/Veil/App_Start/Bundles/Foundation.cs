@@ -8,7 +8,7 @@ namespace Veil
         {
             return new ScriptBundle("~/bundles/foundation").Include(
                       "~/Scripts/Library/foundation/fastclick.js",
-                      "~/Scripts/Library/jquery.cookie.js",
+                      "~/Scripts/Library/foundation/jquery.cookie.js",
                       "~/Scripts/Library/foundation/foundation.js",
                       "~/Scripts/Library/foundation/foundation.*",
                       "~/Scripts/Library/foundation/app.js");

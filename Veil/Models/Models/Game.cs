@@ -99,6 +99,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [DataType(DataType.Url)]
         [Url]
+        [RegularExpression(ValidationRegex.YOUTUBE_EMBED_LINK, ErrorMessage = "Must be in the format https://www.youtube.com/embed/KxTaQmhztVQ")]
         [MaxLength(2048)]
         [DisplayName("Trailer URL")]
         public string TrailerURL { get; set; }

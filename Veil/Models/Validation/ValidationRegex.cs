@@ -61,5 +61,14 @@ namespace Veil.DataModels.Validation
         ///     Pattern for persisted postal codes
         /// </summary>
         public const string STORED_POSTAL_CODE = @"(?:^(?!.*[DFIOQU])[A-VXY]\d[A-Z] \d[A-Z]\d$)|(?:^\d{5}(?:-\d{4})?$)";
+
+        /// <summary>
+        ///     Pattern for Youtube embed links.
+        /// </summary>
+        /// <remarks>
+        ///     UrlAttribute should be used along with this to ensure it really is a valid Url.
+        ///     This simply ensures it is a Youtube Embed url
+        /// </remarks>
+        public const string YOUTUBE_EMBED_LINK = @"^[hH][tT]{2}[pP][sS]?://(?:[wW]{3}\.)?youtube.com/embed/[^\&\?\/]+";
     }
 }
