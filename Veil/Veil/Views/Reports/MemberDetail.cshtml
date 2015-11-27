@@ -1,77 +1,135 @@
-﻿
+﻿@using Veil.DataModels.Models
+@model Veil.Models.Reports.MemberDetailViewModel
+
 @{
-    ViewBag.Title = "Member Detail";
+    ViewBag.Title = $"Member Details for {Model.UserName}";
 }
 
 <div class="row">
     <div class="column">
         <h2>@ViewBag.Title</h2>
-        <p><em>Generates a report of orders made by a member</em></p>
+        <p><em>A report of orders made by a member.</em></p>
     </div>
 </div>
 
-<div class="game-information row">
+<div>
     <div class="columns">
-        <h3>rando184 (Sterling Archer)</h3>
-        <p><strong>Favourite System(s): </strong>PC, Xbox One, PS4</p>
-        <p><strong>Favourite Tag(s): </strong>RPG, FPS, RTS</p>
+        <h3>@Model.UserName (@Model.FullName)</h3>
+        <p class="margin-bottom-0"><strong>Favourite Platforms:</strong>&nbsp;
+            @if (Model.FavoritePlatforms.Count > 0)
+            {
+                <span>@Model.PlatformString</span>
+            }
+            else
+            {
+                <span>No platforms favorited</span>
+            }
+        </p>
+        <p class="margin-bottom-0">
+            <strong>Favourite Tags:</strong>&nbsp;
+            @if (Model.FavoriteTags.Count > 0)
+            {
+                <span>@Model.TagString</span>
+            }
+            else
+            {
+                <span>No tags favorited</span>
+            }
+        </p>
+        <p class="margin-bottom-0">
+            @Html.ActionLink($"{Model.WishlistCount} items", "Index", "Wishlist", new { username = Model.UserName }, null) on wishlist
+        </p>
+        <p>@Model.FriendCount friends</p>
     </div>
 </div>
+
+@using (Html.BeginForm(ViewContext.RouteData.Values["action"].ToString(), "Reports", FormMethod.Post))
+{
+    <div class="row">
+        <div class="medium-2 columns">
+            <span><em>Optional Filter</em></span><br />
+        </div>
+
+        <div class="medium-3 columns">
+            <label for="startDate" class="prefix">From:</label>
+            <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true" name="start" placeholder="yyyy-mm-dd" />
+            @Html.ValidationMessage("start")
+        </div>
+        <div class="medium-3 columns">
+            <label for="endDate" class="prefix">To (optional):</label>
+            <input type="date" id="endDate" name="end" value="@DateTime.Now.ToShortDateString()" />
+        </div>
+
+        <div class="medium-3 end columns">
+            <input type="hidden" name="username" value="@Model.UserName" />
+            <button type="submit" class="expand">Refresh Report</button>
+        </div>
+    </div>
+}
 
 <div class="row">
-    <div class="medium-2 columns">
-        <span><em>Optional Filter</em></span><br />
-    </div>
-    <div class="medium-3 columns">
-        <label for="startDate" class="prefix">From:</label>
-        <input type="date" id="startDate" required="required" data-val-required="Provide a start date to filter by." data-val="true" aria-required="true" name="start" placeholder="yyyy-mm-dd" />
-        @Html.ValidationMessage("start")
-    </div>
-    <div class="medium-3 columns">
-        <label for="start-date">To:</label>
-        <input type="date" id="end-date" name="end-date" />
-    </div>
-    <div class="medium-3 end columns">
-        <button class="expand">Refresh Report</button>
+    <div class="columns padding-bottom-1">
+        <strong>
+            @if (Model.StartDate.HasValue)
+            {
+                @:Date Range: @Model.StartDate.Value.ToShortDateString() - @Model.EndDate.Value.ToShortDateString()
+            }
+            else
+            {
+                @:Date Range: All Time
+            }
+        </strong>
     </div>
 </div>
 
-<style>
-    .game-information p {
-        margin-left: 2em;
-    }
-</style>
-
-<div class="game-information row">
-    <div class="columns">
-        <h4>Order #: 00054212358</h4>
-    </div>
-</div>
 <div class="row">
     <div class="columns">
         <table class="report">
             <thead>
                 <tr>
-                    <th>Item</th>
-                    <th>New / Used</th>
-                    <th class="text-right">Qty</th>
-                    <th class="text-right">Price ($)</th>
+                    <th>Order Number</th>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th class="text-right">Order Quantity</th>
+                    <th class="text-right">Subtotal</th>
+                    <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Star Wars: Battlefront</td>
-                    <td>New</td>
-                    <td class="value-number">2</td>
-                    <td class="value-number">$69.99</td>
-                </tr>
+                @if (Model.Items.Count < 1)
+                {
+                    <tr>
+                        <td colspan="7">There are no orders matching the specified criteria.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var order in Model.Items)
+                    {
+                        <tr>
+                            <td>@Html.ActionLink(order.OrderNumber.ToString(), "Details", "WebOrders", new { id = order.OrderNumber }, null)</td>
+                            <td>@order.OrderDate</td>
+                            <td>
+                                @Html.DisplayFor(m => order.OrderStatus)
+                                @if (order.OrderStatus == OrderStatus.Processed && order.ProcessedDate != null)
+                                {
+                                    <span>(@order.ProcessedDate.Value.ToShortDateString())</span>
+                                }
+                            </td>
+                            <td class="value-number">@order.Quantity</td>
+                            <td class="value-number">@order.Subtotal.ToString("C")</td>
+                            <td class="value-number">@order.OrderTotal.ToString("C")</td>
+                        </tr>
+                    }
+                }
             </tbody>
             <tfoot>
                 <tr>
-                    <td></td>
-                    <td class="text-right">Totals:</td>
-                    <td class="value-number">2</td>
-                    <td class="value-number">$33746.46</td>
+                    <td colspan="2">Totals (processed orders only)</td>
+                    <td>@Model.OrderCount Orders</td>
+                    <td class="value-number">@Model.TotalQuantity</td>
+                    <td class="value-number">@Model.ItemsSum.ToString("C")</td>
+                    <td class="value-number">@Model.Total.ToString("C")</td>
                 </tr>
             </tfoot>
         </table>

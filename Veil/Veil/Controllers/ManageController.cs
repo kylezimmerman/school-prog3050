@@ -1,15 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Migrations;
+using System.Data.Entity.Validation;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Transactions;
 using System.Web;
+using System.Web.Caching;
 using System.Web.Mvc;
-using Microsoft.Ajax.Utilities;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Stripe;
@@ -49,33 +49,28 @@ namespace Veil.Controllers
         // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
-            string statusMessage;
-
             switch (message)
             {
                 case ManageMessageId.AddPhoneSuccess:
-                    statusMessage = "Your phone number was added.";
+                    this.AddAlert(AlertType.Success, "Your phone number was added.");
                     break;
                 case ManageMessageId.ChangePasswordSuccess:
-                    statusMessage = "Your password has been changed.";
+                    this.AddAlert(AlertType.Success, "Your password has been changed.");
                     break;
                 case ManageMessageId.SetTwoFactorSuccess:
-                    statusMessage = "Your two-factor authentication provider has been set.";
+                    this.AddAlert(AlertType.Success, "Your two-factor authentication provider has been set.");
                     break;
                 case ManageMessageId.SetPasswordSuccess:
-                    statusMessage = "Your password has been set.";
+                    this.AddAlert(AlertType.Success, "Your password has been set.");
                     break;
                 case ManageMessageId.RemoveLoginSuccess:
-                    statusMessage = "A login has been removed.";
+                    this.AddAlert(AlertType.Success,  "A login has been removed.");
                     break;
                 case ManageMessageId.RemovePhoneSuccess:
-                    statusMessage = "Your phone number was removed.";
+                    this.AddAlert(AlertType.Success, "Your phone number was removed.");
                     break;
                 case ManageMessageId.Error:
-                    statusMessage = "An error has occurred.";
-                    break;
-                default:
-                    statusMessage = "";
+                    this.AddAlert(AlertType.Error, "An error has occurred.");
                     break;
             }
 
@@ -83,7 +78,7 @@ namespace Veil.Controllers
 
             string phoneNumber;
 
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             try
             {
@@ -104,13 +99,13 @@ namespace Veil.Controllers
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
                 BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
-                StatusMessage = statusMessage,
                 MemberFirstName = user.FirstName,
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
                 MemberVisibility = user.Member.WishListVisibility,
                 ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails,
-                UserId = userId
+                FavoritePlatformCount = user.Member.FavoritePlatforms.Count,
+                FavoriteTagCount = user.Member.FavoriteTags.Count
             };
 
             return View(model);
@@ -120,101 +115,69 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UpdateProfile(IndexViewModel viewModel)
         {
+            Guid userId = GetUserId();
             ManageMessageId? message = null;
-
-            if (viewModel.UserId == null)
-            {
-                throw new HttpException(NotFound, "error");
-            }
-
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == viewModel.UserId);
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
-                throw new HttpException(NotFound, "error");
+                throw new HttpException(NotFound, "No user found with that ID");
             }
-
-            user.FirstName = viewModel.MemberFirstName;
-            user.LastName = viewModel.MemberLastName;
-            user.PhoneNumber = viewModel.PhoneNumber;
-            user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
-            
-            
-            try
+         
+            if (ModelState.IsValid)
             {
-                db.MarkAsModified(user);
-                await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, "Updates made"); 
-            }
-            catch (Exception e)
-            {
-                this.AddAlert(AlertType.Error, e.ToString());
-            }
+                user.FirstName = viewModel.MemberFirstName;
+                user.LastName = viewModel.MemberLastName;
+                user.PhoneNumber = viewModel.PhoneNumber;    
 
-            if (user.Email != viewModel.MemberEmail)
-            {
-                //TODO redirect to a view to warn user
-                return RedirectToAction("ChangeEmail", new { NewEmail = viewModel.MemberEmail });
-                
-            }
+                if (user.Member != null)
+                {
+                    user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
+                    user.Member.WishListVisibility = viewModel.MemberVisibility;
+                }
 
-            return RedirectToAction("Index", new { Message = message });
-        }
+                bool isNewEmail = false;
 
-        public async Task<ActionResult> ChangeEmail(string  newEmail)
-        {
+                //runs if the entered email is different than the current on
+                if (user.Email != viewModel.MemberEmail)
+                {
+                    //runs if the newemail is null or empty on the user object
+                    if (String.IsNullOrWhiteSpace(user.NewEmail))
+                    {
+                        user.NewEmail = viewModel.MemberEmail;
+                        isNewEmail = true; 
+                    }
+                    //runs if newEmail was not null or empty and and the new email property is different than the one being set
+                    else if (!String.IsNullOrWhiteSpace(user.NewEmail) && user.NewEmail != viewModel.MemberEmail)
+                    {
+                        user.NewEmail = viewModel.MemberEmail;
+                        isNewEmail = true;
+                        //invalidates confirmation email stamp
+                        await userManager.UpdateSecurityStampAsync(userId);
+                    }  
+                }
 
-            if (String.IsNullOrWhiteSpace(newEmail))
-            {
-                throw new HttpException(NotFound, "No email was supplied");    
-            }
-
-            return View(newEmail);
-        }
-
-
-        [HttpPost, ActionName("ChangeEmail")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ChangeEmailConfirmed(string newEmail)
-        {
-            if (String.IsNullOrWhiteSpace(newEmail))
-            {
-                throw new HttpException(NotFound, "New email was null or empty");
-            }
-
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == GetUserId());
-
-            if (user == null)
-            {
-                throw new HttpException(NotFound, "No user with supplied Id found");
-            }
-
-            user.Email = newEmail;
-            user.EmailConfirmed = false;
-
-            using (TransactionScope newEmailScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
                 try
                 {
                     db.MarkAsModified(user);
                     await db.SaveChangesAsync();
-                    await SendConfirmationEmail(user);
-                    signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-                    newEmailScope.Complete();
+                    if (isNewEmail)
+                    {
+                        await SendConfirmationEmail(user);
+                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to " + user.NewEmail + 
+                            ", you can continue logging into your Veil account using "+ user.Email +" to login until you confirm the new email address");
+                    }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    throw new HttpException(NotFound, "Error changing email address");
+                    this.AddAlert(AlertType.Error, e.ToString());
                 }
-
-                
-            }
-           
-            return RedirectToAction("Index", "Home");
-
-            //TODO send confirmation email to new address
-            //TODO logout user'
+            }          
+     
+            return RedirectToAction("Index", new { Message = message });
         }
+
+       
 
 
         private async Task SendConfirmationEmail(User user)
@@ -222,7 +185,7 @@ namespace Veil.Controllers
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
             // Send an email with this link
             string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ConfirmEmail", "Account",
+            var callbackUrl = Url.Action("ConfirmNewEmail", "Manage",
                 new
                 {
                     userId = user.Id,
@@ -230,10 +193,49 @@ namespace Veil.Controllers
                 },
                 protocol: Request.Url.Scheme);
 
-            await userManager.SendEmailAsync(user.Id,
+            await userManager.SendNewEmailConfirmationEmail(user.NewEmail,
                 "Veil - Email change request",
                 "<h1>Confirm this email to rejoin us at Veil</h1>" +
-                "Please confirm your new email address by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                "An email change request has been made for this address if you requested this please click <a href=\"" + callbackUrl + "\">here</a>" +
+                "<br/> **Note once you click this link you need to use this email address to log in to Veil");
+        }
+
+        [AllowAnonymous]
+        public async Task<ActionResult> ConfirmNewEmail(Guid userId, string code)
+        {
+            if (userId == Guid.Empty || string.IsNullOrWhiteSpace(code))
+            {
+                return View("Error");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(userId, code);
+           
+            if (!result.Succeeded)
+            {
+
+                return View("Error");
+            }
+
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            user.Email = user.NewEmail;
+            user.NewEmail = null;
+            try
+            {
+                db.MarkAsModified(user);
+                await db.SaveChangesAsync();
+
+                // Update the security stamp to invalidate the email link
+                await userManager.UpdateSecurityStampAsync(userId);
+            }
+            catch (Exception e)
+            {
+                //this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
+                this.AddAlert(AlertType.Error, e.ToString());
+                return View("Error");
+            }
+
+            return View("ConfirmNewEmail");
         }
 
         //
@@ -307,17 +309,34 @@ namespace Veil.Controllers
             {
                 return View(model);
             }
-            var result = await userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
+
+            IdentityResult result = null; 
+
+            try
+            {
+                result = await userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                this.AddAlert(AlertType.Error, ex.Message);
+
+                return View(model);
+            }
+
             if (result.Succeeded)
             {
                 var user = await userManager.FindByIdAsync(GetUserId());
+
                 if (user != null)
                 {
                     await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                 }
+
                 return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
             }
+
             AddErrors(result);
+
             return View(model);
         }
 
@@ -636,6 +655,42 @@ namespace Veil.Controllers
             return RedirectToAction("ManageCreditCards");
         }
 
+        public async Task<ActionResult> ManagePlatforms()
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ManagePlatforms(List<string> platforms)
+        {
+            return View();
+        }
+
+        public async Task<ActionResult> ManageTags()
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            return View(currentMember.FavoriteTags.ToList());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ManageTags(List<string> tags)
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            currentMember.FavoriteTags.Clear();
+            currentMember.FavoriteTags = await db.Tags.Where(t => tags.Contains(t.Name)).ToListAsync();
+
+            db.MarkAsModified(currentMember);
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
         //
         // POST: /Manage/LinkLogin
         [HttpPost]
@@ -690,7 +745,7 @@ namespace Veil.Controllers
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError("", error);
+                ModelState.AddModelError(string.Empty, error);
             }
         }
 

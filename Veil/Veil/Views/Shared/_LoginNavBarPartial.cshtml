@@ -1,4 +1,5 @@
-﻿@using Veil.DataModels
+﻿@using Veil.Controllers
+@using Veil.DataModels
 
 @if (Request.IsAuthenticated)
 {
@@ -64,7 +65,20 @@ else
 {
     <ul class="right">
         <li>
-            @Html.ActionLink("Log in", "Login", "Account", routeValues: new { returnUrl = ViewBag.ReturnUrl ?? Request.RawUrl }, htmlAttributes: new { id = "loginLink" })
+            @{
+                string returnUrl = ViewBag.ReturnUrl;
+
+                // Prevent a redirect back to the confirm email page which would result in an error.
+                if (returnUrl == null && !Request.RawUrl.Contains(nameof(AccountController.ConfirmEmail)))
+                {
+                    returnUrl = Request.RawUrl;
+                }
+                else
+                {
+                    returnUrl = "/";
+                }
+            }
+            @Html.ActionLink("Log in", "Login", "Account", routeValues: new { returnUrl = returnUrl }, htmlAttributes: new { id = "loginLink" })
         </li>
     </ul>
 }

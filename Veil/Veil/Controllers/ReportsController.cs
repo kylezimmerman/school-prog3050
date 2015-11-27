@@ -211,19 +211,85 @@ namespace Veil.Controllers
             return View(viewModel);
         }
 
-        //Member Detail report
+        /// <summary>
+        ///     Displays a report of all orders made by a member as well as member
+        ///     information such as name, favorite tags, and favorite platforms
+        /// </summary>
+        /// <param name="username">
+        ///     The username of the member to view information of
+        /// </param>
+        /// <returns>
+        ///     A view presenting the member's information
+        /// </returns>
         [HttpGet]
-        public ActionResult MemberDetail(string userName)
+        public async Task<ActionResult> MemberDetail(string username)
         {
-            return View();
+            if (username == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
+
+            var model = await db.Members.Select(m => new MemberDetailViewModel
+            {
+                UserName = m.UserAccount.UserName,
+                FirstName = m.UserAccount.FirstName,
+                LastName = m.UserAccount.LastName,
+                WishlistCount = m.Wishlist.Count,
+                FriendCount = m.ReceivedFriendships.Count(f => f.RequestStatus == FriendshipRequestStatus.Accepted) +
+                    m.RequestedFriendships.Count(f => f.RequestStatus == FriendshipRequestStatus.Accepted),
+                FavoritePlatforms = m.FavoritePlatforms,
+                FavoriteTags = m.FavoriteTags,
+                Items = m.WebOrders.Select(o => new MemberOrderViewModel
+                {
+                    OrderNumber = o.Id,
+                    OrderDate = o.OrderDate,
+                    OrderStatus = o.OrderStatus,
+                    ProcessedDate = o.ProcessedDate,
+                    Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                    Subtotal = o.OrderSubtotal,
+                    OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                }).OrderByDescending(o => o.OrderDate).ToList()
+            }).FirstOrDefaultAsync(m => m.UserName == username);
+
+            return View(model);
         }
 
         [HttpPost]
-        public ActionResult MemberDetail(DateTime start, DateTime? end)
+        public async Task<ActionResult> MemberDetail(string username, DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            if (username == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
+
+            var model = await db.Members.Select(m => new MemberDetailViewModel
+            {
+                StartDate = start,
+                EndDate = end,
+                UserName = m.UserAccount.UserName,
+                FirstName = m.UserAccount.FirstName,
+                LastName = m.UserAccount.LastName,
+                WishlistCount = m.Wishlist.Count,
+                FriendCount = m.ReceivedFriendships.Count(f => f.RequestStatus == FriendshipRequestStatus.Accepted) +
+                    m.RequestedFriendships.Count(f => f.RequestStatus == FriendshipRequestStatus.Accepted),
+                FavoritePlatforms = m.FavoritePlatforms,
+                FavoriteTags = m.FavoriteTags,
+                Items = m.WebOrders.Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                    .Select(o => new MemberOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        OrderDate = o.OrderDate,
+                        OrderStatus = o.OrderStatus,
+                        ProcessedDate = o.ProcessedDate,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).OrderByDescending(o => o.OrderDate).ToList()
+            }).FirstOrDefaultAsync(m => m.UserName == username);
+
+            return View(model);
         }
 
         /// <summary>
@@ -304,19 +370,74 @@ namespace Veil.Controllers
             return View(model);
         }
 
-        //Sales report
+        /// <summary>
+        ///     Displays a report of all orders including order number, username,
+        ///     number of items in the order, sums for item prices, shipping, tax,
+        ///     and the order total
+        /// </summary>
+        /// <returns>
+        ///     A view presenting order information
+        /// </returns>
         [HttpGet]
         public async Task<ActionResult> Sales()
         {
-            return View();
+            var model = new SalesViewModel
+            {
+                Items = await db.WebOrders.Select(o =>
+                    new SalesOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        Username = o.Member.UserAccount.UserName,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        Shipping = o.ShippingCost,
+                        Tax = o.TaxAmount,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).OrderBy(o => o.OrderNumber)
+                    .ToListAsync()
+            };
+
+            return View(model);
         }
 
+        /// <summary>
+        ///     Displays a report of all orders within a specified date range
+        ///     including order number, username, number of items in the order,
+        ///     sums for item prices, shipping, tax, and the order total
+        /// </summary>
+        /// <param name="start">
+        ///     Orders before this date will not be shown
+        /// </param>
+        /// <param name="end">
+        ///     Orders after this date will not be shown
+        /// </param>
+        /// <returns>
+        ///     A view presenting order information filtered by date
+        /// </returns>
         [HttpPost]
-        public ActionResult Sales(DateTime start, DateTime? end)
+        public async Task<ActionResult> Sales(DateTime start, DateTime? end)
         {
             end = end ?? DateTime.Now;
 
-            return View();
+            var model = new SalesViewModel
+            {
+                StartDate = start,
+                EndDate = end,
+                Items = await db.WebOrders.Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                    .Select(o => new SalesOrderViewModel
+                    {
+                        OrderNumber = o.Id,
+                        Username = o.Member.UserAccount.UserName,
+                        Quantity = o.OrderItems.Sum(oi => oi.Quantity),
+                        Subtotal = o.OrderSubtotal,
+                        Shipping = o.ShippingCost,
+                        Tax = o.TaxAmount,
+                        OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
+                    }).OrderBy(o => o.OrderNumber)
+                    .ToListAsync()
+            };
+
+            return View(model);
         }
     }
 }

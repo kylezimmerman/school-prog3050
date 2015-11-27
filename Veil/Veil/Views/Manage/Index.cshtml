@@ -12,14 +12,9 @@
     </div>
 </div>
 
-@* TODO: This was just copy pasted from the Manage/Index view and should be styled *@
-<p class="text-success">@Model.StatusMessage</p>
-
 @using (Html.BeginForm("UpdateProfile", "Manage", FormMethod.Post, new { Role = "form" }))
 {
     @Html.AntiForgeryToken()
-
-    @Html.HiddenFor(model => model.UserId);
     <div class="row panel">
         <div class="column">
             <h4>Your Profile</h4>
@@ -68,10 +63,24 @@
                     @Html.ValidationMessageFor( model => model.MemberVisibility, "", new {@class = ""})
                 </div>
             </div>
-
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Addresses</span>
+                    <span class="prefix"><strong>Favorites</strong></span>
+                </div>
+                <div class="medium-9 columns">
+                    <div class="row">
+                        <div class="medium-6 columns">
+                            @Html.ActionLink($"Platforms ({Model.FavoritePlatformCount})", "ManagePlatforms", null, new { @class = "button expand postfix border-right-white" })
+                        </div>
+                        <div class="medium-6 columns">
+                            @Html.ActionLink($"Tags ({Model.FavoriteTagCount})", "ManageTags", null, new { @class = "button expand postfix" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row collapse">
+                <div class="medium-3 columns">
+                    <span class="prefix"><strong>Addresses</strong></span>
                 </div>
 
                 <div class="medium-9 columns">
@@ -81,7 +90,7 @@
 
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Credit Cards</span>
+                    <span class="prefix"><strong>Credit Cards</strong></span>
                 </div>
 
                 <div class="medium-9 columns">
@@ -91,7 +100,7 @@
 
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Password</span>
+                    <span class="prefix"><strong>Password</strong></span>
                 </div>
                 <div class="medium-9 columns">
                     @if (Model.HasPassword)
@@ -107,7 +116,7 @@
 
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">External Logins</span>
+                    <span class="prefix"><strong>External Logins</strong></span>
                 </div>
                 <div class="medium-9 columns">
                     @Html.ActionLink($"{Model.Logins.Count} [Manage]", "ManageLogins", null, new { @class = "button postfix" })
@@ -116,7 +125,7 @@
 
             <div class="row collapse">
                 <div class="medium-3 columns">
-                    <span class="prefix">Two Factor Auth</span>
+                    <span class="prefix"><strong>Two Factor Auth</strong></span>
                 </div>
                 <div class="medium-9 columns">
                     <p class="postfix">

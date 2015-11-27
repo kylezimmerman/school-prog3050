@@ -1,9 +1,7 @@
-﻿@using Veil.DataModels.Models
-@using Veil.Extensions
-@model IEnumerable<Veil.DataModels.Models.WebOrder>
+﻿@model IEnumerable<Veil.DataModels.Models.WebOrder>
 
 @{
-    ViewBag.Title = "Order History";
+    ViewBag.Title = "Unprocessed Orders";
 }
 
 <div class="row">
@@ -13,13 +11,26 @@
 </div>
 
 <div class="row">
+    @using (Html.BeginForm("Details", "WebOrders", FormMethod.Get))
+    {
+        <div class="small-6 medium-3 columns">
+            <label for="orderId">Order Id</label>
+            <input type="text" id="orderId" name="id" />
+        </div>
+        <div class="small-6 medium-3 columns end">
+            <button class="expand">View Order Details</button>
+        </div>
+    }
+</div>
+
+<div class="row">
     <div class="column">
         <table style="width:100%;">
             <tr>
                 <th>Order Number</th>
+                <th>User</th>
                 <th>Order Placed</th>
                 <th>Status</th>
-                <th class="text-right">Subtotal</th>
                 <th class="text-right">Order Total</th>
                 <td></td>
             </tr>
@@ -37,22 +48,16 @@
                 {
                     <tr>
                         <td>@item.Id</td>
+                        <td>@item.Member.UserAccount.UserName</td>
                         <td>@item.OrderDate</td>
-                        <td>
-                            @Html.DisplayFor(m => item.OrderStatus)
-                            @if (item.OrderStatus == OrderStatus.Processed && item.ProcessedDate != null)
-                            {
-                                <span>(@item.ProcessedDate.Value.ToShortDateString())</span>
-                            }
-                        </td>
-                        <td class="text-right">@item.OrderSubtotal.ToString("C")</td>
+                        <td>@Html.DisplayFor(m => item.OrderStatus)</td>
                         <td class="text-right">@((item.OrderSubtotal + item.ShippingCost + item.TaxAmount).ToString("C"))</td>
                         <td>
-                            @Html.ActionLink("Order Details", "Details", new {id = item.Id})
+                            @Html.ActionLink("Order Details", "Details", new { id = item.Id })
                         </td>
                     </tr>
+                    }
                 }
-            }
         </table>
     </div>
 </div>
