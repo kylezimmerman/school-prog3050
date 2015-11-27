@@ -296,12 +296,15 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Exclude = nameof(Game.Tags))] Game game, List<string> tags)
+        public async Task<ActionResult> Create([Bind(Exclude = nameof(Game.Tags) + "," + nameof(Game.ContentDescriptors))] Game game, List<string> tags, List<int> contentDescriptors)
         {
             if (ModelState.IsValid)
             {
                 game.Tags = new List<Tag>();
                 await SetTags(game, tags);
+
+                game.ContentDescriptors = new List<ESRBContentDescriptor>();
+                await SetESRBContentDescriptors(game, contentDescriptors);
 
                 db.Games.Add(game);
                 await db.SaveChangesAsync();
@@ -338,7 +341,7 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> Edit([Bind(Exclude = "Tags")] Game game, List<string> tags)
+        public async Task<ActionResult> Edit([Bind(Exclude = nameof(Game.Tags) + "," + nameof(Game.ContentDescriptors))] Game game, List<string> tags, List<int> contentDescriptors)
         {
             if (ModelState.IsValid)
             {
@@ -352,9 +355,10 @@ namespace Veil.Controllers
                 //'Tag logic'
                 //Get the game we just saved, including the tags this time
                 // ReSharper disable once AccessToModifiedClosure
-                game = await db.Games.Include(g => g.Tags).FirstAsync(g => g.Id == game.Id);
+                game = await db.Games.Include(g => g.Tags).Include(g => g.ContentDescriptors).FirstAsync(g => g.Id == game.Id);
 
                 await SetTags(game, tags);
+                await SetESRBContentDescriptors(game, contentDescriptors);
 
                 //Save the game again now with the tag info included
                 await db.SaveChangesAsync();
@@ -449,8 +453,8 @@ namespace Veil.Controllers
                                 " Consider marking all of its SKUs as not for sale instead.");
                     }
                     else
-                    {
-                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
+                {
+                    this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
                     }
 
                     
@@ -484,6 +488,28 @@ namespace Veil.Controllers
                 {
                     game.Tags.Add(tag);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets a Game's ESRB Content Descriptors to the provided list of content descriptors by Id. Note that this clears any existing descriptors.
+        /// </summary>
+        /// <param name="game">The game to set the tags on.</param>
+        /// <param name="tagNames">A list of tag names to add to the game.</param>
+        private async Task SetESRBContentDescriptors(Game game, List<int> contentDescriptors)
+        {
+            //Clear any existing tags in the game
+            game.ContentDescriptors.Clear();
+
+            if (contentDescriptors == null)
+            {
+                return;
+            }
+
+            var results = db.ESRBContentDescriptors.Where(e => contentDescriptors.Contains(e.Id));
+            foreach (var esrbContentDescriptor in results)
+            {
+                game.ContentDescriptors.Add(esrbContentDescriptor);
             }
         }
 
