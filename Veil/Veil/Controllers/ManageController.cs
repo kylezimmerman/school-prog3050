@@ -75,27 +75,27 @@ namespace Veil.Controllers
             }
 
             var userId = GetUserId();
+            var user = await userManager.FindByIdAsync(userId);
 
-            string phoneNumber;
-
-            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
-            try
-            {
-                phoneNumber = await userManager.GetPhoneNumberAsync(userId);
-            }
-            catch (InvalidOperationException)
+            if (user == null)
             {
                 // If this happens, the user has been deleted in the database but still has a valid login cookie
                 signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
 
                 return RedirectToAction("Index", "Home");
             }
-            
+
+            if (user.Member == null)
+            {
+                this.AddAlert(AlertType.Error, "Employees do not have profiles to view you have been redirected to the home page");
+
+                return RedirectToAction("Index", "Home");
+            }
+
             var model = new IndexViewModel
             {
                 HasPassword = HasPassword(),
-                PhoneNumber = phoneNumber,
+                PhoneNumber = user.PhoneNumber,
                 TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await userManager.GetLoginsAsync(userId),
                 BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
@@ -117,13 +117,15 @@ namespace Veil.Controllers
         {
             Guid userId = GetUserId();
             ManageMessageId? message = null;
-            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userManager.FindByIdAsync(userId);
+            bool isNewEmail = false;
 
             if (user == null)
             {
                 throw new HttpException(NotFound, "No user found with that ID");
             }
          
+
             if (ModelState.IsValid)
             {
                 user.FirstName = viewModel.MemberFirstName;
@@ -136,8 +138,7 @@ namespace Veil.Controllers
                     user.Member.WishListVisibility = viewModel.MemberVisibility;
                 }
 
-                bool isNewEmail = false;
-
+                
                 //runs if the entered email is different than the current on
                 if (user.Email != viewModel.MemberEmail)
                 {
@@ -173,7 +174,8 @@ namespace Veil.Controllers
                     this.AddAlert(AlertType.Error, e.ToString());
                 }
             }          
-     
+            
+            this.AddAlert(AlertType.Success, "Your Profile has been updated");
             return RedirectToAction("Index", new { Message = message });
         }
 
@@ -216,7 +218,7 @@ namespace Veil.Controllers
                 return View("Error");
             }
 
-            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userManager.FindByIdAsync(userId);
 
             user.Email = user.NewEmail;
             user.NewEmail = null;
@@ -228,10 +230,9 @@ namespace Veil.Controllers
                 // Update the security stamp to invalidate the email link
                 await userManager.UpdateSecurityStampAsync(userId);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                //this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
-                this.AddAlert(AlertType.Error, e.ToString());
+                this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
                 return View("Error");
             }
 
