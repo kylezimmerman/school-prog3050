@@ -215,6 +215,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\ESRBDescriptionController.cs" />
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\PlatformsController.cs" />
@@ -230,6 +231,7 @@
     <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\CartViewModel.cs" />
+    <Compile Include="Models\ESRBDescriptionViewModel.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
     <Compile Include="Models\EventListViewModel.cs" />
@@ -242,6 +244,7 @@
     <Compile Include="Models\HomePageViewModel.cs" />
     <Compile Include="Models\AddressViewModel.cs" />
     <Compile Include="Models\AdvancedSearchViewModel.cs" />
+    <Compile Include="Models\Reports\GameDetailViewModel.cs" />
     <Compile Include="Models\Reports\GameListViewModel.cs" />
     <Compile Include="Models\Reports\MemberDetailViewModel.cs" />
     <Compile Include="Models\Reports\SalesViewModel.cs" />
@@ -348,6 +351,7 @@
     <Content Include="ConnectionStrings.config">
       <SubType>Designer</SubType>
     </Content>
+    <None Include="Properties\PublishProfiles\Local_IIS.pubxml" />
     <None Include="Scripts\Library\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\AddStripeCard.js" />
     <Content Include="Scripts\Library\foundation\fastclick.js" />
@@ -501,7 +505,6 @@
     <Content Include="Views\Account\ResendConfimationEmail.cshtml" />
     <Content Include="Views\Account\RegisterComplete.cshtml" />
     <Content Include="Views\Account\ConfirmResendConfirmationEmail.cshtml" />
-    <Content Include="Views\Games\Search.cshtml" />
     <Content Include="Views\Games\AdvancedSearch.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Events\_EventListItem.cshtml" />
@@ -513,6 +516,7 @@
     <Content Include="Views\GameProducts\CreateDownloadSKU.cshtml" />
     <Content Include="Views\GameProducts\CreatePhysicalSKU.cshtml" />
     <Content Include="Views\GameProducts\Delete.cshtml" />
+    <Content Include="Views\ESRBDescription\Index.cshtml" />
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />
@@ -590,7 +594,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>2700</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>

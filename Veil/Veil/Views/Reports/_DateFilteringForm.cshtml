@@ -1,8 +1,9 @@
-﻿@using Veil.Models.Reports
+﻿@using Veil.Helpers
+@using Veil.Models.Reports
 @model DateFilteredViewModel
 
-@using (Html.BeginForm(ViewContext.RouteData.Values["action"].ToString(), "Reports", FormMethod.Post))
-{
+
+<form method="POST" action="@Html.Raw(Request.Url)">
     <div class="row">
         <div class="medium-2 columns">
             <span><em>Optional Filter</em></span><br />
@@ -15,14 +16,14 @@
         </div>
         <div class="medium-3 columns">
             <label for="endDate" class="prefix">To (optional):</label>
-            <input type="date" id="endDate" name="end" value="@DateTime.Now.ToShortDateString()"/>
+            <input type="date" id="endDate" name="end" value="@DateTime.Now.ToShortDateString()" />
         </div>
 
         <div class="medium-3 end columns">
             <button type="submit" class="expand">Refresh Report</button>
         </div>
     </div>
-}
+</form>
 
 <div class="row">
     <div class="columns padding-bottom-1">
