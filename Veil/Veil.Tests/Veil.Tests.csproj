@@ -153,8 +153,15 @@
     <Compile Include="Controllers\CheckoutControllerTests\PlaceOrderTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\ShippingInfoTests.cs" />
     <Compile Include="Controllers\FriendListControllerTests.cs" />
-    <Compile Include="Controllers\GameProductsControllerTests.cs" />
     <Compile Include="Controllers\EventsControllerTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\CreateDownloadSKUTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\CreatePhysicalGameSKUTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\DeleteConfirmedTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\DeleteTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\EditDownloadSKUTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\EditPhysicalSKUTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\RenderPhysicalGameProductPartialTests.cs" />
+    <Compile Include="Controllers\GameProductsControllerTests\_GameProductsControllerTestsBase.cs" />
     <Compile Include="Controllers\GamesControllerTests.cs" />
     <Compile Include="Controllers\CartControllerTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\IndexTest.cs" />

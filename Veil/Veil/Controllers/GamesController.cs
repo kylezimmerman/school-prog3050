@@ -251,7 +251,9 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Game));
             }
 
-            Game game = await db.Games.Include(g => g.GameSKUs)
+            Game game = await db.Games
+                .Include(g => g.ContentDescriptors)
+                .Include(g => g.GameSKUs)
                 .Include(g => g.GameSKUs.Select(sku => sku.Reviews.Select(r => r.Member)))
                 .FirstOrDefaultAsync(g => g.Id == id);
 
@@ -438,8 +440,6 @@ namespace Veil.Controllers
 
                     if (innermostException != null)
                     {
-                        string exMessage = innermostException.Message;
-
                         errorWasProvinceForeignKeyConstraint =
                             innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
                     }
@@ -452,8 +452,8 @@ namespace Veil.Controllers
                                 " Consider marking all of its SKUs as not for sale instead.");
                     }
                     else
-                {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
+                    {
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
                     }
 
                     
