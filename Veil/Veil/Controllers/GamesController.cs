@@ -20,6 +20,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Transactions;
 using System.Web;
+using System.Web.Routing;
 using LinqKit;
 using Veil.Extensions;
 using Veil.DataModels;
@@ -31,10 +32,12 @@ namespace Veil.Controllers
         private const int GAMES_PER_PAGE = 10;
 
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public GamesController(IVeilDataAccess veilDataAccess)
+        public GamesController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         public int GamesPerPage { get; set; } = GAMES_PER_PAGE;
@@ -230,6 +233,80 @@ namespace Veil.Controllers
                 (int) Math.Ceiling(await gamesFiltered.CountAsync() / (float) GamesPerPage);
 
             return View("Index", gamesListViewModel);
+        }
+
+        /// <summary>
+        ///     Gets the 10 best matches to the current member's favorite platforms and tags.
+        ///     Current recommendation is sorted as follows:
+        ///         Games with at least one GameSku matching any of the member's favorite platforms
+        ///             AND at least one tag matching the member's favorite tags.
+        ///         Games with at least one tag matching, but no platforms.
+        ///         These first two categories are sorted by the number of tags that match the member's favorites.
+        ///         Games with at least platform matching, but no tags.
+        ///         Each of these three sections are last sorted by release date with newest games first.
+        ///     A game that a member has already purchased (regardless of format) will never be recommended.
+        /// </summary>
+        /// <returns>
+        ///     A view with the filtered list of games
+        /// </returns>
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
+        public async Task<ActionResult> Recommended()
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            if (currentMember.FavoritePlatforms.Count + currentMember.FavoriteTags.Count == 0)
+            {
+                this.AddAlert(AlertType.Info, "You do not have any favorite platforms or tags yet.");
+                return RedirectToAction("Index", "Manage");
+            }
+            
+            var tagGames = currentMember.FavoriteTags
+                .SelectMany(t => t.TaggedGames)
+                .Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale)
+                .ToList();
+
+            var platformGames = currentMember.FavoritePlatforms
+                .SelectMany(p => p.GameProducts)
+                .Select(gp => gp.Game)
+                .Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale)
+                .ToList();
+
+            var model = new GameListViewModel
+            {
+                CurrentPage = 1,
+                TotalPages = 1,
+                Games = tagGames.Intersect(platformGames)
+                        .OrderByDescending(g => g.Tags.Intersect(currentMember.FavoriteTags).Count())
+                        .ThenByDescending(g => g.GameSKUs.Min(gp => gp?.ReleaseDate))
+                    .Union(
+                        tagGames.Except(platformGames)
+                        .OrderByDescending(g => g.Tags.Intersect(currentMember.FavoriteTags).Count())
+                        .ThenByDescending(g => g.GameSKUs.Min(gp => gp?.ReleaseDate)))
+                    .Union(
+                        platformGames.Except(tagGames)
+                        .OrderByDescending(g => g.GameSKUs.Min(gp => gp?.ReleaseDate)))
+                    .Except(currentMember.WebOrders.SelectMany(
+                        wo => wo.OrderItems.Select(oi => (oi.Product as GameProduct)?.Game)))
+                    .Take(GamesPerPage)
+            };
+
+            if (!model.Games.Any())
+            {
+                string favoritesLink = HtmlHelper.GenerateLink(
+                    ControllerContext.RequestContext,
+                    RouteTable.Routes,
+                    "platforms and tags.",
+                    null,
+                    "Index",
+                    "Manage",
+                    null,
+                    null);
+
+                this.AddAlert(AlertType.Info, "We don't have any recommendations for you at this time. Try again later or consider updating your favorite ",
+                    favoritesLink);
+            }
+
+            return View("Index", model);
         }
 
         /// <summary>

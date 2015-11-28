@@ -42,7 +42,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -73,7 +73,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -89,7 +89,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public void DeleteGame_NullId(string role)
         {
-            GamesController controller = new GamesController(veilDataAccess: null);
+            GamesController controller = new GamesController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Delete(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -114,7 +114,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };

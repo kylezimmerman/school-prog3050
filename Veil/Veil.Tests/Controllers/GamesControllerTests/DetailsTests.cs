@@ -17,7 +17,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [Test]
         public void Details_NullId_Throws404Exception()
         {
-            GamesController controller = new GamesController(null);
+            GamesController controller = new GamesController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -32,7 +32,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
 
             dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Details(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -56,7 +56,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -88,7 +88,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InEmployeeRole();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -121,7 +121,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InMemberRole();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -152,7 +152,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InMemberRole();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -179,7 +179,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InNoRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -207,7 +207,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -243,7 +243,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };

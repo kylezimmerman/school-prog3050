@@ -24,7 +24,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<DbSet<ESRBRating>> esrbDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRatings.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = controller.Create() as ViewResult;
 
@@ -41,7 +41,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<DbSet<Game>> gamesDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game>().AsQueryable());
             dbStub.Setup(db => db.Games).Returns(gamesDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = await controller.Create(game, null, null) as RedirectToRouteResult;
 
@@ -66,7 +66,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<DbSet<ESRBRating>> esrbDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRatings.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             await controller.Create(game, null, null);
 
@@ -89,7 +89,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<DbSet<Tag>> tagDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             await controller.Create(game, tagNames, null);
 
@@ -107,7 +107,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             dbStub.Setup(db => db.SaveChangesAsync()).ReturnsAsync(1).Verifiable();
             dbStub.Setup(db => db.Games).Returns(gamesDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             await controller.Create(game, tags: null, contentDescriptors: null);
 
@@ -130,7 +130,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Mock<DbSet<ESRBRating>> esrbDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRatings.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             controller.ModelState.AddModelError("name", "Name is required");
 
