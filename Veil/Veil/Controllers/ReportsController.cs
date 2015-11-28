@@ -100,7 +100,11 @@ namespace Veil.Controllers
             return View(viewModel);
         }
 
-        //Game Detail report
+        /// <summary>
+        /// Genereates a report showing the number of sales of each SKU for a game.
+        /// </summary>
+        /// <param name="gameGuid">The GUID of a game.</param>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpGet]
         public async Task<ActionResult> GameDetail(Guid gameGuid)
         {
@@ -161,6 +165,13 @@ namespace Veil.Controllers
             return View(viewModel);
         }
 
+        /// <summary>
+        /// /// Genereates a report showing the number of sales of each SKU for a game, filtered by a date range.
+        /// </summary>
+        /// <param name="gameGuid">The GUID of a game.</param>
+        /// <param name="start">The date to start the filter range (inclusive).</param>
+        /// <param name="end">The date to end the filter range (inclusive).</param>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpPost]
         public async Task<ActionResult> GameDetail(Guid gameGuid, DateTime start, DateTime? end)
         {
