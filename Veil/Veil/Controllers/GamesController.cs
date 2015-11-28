@@ -21,7 +21,6 @@ using System.Data.SqlClient;
 using System.Transactions;
 using System.Web;
 using LinqKit;
-using Microsoft.Ajax.Utilities;
 using Veil.Extensions;
 using Veil.DataModels;
 

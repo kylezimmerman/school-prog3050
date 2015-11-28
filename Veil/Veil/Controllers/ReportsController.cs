@@ -73,8 +73,7 @@ namespace Veil.Controllers
         [HttpPost]
         public async Task<ActionResult> GameList(DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
-            end = end.Value.AddDays(1).AddTicks(-1);
+            end = SetToEndOfDayIfInPast(end);
 
             var viewModel = new DateFilteredListViewModel<GameListViewModel>
             {
@@ -175,8 +174,7 @@ namespace Veil.Controllers
         [HttpPost]
         public async Task<ActionResult> GameDetail(Guid gameGuid, DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Today;
-            end = end.Value.AddDays(1).AddTicks(-1);
+            end = SetToEndOfDayIfInPast(end);
 
             var viewModel = new GameDetailViewModel
             {
@@ -285,22 +283,21 @@ namespace Veil.Controllers
         ///     Generates a report showing all <see cref="DataModels.Models.Member"/>s,
         ///     their names, total order count, total spent on orders, and average order amount from 
         ///     <see cref="DataModels.Models.WebOrder"/>s between the <see cref="start"/> date and 
-        ///     <see cref="end"/> date
+        ///     <see cref="optionalEnd"/> date
         /// </summary>
         /// <param name="start">
         ///     The start date to filter the <see cref="DataModels.Models.WebOrder"/>s by
         /// </param>
-        /// <param name="end">
+        /// <param name="optionalEnd">
         ///     Optional. The end date to filter the <see cref="DataModels.Models.WebOrder"/>s by. Defaults to Now.
         /// </param>
         /// <returns>
         ///     A view displaying the generated report
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult> MemberList(DateTime start, DateTime? end)
+        public async Task<ActionResult> MemberList(DateTime start, DateTime? optionalEnd)
         {
-            end = end ?? DateTime.Now;
-            end = end.Value.AddDays(1).AddTicks(-1);
+            DateTime end = SetToEndOfDayIfInPast(optionalEnd);
 
             var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
             {
@@ -390,8 +387,7 @@ namespace Veil.Controllers
         [HttpPost]
         public async Task<ActionResult> MemberDetail(string username, DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
-            end = end.Value.AddDays(1).AddTicks(-1);
+            end = SetToEndOfDayIfInPast(end);
 
             if (username == null)
             {
@@ -551,8 +547,7 @@ namespace Veil.Controllers
         [HttpPost]
         public async Task<ActionResult> Sales(DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
-            end = end.Value.AddDays(1).AddTicks(-1);
+            end = SetToEndOfDayIfInPast(end);
 
             var model = new SalesViewModel
             {
@@ -574,5 +569,17 @@ namespace Veil.Controllers
 
             return View(model);
         }
+
+        private DateTime SetToEndOfDayIfInPast(DateTime? value)
+        {
+            DateTime end = value?.Date ?? DateTime.Today;
+
+            // Prevent under/overflowing MinValue and MaxValue
+            return end == DateTime.MinValue.Date 
+                ? end.AddDays(1).AddTicks(-1) 
+                : end.AddTicks(-1).AddDays(1);
+        }
     }
+
+    
 }
