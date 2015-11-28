@@ -83,7 +83,10 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(Guid id)
         {
-            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
+            GameProduct gameProduct = await db.GameProducts.
+                Include(gp => gp.Game).
+                Include(gp => gp.Platform).
+                SingleOrDefaultAsync(gp => gp.Id == id);
 
             if (gameProduct == null)
             {
@@ -95,7 +98,6 @@ namespace Veil.Controllers
 
             try
             {
-                // TODO: This is new untested code.
                 db.ProductLocationInventories.RemoveRange(
                     await db.ProductLocationInventories.Where(
                             pli =>
@@ -104,7 +106,6 @@ namespace Veil.Controllers
                                 pli.UsedOnHand == 0 &&
                                 pli.NewOnOrder == 0).ToListAsync()
                 );
-                // TODO: End new untested code.
 
                 db.GameProducts.Remove(gameProduct);
 
@@ -115,15 +116,15 @@ namespace Veil.Controllers
                 // Get the exception which states if a foreign key constraint was violated
                 SqlException innermostException = ex.GetBaseException() as SqlException;
 
-                bool errorWasProvinceForeignKeyConstraint = false;
+                bool errorWasConstraintViolation = false;
 
                 if (innermostException != null)
                 {
-                    errorWasProvinceForeignKeyConstraint =
+                    errorWasConstraintViolation =
                         innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
                 }
 
-                if (errorWasProvinceForeignKeyConstraint)
+                if (errorWasConstraintViolation)
                 {
                     this.AddAlert(
                         AlertType.Error,

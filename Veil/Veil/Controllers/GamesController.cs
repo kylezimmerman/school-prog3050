@@ -436,15 +436,15 @@ namespace Veil.Controllers
                     // Get the exception which states if a foreign key constraint was violated
                     SqlException innermostException = ex.GetBaseException() as SqlException;
 
-                    bool errorWasProvinceForeignKeyConstraint = false;
+                    bool errorWasConstraintViolation = false;
 
                     if (innermostException != null)
                     {
-                        errorWasProvinceForeignKeyConstraint =
+                        errorWasConstraintViolation =
                             innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
                     }
 
-                    if (errorWasProvinceForeignKeyConstraint)
+                    if (errorWasConstraintViolation)
                     {
                         this.AddAlert(
                             AlertType.Error,

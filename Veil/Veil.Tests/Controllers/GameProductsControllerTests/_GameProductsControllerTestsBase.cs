@@ -12,7 +12,7 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
     [TestFixture]
     public abstract class GameProductsControllerTestsBase
     {
-        protected Guid Id;
+        protected Guid gameId;
         protected Guid GameSKUId;
 
         protected Game game;
@@ -24,10 +24,14 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
         [SetUp]
         public void Setup()
         {
-            Id = new Guid("44B0752E-998B-466A-AAAD-3ED535BA3559");
+            gameId = new Guid("44B0752E-998B-466A-AAAD-3ED535BA3559");
             GameSKUId = new Guid("3FE5BFCF-0A01-4EC2-A662-ADA08A2C34D2");
 
-            game = new Game { Id = Id };
+            game = new Game
+            {
+                Id = gameId,
+                Name = "A game"
+            };
 
             ps4Platform = new Platform
             {

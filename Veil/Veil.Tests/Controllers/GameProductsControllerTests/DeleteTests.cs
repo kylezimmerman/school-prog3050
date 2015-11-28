@@ -46,7 +46,7 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
         public void Delete_NoMatchingIdInDB()
         {
             GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
+            gameSku.GameId = gameId;
             gameSku.Id = GameSKUId;
 
             Guid nonMatch = new Guid("44B0752E-998B-477A-AAAD-3ED535BA3559");
@@ -54,7 +54,7 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
 
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(gameId)).ReturnsAsync(gameSku);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
@@ -66,14 +66,14 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
         public void Delete_NullID()
         {
             GameProduct gameSku = new PhysicalGameProduct();
-            gameSku.GameId = Id;
+            gameSku.GameId = gameId;
             gameSku.Id = GameSKUId;
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameSku }.AsQueryable());
             gameProductDbSetStub.SetupForInclude();
 
-            gameProductDbSetStub.Setup(gp => gp.FindAsync(Id)).ReturnsAsync(gameSku);
+            gameProductDbSetStub.Setup(gp => gp.FindAsync(gameId)).ReturnsAsync(gameSku);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
 
             GameProductsController controller = new GameProductsController(dbStub.Object, idGetter: null);
