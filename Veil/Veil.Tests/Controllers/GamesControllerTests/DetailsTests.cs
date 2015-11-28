@@ -34,7 +34,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
 
             GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
-            Assert.That(async () => await controller.Details(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
+            Assert.That(async () => await controller.Details(gameId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
 
         [Test]
@@ -42,7 +42,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = AvailabilityStatus.Available,
                 GameSKUs = new List<GameProduct>()
             };
@@ -74,7 +74,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = AvailabilityStatus.Available
             };
 
@@ -106,7 +106,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = status,
                 GameSKUs = new List<GameProduct>()
             };
@@ -137,7 +137,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = AvailabilityStatus.NotForSale,
                 GameSKUs = new List<GameProduct>()
             };
@@ -165,7 +165,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = AvailabilityStatus.NotForSale
             };
 
@@ -193,7 +193,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = AvailabilityStatus.PreOrder,
                 GameSKUs = GetGameSKUsListWithAllAvailabilityStatuses()
             };
@@ -229,7 +229,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game matchingGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameAvailabilityStatus = AvailabilityStatus.PreOrder,
                 GameSKUs = GetGameSKUsListWithAllAvailabilityStatuses()
             };

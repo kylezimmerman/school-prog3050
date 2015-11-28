@@ -34,15 +34,14 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
             };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { aGameProduct }.AsQueryable());
-            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
-
             MockPlatforms(dbStub);
-            StubLocationWithOnlineWarehouse(dbStub);
             StubEmptyProductLocationInventories(dbStub);
-            gameProductDbSetStub.SetupForInclude();
 
+            Mock<DbSet<GameProduct>> gameProductDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { aGameProduct }.AsQueryable());
+            gameProductDbSetStub.SetupForInclude();
             gameProductDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
+
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { aGame }.AsQueryable());
             gameDbSetStub.Setup(g => g.FindAsync(aGame.Id)).ReturnsAsync(aGame);
 
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
@@ -156,18 +155,12 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<DbSet<GameProduct>> gameProductsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
             gameProductsDbSetStub.SetupForInclude();
-            StubLocationWithOnlineWarehouse(dbStub);
 
             Mock<DbSet<ProductLocationInventory>> inventoriesDbSetStub = TestHelpers.GetFakeAsyncDbSet(inventories.AsQueryable());
             inventoriesDbSetStub.
                 Setup(idb => idb.RemoveRange(It.IsAny<IEnumerable<ProductLocationInventory>>())).
                 Returns<IEnumerable<ProductLocationInventory>>(val => val).
-                Callback<IEnumerable<ProductLocationInventory>>(
-                    val =>
-                    {
-                        deletedInventories = val.ToList();
-                    });
-
+                Callback<IEnumerable<ProductLocationInventory>>(val => deletedInventories = val.ToList());
 
             dbStub.
                 Setup(db => db.ProductLocationInventories).
@@ -208,7 +201,6 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
             gameProductsDbSetStub.SetupForInclude();
             gameProductsDbSetStub.Setup(gp => gp.FindAsync(aGameProduct.Id)).ReturnsAsync(aGameProduct);
 
-            StubLocationWithOnlineWarehouse(dbStub);
             StubEmptyProductLocationInventories(dbStub);
 
             dbStub.Setup(db => db.GameProducts).Returns(gameProductsDbSetStub.Object);
@@ -235,7 +227,6 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
             Mock<DbSet<GameProduct>> gameProductsDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<GameProduct> { gameProduct }.AsQueryable());
             gameProductsDbSetStub.SetupForInclude();
 
-            StubLocationWithOnlineWarehouse(dbStub);
             StubEmptyProductLocationInventories(dbStub);
 
             dbStub.

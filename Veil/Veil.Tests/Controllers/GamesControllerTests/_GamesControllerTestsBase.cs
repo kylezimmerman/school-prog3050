@@ -13,7 +13,8 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         protected PhysicalGameProduct preOrderSKU;
         protected PhysicalGameProduct discontinuedSKU;
 
-        protected Guid Id;
+        protected Guid gameId;
+        protected Guid gameSKUId;
 
         protected Tag tag;
         protected ESRBRating everyoneESRBRating;
@@ -43,7 +44,8 @@ namespace Veil.Tests.Controllers.GamesControllerTests
                 ProductAvailabilityStatus = AvailabilityStatus.DiscontinuedByManufacturer
             };
 
-            Id = new Guid("44B0752E-998B-466A-AAAD-3ED535BA3559");
+            gameId = new Guid("44B0752E-998B-466A-AAAD-3ED535BA3559");
+            gameSKUId = new Guid("281B0B14-F775-497B-AAFB-F1036FAB630D");
 
             tag = new Tag { Name = "Test" };
 

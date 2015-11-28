@@ -27,7 +27,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             var games = new List<Game>
             {
-                new Game {Id = Id}
+                new Game {Id = gameId}
             };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
@@ -42,7 +42,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [Test]
         public async void Edit_GET_Valid_ViewById()
         {
-            var game = new Game { Id = Id };
+            var game = new Game { Id = gameId };
 
             var games = new List<Game>
             {
@@ -75,7 +75,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [Test]
         public async void Edit_POST_Valid_NoTags()
         {
-            var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
+            var game = new Game { Id = gameId, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
 
             var games = new List<Game>
             {
@@ -114,7 +114,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [Test]
         public async void Edit_POST_Valid_ConfirmSaveChangesAsyncCalled()
         {
-            var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
+            var game = new Game { Id = gameId, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
 
             var games = new List<Game>
             {
@@ -153,7 +153,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [Test]
         public async void Edit_POST_Valid_WithTags()
         {
-            var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
+            var game = new Game { Id = gameId, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
             var tagNames = new List<string> { tag.Name };
 
             var games = new List<Game>
@@ -200,7 +200,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             var contentDescriptor = new ESRBContentDescriptor { Id = 1, DescriptorName = "Test Descriptor" };
             var contentDescriptors = new List<ESRBContentDescriptor> { contentDescriptor };
 
-            var game = new Game { Id = Id, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
+            var game = new Game { Id = gameId, Tags = new List<Tag>(), ContentDescriptors = new List<ESRBContentDescriptor>() };
 
             var contentDescriptorIds = new List<int> { contentDescriptor.Id };
 

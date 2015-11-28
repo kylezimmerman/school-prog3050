@@ -488,7 +488,6 @@ namespace Veil.Controllers
                     {
                         foreach (var gameSKU in game.GameSKUs)
                         {
-                            // TODO: This is new untested code.
                             db.ProductLocationInventories.RemoveRange(
                                 await db.ProductLocationInventories.Where(
                                         pli =>
@@ -497,7 +496,6 @@ namespace Veil.Controllers
                                             pli.UsedOnHand == 0 &&
                                             pli.NewOnOrder == 0).ToListAsync()
                             );
-                            // TODO: End new untested code.
                         }
 
                         db.GameProducts.RemoveRange(game.GameSKUs);

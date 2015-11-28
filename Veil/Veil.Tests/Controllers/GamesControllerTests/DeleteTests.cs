@@ -21,7 +21,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game aGame = new Game
             {
-                Id = Id
+                Id = gameId
             };
 
             GameProduct aGameProduct = new PhysicalGameProduct();
@@ -60,7 +60,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game aGame = new Game
             {
-                Id = Id,
+                Id = gameId,
                 GameSKUs = new List<GameProduct>()
             };
 
@@ -100,7 +100,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         {
             Game aGame = new Game
             {
-                Id = Id
+                Id = gameId
             };
 
             Guid nonMatch = new Guid("44B0752E-968B-477A-AAAD-3ED535BA3559");

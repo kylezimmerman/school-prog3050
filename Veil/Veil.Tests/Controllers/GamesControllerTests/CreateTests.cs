@@ -34,7 +34,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
         [Test]
         public async void Create_POST_Valid_RedirectsToDetails()
         {
-            var game = new Game { Id = Id };
+            var game = new Game { Id = gameId };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
 
