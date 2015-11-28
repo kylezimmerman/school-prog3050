@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Caching;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -655,6 +654,12 @@ namespace Veil.Controllers
             return RedirectToAction("ManageCreditCards");
         }
 
+        /// <summary>
+        ///     Allows a member to update their favorite platforms
+        /// </summary>
+        /// <returns>
+        ///     A view containing a form to set favorite platforms
+        /// </returns>
         public async Task<ActionResult> ManagePlatforms()
         {
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
@@ -662,6 +667,15 @@ namespace Veil.Controllers
             return View(currentMember.FavoritePlatforms.ToList());
         }
 
+        /// <summary>
+        ///     Persists the selected platfroms as the member's new favorites
+        /// </summary>
+        /// <param name="platforms">
+        ///     An updated list of the member's favorite platforms
+        /// </param>
+        /// <returns>
+        ///     Redirects to the index view.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ManagePlatforms(List<string> platforms)
@@ -684,6 +698,12 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        ///     Allows a member to update their favorite tags
+        /// </summary>
+        /// <returns>
+        ///     A view containing a form to set favorite tags
+        /// </returns>
         public async Task<ActionResult> ManageTags()
         {
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
@@ -691,6 +711,15 @@ namespace Veil.Controllers
             return View(currentMember.FavoriteTags.ToList());
         }
 
+        /// <summary>
+        ///     Persists the selected tags as the member's new favorites
+        /// </summary>
+        /// <param name="tags">
+        ///     An updated list of the member's favorite tags
+        /// </param>
+        /// <returns>
+        ///     Redirects to the index view.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ManageTags(List<string> tags)

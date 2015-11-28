@@ -145,7 +145,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -168,7 +168,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -197,7 +197,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -227,7 +227,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -256,7 +256,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -284,7 +284,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -313,7 +313,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -342,7 +342,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -371,7 +371,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -398,7 +398,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -427,7 +427,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -463,7 +463,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = gamesPerPage
@@ -500,7 +500,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = gamesPerPage
@@ -537,7 +537,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = gamesPerPage
@@ -568,7 +568,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -593,7 +593,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -633,7 +633,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -660,7 +660,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -691,7 +691,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -722,7 +722,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -754,7 +754,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -786,7 +786,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -818,7 +818,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -849,7 +849,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -883,7 +883,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -916,7 +916,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = gamesPerPage
@@ -950,7 +950,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = gamesPerPage
@@ -984,7 +984,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = gamesPerPage
@@ -1019,7 +1019,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1037,7 +1037,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public void Details_NullId_Throws404Exception()
         {
-            GamesController controller = new GamesController(null);
+            GamesController controller = new GamesController(null, null);
 
             Assert.That(async () => await controller.Details(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1052,7 +1052,7 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Details(Id), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1076,7 +1076,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1108,7 +1108,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InEmployeeRole();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1141,7 +1141,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InMemberRole();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1172,7 +1172,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InMemberRole();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1199,7 +1199,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InNoRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1227,7 +1227,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1263,7 +1263,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1296,7 +1296,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
             };
@@ -1329,7 +1329,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
             };
@@ -1360,7 +1360,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
             };
@@ -1385,7 +1385,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InNoRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = 1
@@ -1418,7 +1418,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = 1
@@ -1453,7 +1453,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().InAllRoles();
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object,
                 GamesPerPage = 1
@@ -1481,7 +1481,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<ESRBRating>> esrbDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRatings.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = controller.Create() as ViewResult;
 
@@ -1498,7 +1498,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Game>> gamesDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game>().AsQueryable());
             dbStub.Setup(db => db.Games).Returns(gamesDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = await controller.Create(game, null) as RedirectToRouteResult;
 
@@ -1523,7 +1523,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<ESRBRating>> esrbDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRatings.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             await controller.Create(game, null);
 
@@ -1546,7 +1546,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Tag>> tagDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             await controller.Create(game, tagNames);
 
@@ -1564,7 +1564,7 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.SaveChangesAsync()).ReturnsAsync(1).Verifiable();
             dbStub.Setup(db => db.Games).Returns(gamesDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             await controller.Create(game, tags: null);
 
@@ -1587,7 +1587,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<ESRBRating>> esrbDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRatings.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             controller.ModelState.AddModelError("name", "Name is required");
 
@@ -1604,7 +1604,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void Edit_GET_Invalid_NullId()
         {
-            GamesController controller = new GamesController(veilDataAccess: null);
+            GamesController controller = new GamesController(veilDataAccess: null, idGetter: null);
            
             Assert.That(async () => await controller.Edit(id: null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1621,7 +1621,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(games.AsQueryable());
             dbStub.Setup(db => db.Games).Returns(gameDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             Assert.That(async () => await controller.Edit(id: Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1650,7 +1650,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<ESRBRating>> esrbRatingDbSetStub = TestHelpers.GetFakeAsyncDbSet(esrbRating.AsQueryable());
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbRatingDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = await controller.Edit(game.Id) as ViewResult;
 
@@ -1688,7 +1688,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagsDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = await controller.Edit(game, null) as RedirectToRouteResult;
 
@@ -1728,7 +1728,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagsDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = await controller.Edit(game, null) as RedirectToRouteResult;
 
@@ -1766,7 +1766,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Tag>> tagsDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
             dbStub.Setup(db => db.Tags).Returns(tagsDbSetStub.Object);
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
 
             var result = await controller.Edit(game, tagNames) as RedirectToRouteResult;
 
@@ -1788,7 +1788,7 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.ESRBRatings).Returns(esrbRatingDbSetStub.Object);
 
 
-            GamesController controller = new GamesController(dbStub.Object);
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null);
             controller.ModelState.AddModelError("id", "id");
 
             var result = await controller.Edit(game, tags: null) as ViewResult;
@@ -1824,7 +1824,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1853,7 +1853,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1869,7 +1869,7 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGame_NullId(string role)
         {
-            GamesController controller = new GamesController(veilDataAccess: null);
+            GamesController controller = new GamesController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.Delete(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1892,7 +1892,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1927,7 +1927,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1955,7 +1955,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -1970,7 +1970,7 @@ namespace Veil.Tests.Controllers
         [TestCase(VeilRoles.ADMIN_ROLE)]
         public async void DeleteGameConfirmed_EmptyGuid(string role)
         {
-            GamesController controller = new GamesController(veilDataAccess: null);
+            GamesController controller = new GamesController(veilDataAccess: null, idGetter: null);
 
             Assert.That(async () => await controller.DeleteGameConfirmed(Guid.Empty), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(e => e.GetHttpCode() == 404));
         }
@@ -1996,7 +1996,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };
@@ -2021,7 +2021,7 @@ namespace Veil.Tests.Controllers
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
             contextStub.SetupUser().IsInRole(role);
 
-            GamesController controller = new GamesController(dbStub.Object)
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
                 ControllerContext = contextStub.Object
             };

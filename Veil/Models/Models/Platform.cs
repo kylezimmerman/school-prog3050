@@ -40,6 +40,6 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// Collection navigation property for the GameProduct's on this platform
         /// </summary>
-        public ICollection<GameProduct> GameProducts { get; set; }
+        public virtual ICollection<GameProduct> GameProducts { get; set; }
     }
 }
