@@ -382,6 +382,22 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        ///     Displays a report of all orders made by a member between specified dates as well as member
+        ///     information such as name, favorite tags, and favorite platforms
+        /// </summary>
+        /// <param name="username">
+        ///     The username of the member to view information of
+        /// </param>
+        /// <param name="start">
+        ///     The earliest time to include orders from
+        /// </param>
+        /// <param name="end">
+        ///     The latest time to include orders from
+        /// </param>
+        /// <returns>
+        ///     A view presenting the member's information, with orders filtered between dates
+        /// </returns>
         [HttpPost]
         public async Task<ActionResult> MemberDetail(string username, DateTime start, DateTime? end)
         {
