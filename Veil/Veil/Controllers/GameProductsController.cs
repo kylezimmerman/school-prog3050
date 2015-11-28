@@ -1,3 +1,10 @@
+/* GameProductsController.cs
+ * Purpose: Controller for actions related to the GameProduct model and derived models
+ * 
+ * Revision History:
+ *      Kyle Zimmerman, 2015.11.9: Created
+ */ 
+
 using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
@@ -59,6 +66,16 @@ namespace Veil.Controllers
             return PartialView("_PhysicalGameProductPartial", model);
         }
 
+        /// <summary>
+        ///     Displays a delete confirmation page for the identified game SKU
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game SKU to delete
+        /// </param>
+        /// <returns>
+        ///     The delete confirmation page if a match is found
+        ///     404 Not Found page if a match is not found
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
@@ -78,6 +95,17 @@ namespace Veil.Controllers
             return View(gameProduct);
         }
 
+        /// <summary>
+        ///     Deletes the identified game including all of its empty ProductLocationInventories
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game SKU to delete
+        /// </param>
+        /// <returns>
+        ///     Redirection to Games/Index if successful
+        ///     Redirection to Delete to redisplay the confirmation page if unsuccessful
+        ///     404 Not Found if no game matches the Id
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -100,12 +128,12 @@ namespace Veil.Controllers
             {
                 db.ProductLocationInventories.RemoveRange(
                     await db.ProductLocationInventories.Where(
-                            pli =>
-                                pli.ProductId == id &&
+                        pli =>
+                            pli.ProductId == id &&
                                 pli.NewOnHand == 0 &&
                                 pli.UsedOnHand == 0 &&
                                 pli.NewOnOrder == 0).ToListAsync()
-                );
+                    );
 
                 db.GameProducts.Remove(gameProduct);
 
@@ -121,7 +149,7 @@ namespace Veil.Controllers
                 if (innermostException != null)
                 {
                     errorWasConstraintViolation =
-                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
+                        innermostException.Number == (int) SqlErrorNumbers.ConstraintViolation;
                 }
 
                 if (errorWasConstraintViolation)
@@ -133,9 +161,10 @@ namespace Veil.Controllers
                 }
                 else
                 {
-                    this.AddAlert(AlertType.Error, $"There was an error deleting {gameName} for {platform}.");
+                    this.AddAlert(
+                        AlertType.Error, $"There was an error deleting {gameName} for {platform}.");
                 }
-                
+
                 return RedirectToAction("Delete", new { id = id });
             }
 
@@ -178,8 +207,12 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> CreatePhysicalSKU(Guid id, 
-            [Bind(Exclude = nameof(PhysicalGameProduct.NewInventory) + "," + nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> CreatePhysicalSKU(
+            Guid id,
+            [Bind(
+                Exclude =
+                    nameof(PhysicalGameProduct.NewInventory) + "," +
+                        nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
         {
             if (!await db.Games.AnyAsync(g => g.Id == id))
             {
@@ -242,7 +275,7 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind]PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind] PhysicalGameProduct gameProduct)
         {
             if (id == null)
             {

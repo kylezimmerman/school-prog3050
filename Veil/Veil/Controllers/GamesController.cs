@@ -1,6 +1,5 @@
 ﻿/* GamesController.cs
- * Purpose: Controller for the primarily for the Games model
- *          Also contains actions for GameProduct and derived models
+ * Purpose: Controller for the Games model
  * 
  * Revision History:
  *      Isaac West, 2015.10.13: Created
@@ -371,6 +370,7 @@ namespace Veil.Controllers
             return View();
         }
 
+        // TODO: Comments
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -394,6 +394,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        // TODO: Comments
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Edit(Guid? id)
         {
@@ -413,9 +414,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // POST: Games/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // TODO: Comments
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
@@ -450,6 +449,16 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        /// <summary>
+        ///     Displays a delete confirmation page for the identified game
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game to delete
+        /// </param>
+        /// <returns>
+        ///     The delete confirmation page if a match is found
+        ///     404 Not Found page if a match is not found
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
@@ -468,6 +477,18 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        /// <summary>
+        ///     Deletes the identified game including all of its SKUs and
+        ///     the empty ProductLocationInventories for those SKUs
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game to delete
+        /// </param>
+        /// <returns>
+        ///     Redirection to Index if successful
+        ///     Redirection to Delete to redisplay the confirmation page if unsuccessful
+        ///     404 Not Found if no game matches the Id
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -531,7 +552,8 @@ namespace Veil.Controllers
                         this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
                     }
 
-                    
+                    // We redirection instead of redisplaying because the failed delete removed the
+                    // navigation property values from the game.
                     return RedirectToAction("Delete", new { id = id });
                 }
             }
