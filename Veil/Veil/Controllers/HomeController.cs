@@ -68,8 +68,6 @@ namespace Veil.Controllers
         /// <returns>The About view for the Home controller.</returns>
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
-
             return View();
         }
 
@@ -79,8 +77,6 @@ namespace Veil.Controllers
         /// <returns>The Contact view for the Home controller.</returns>
         public ActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
-
             return View();
         }
     }
