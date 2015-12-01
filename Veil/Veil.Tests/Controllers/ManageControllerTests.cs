@@ -1784,10 +1784,64 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        [Ignore]
         public async void ManagePlatformsPOST_RemovePlatforms_ReturnsUpdatedModel()
         {
-            // TODO
+            List<Platform> platforms = new List<Platform>
+            {
+                new Platform
+                {
+                    PlatformCode = "TPlat",
+                    PlatformName = "Test Platform"
+                },
+                new Platform
+                {
+                    PlatformCode = "2Plat",
+                    PlatformName = "Second Platform"
+                }
+            };
+
+            List<string> platformStrings = new List<string>
+            {
+                "TPlat"
+            };
+
+            Member member = new Member
+            {
+                UserId = memberId,
+                FavoritePlatforms = new List<Platform>
+                {
+                    platforms[0],
+                    platforms[1]
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Platform>> platformDbSetStub = TestHelpers.GetFakeAsyncDbSet(platforms.AsQueryable());
+            dbStub.Setup(db => db.Platforms).Returns(platformDbSetStub.Object);
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null,
+                veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ManagePlatforms(platformStrings);
+
+            Assert.That(member.FavoritePlatforms.Count, Is.EqualTo(1));
+            Assert.That(member.FavoritePlatforms.Any(p => p.PlatformCode == "TPlat"));
+            Assert.That(member.FavoritePlatforms.All(p => p.PlatformCode != "2Plat"));
         }
 
         [Test]
@@ -1944,10 +1998,61 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        [Ignore]
         public async void ManageTagsPOST_RemoveTags_ReturnsUpdatedModel()
         {
-            // TODO
+            List<Tag> tags = new List<Tag>
+            {
+                new Tag
+                {
+                    Name = "Test Tag"
+                },
+                new Tag
+                {
+                    Name = "Second Tag"
+                }
+            };
+
+            List<string> tagStrings = new List<string>
+            {
+                "Test Tag"
+            };
+
+            Member member = new Member
+            {
+                UserId = memberId,
+                FavoriteTags = new List<Tag>
+                {
+                    tags[0]
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Tag>> tagDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
+            dbStub.Setup(db => db.Tags).Returns(tagDbSetStub.Object);
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null,
+                veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ManageTags(tagStrings);
+
+            Assert.That(member.FavoriteTags.Count, Is.EqualTo(1));
+            Assert.That(member.FavoriteTags.Any(t => t.Name == "Test Tag"));
+            Assert.That(member.FavoriteTags.All(t => t.Name != "Second Tag"));
         }
 
         [Test]
