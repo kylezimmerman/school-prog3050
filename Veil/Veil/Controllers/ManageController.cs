@@ -619,7 +619,7 @@ namespace Veil.Controllers
             catch (StripeException ex)
             {
                 // Note: Stripe says their card_error messages are safe to display to the user
-                if (ex.StripeError.Code == "card_error")
+                if (ex.StripeError.ErrorType == "card_error")
                 {
                     this.AddAlert(AlertType.Error, ex.Message);
                     ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
@@ -728,30 +728,7 @@ namespace Veil.Controllers
 
             return RedirectToAction("Index");
         }
-
-        //
-        // POST: /Manage/LinkLogin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult LinkLogin(string provider)
-        {
-            // Request a redirect to the external login provider to link a login for the current user
-            return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), GetUserId().ToString());
-        }
-
-        //
-        // GET: /Manage/LinkLoginCallback
-        public async Task<ActionResult> LinkLoginCallback()
-        {
-            var loginInfo = await signInManager.AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, GetUserId().ToString());
-            if (loginInfo == null)
-            {
-                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
-            }
-            var result = await userManager.AddLoginAsync(GetUserId(), loginInfo.Login);
-            return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
-        }
-
+        
         //
         // POST: /Manage/RememberBrowser
         [HttpPost]
@@ -776,9 +753,6 @@ namespace Veil.Controllers
         }
 
         #region Helpers
-        // Used for XSRF protection when adding external logins
-        private const string XsrfKey = "XsrfId";
-
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)
