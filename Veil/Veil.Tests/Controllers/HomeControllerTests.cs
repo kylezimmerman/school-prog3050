@@ -88,5 +88,25 @@ namespace Veil.Tests.Controllers
             Assert.That(model.ComingSoon.Select(g => g.GameSKUs), Has.All.Matches<List<GameProduct>>(gs => gs.Any(lgp => lgp.ReleaseDate > DateTime.Now)));
             Assert.That(model.NewReleases.Select(g => g.GameSKUs), Has.All.Matches<List<GameProduct>>(gs => gs.Any(lgp => lgp.ReleaseDate < DateTime.Now)));
         }
+
+        [Test]
+        public void Contact_WhenCalled_ReturnsView()
+        {
+            HomeController controller = new HomeController(null);
+
+            var result = controller.Contact() as ViewResult;
+
+            Assert.That(result != null);
+        }
+
+        [Test]
+        public void About_WhenCalled_ReturnsView()
+        {
+            HomeController controller = new HomeController(null);
+
+            var result = controller.About() as ViewResult;
+
+            Assert.That(result != null);
+        }
     }
 }

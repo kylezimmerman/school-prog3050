@@ -276,7 +276,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -296,7 +296,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -316,7 +316,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -336,7 +336,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -356,7 +356,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -376,7 +376,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MinValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MinValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -403,7 +403,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -430,7 +430,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
+            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), optionalEnd: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -457,7 +457,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -484,7 +484,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
+            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), optionalEnd: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -510,7 +510,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -536,7 +536,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
+            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), optionalEnd: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -560,7 +560,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -589,7 +589,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
+            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), optionalEnd: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -617,7 +617,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: DateTime.MinValue, end: DateTime.MaxValue) as ViewResult;
+            var result = await controller.MemberList(start: DateTime.MinValue, optionalEnd: DateTime.MaxValue) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -648,7 +648,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), end: new DateTime(2015, 11, 22)) as ViewResult;
+            var result = await controller.MemberList(start: new DateTime(2015, 11, 22), optionalEnd: new DateTime(2015, 11, 22)) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -664,7 +664,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
         }
 
         [Test]
-        public async void DateFilter_NullEndDate_DefaultsToNow()
+        public async void DateFilter_NullEndDate_DefaultsToTodayAtJustBeforeMidnight()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             SetupVeilDataAccessWithUser(dbStub, memberUser, memberUser2);
@@ -672,7 +672,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
 
             ReportsController controller = new ReportsController(dbStub.Object);
 
-            var result = await controller.MemberList(start: new DateTime(2015, 11, 21), end: null) as ViewResult;
+            var result = await controller.MemberList(start: new DateTime(2015, 11, 21), optionalEnd: null) as ViewResult;
 
             Assert.That(result != null);
             Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
@@ -680,11 +680,34 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
 
             Assert.That(model.EndDate.HasValue);
-            Assert.That(model.EndDate.Value, Is.EqualTo(DateTime.Now).Within(1).Minutes);
+            Assert.That(model.EndDate.Value, Is.EqualTo(DateTime.Today.AddDays(1)).Within(1).Seconds);
         }
 
         [Test]
-        public async void DateFilter_StartAndEndDate_SetsDatesInViewModel()
+        public async void DateFilter_StartAndEndDate_SetsEndDateToJustBeforeMidnight()
+        {
+            DateTime start = new DateTime(2015, 11, 21);
+            DateTime end = new DateTime(2015, 11, 22);
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithUser(dbStub, memberUser, memberUser2);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            ReportsController controller = new ReportsController(dbStub.Object);
+
+            var result = await controller.MemberList(start, end) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<MemberListItemViewModel>>());
+
+            var model = (DateFilteredListViewModel<MemberListItemViewModel>)result.Model;
+
+            Assert.That(model.EndDate.HasValue);
+            Assert.That(model.EndDate.Value, Is.EqualTo(end.AddDays(1)).Within(1).Seconds);
+        }
+
+        [Test]
+        public async void DateFilter_StartAndEndDate_SetsStartDateToMidnight()
         {
             DateTime start = new DateTime(2015, 11, 21);
             DateTime end = new DateTime(2015, 11, 22);
@@ -705,7 +728,6 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             Assert.That(model.StartDate.HasValue);
             Assert.That(model.StartDate.Value, Is.EqualTo(start));
             Assert.That(model.EndDate.HasValue);
-            Assert.That(model.EndDate.Value, Is.EqualTo(end));
         }
     }
 }

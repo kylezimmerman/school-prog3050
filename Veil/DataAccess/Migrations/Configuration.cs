@@ -329,12 +329,6 @@ namespace Veil.DataAccess.Migrations
                 }
             );
 
-            
-            Company bungie = new Company
-            {
-                Name = "Bungie"
-            };
-
             context.Companies.AddOrUpdate(
                 c => c.Name,
                 new Company { Name = "Activision Blizzard" },
@@ -348,18 +342,80 @@ namespace Veil.DataAccess.Migrations
                 new Company { Name = "Nintendo" },
                 new Company { Name = "Sony Computer Entertainment" },
                 new Company { Name = "Microsoft Studios" },
-                bungie,
-                new Company { Name = "Treyarch" }
+                new Company { Name = "Bungie" },
+                new Company { Name = "Treyarch" },
+                new Company { Name = "Square Enix" },
+                new Company { Name = "Konami" },
+                new Company { Name = "Sega" },
+                new Company { Name = "Bandai Namco" },
+                new Company { Name = "Atari" },
+                new Company { Name = "Capcom" },
+                new Company { Name = "Codemasters" },
+                new Company { Name = "D3" },
+                new Company { Name = "1C" },
+                new Company { Name = "Atlus" },
+                new Company { Name = "Eidos" },
+                new Company { Name = "WB Games" },
+                new Company { Name = "Koei Tecmo" },
+                new Company { Name = "Paradox" },
+                new Company { Name = "SNK" },
+                new Company { Name = "Rare" },
+                new Company { Name = "Supergiant Games" },
+                new Company { Name = "Gaijin Games" },
+                new Company { Name = "Gearbox" },
+                new Company { Name = "Criterion Games" },
+                new Company { Name = "Valve" },
+                new Company { Name = "Hello Games" },
+                new Company { Name = "Klei Entertainment" },
+                new Company { Name = "Squad" },
+                new Company { Name = "Introversion" },
+                new Company { Name = "Double Fine" },
+                new Company { Name = "GSC Game World" },
+                new Company { Name = "CD PROJEKT RED" },
+                new Company { Name = "Croteam" },
+                new Company { Name = "Nadeo" },
+                new Company { Name = "Haemimont Games" },
+                new Company { Name = "PopCap" },
+                new Company { Name = "TellTale Games" },
+                new Company { Name = "Crytek" },
+                new Company { Name = "Robot Entertainment" },
+                new Company { Name = "Firaxis Games" },
+                new Company { Name = "Epic Games" },
+                new Company { Name = "id Software" },
+                new Company { Name = "Vlambeer" },
+                new Company { Name = "3909" },
+                new Company { Name = "Alexander Bruce" },
+                new Company { Name = "Blendo Games" },
+                new Company { Name = "Hidden Path Entertainment" },
+                new Company { Name = "Bethesda Softworks" },
+                new Company { Name = "Polytron Corporation" },
+                new Company { Name = "The Fullbright Company" },
+                new Company { Name = "IO Interactive" },
+                new Company { Name = "Avalanche Studios" },
+                new Company { Name = "Volition" },
+                new Company { Name = "Mike Bithell" },
+                new Company { Name = "Runic Games" },
+                new Company { Name = "Frozen Byte" },
+                new Company { Name = "ACE Team" },
+                new Company { Name = "Zachtronics" },
+                new Company { Name = "Subset Games" },
+                new Company { Name = "Psyonix" },
+                new Company { Name = "Monolith Productions" },
+                new Company { Name = "Bioware" },
+                new Company { Name = "Facepunch Studios" },
+                new Company { Name = "Turn 10 Studios" },
+                new Company { Name = "Lionhead Studios" },
+                new Company { Name = "Fatshark" }
             );
 
             context.Tags.AddOrUpdate(
                 t => t.Name,
-                new Tag { Name = "First Person" },
-                new Tag { Name = "Third Person" },
+                new Tag { Name = "First-Person" },
+                new Tag { Name = "Third-Person" },
                 new Tag { Name = "Shooter" },
                 new Tag { Name = "Simulation" },
                 new Tag { Name = "RTS" },
-                new Tag { Name = "Racing" },
+                new Tag { Name = "Driving/Racing" },
                 new Tag { Name = "RPG" },
                 new Tag { Name = "MMO" },
                 new Tag { Name = "Action" },
@@ -368,7 +424,48 @@ namespace Veil.DataAccess.Migrations
                 new Tag { Name = "2D" },
                 new Tag { Name = "3D" },
                 new Tag { Name = "Turn-Based" },
-                new Tag { Name = "Roguelike" }
+                new Tag { Name = "Roguelike" },
+                new Tag { Name = "Open World" },
+                new Tag { Name = "Baseball" },
+                new Tag { Name = "Basketball" },
+                new Tag { Name = "Billiards" },
+                new Tag { Name = "Block-Breaking" },
+                new Tag { Name = "Bowling" },
+                new Tag { Name = "Boxing" },
+                new Tag { Name = "Brawler" },
+                new Tag { Name = "Card Game" },
+                new Tag { Name = "Compilation" },
+                new Tag { Name = "Cricket" },
+                new Tag { Name = "Dual-Joystick Shooter" },
+                new Tag { Name = "Educational" },
+                new Tag { Name = "Fighting" },
+                new Tag { Name = "Fishing" },
+                new Tag { Name = "Fitness" },
+                new Tag { Name = "Flight Simulator" },
+                new Tag { Name = "Football" },
+                new Tag { Name = "Gambling" },
+                new Tag { Name = "Golf" },
+                new Tag { Name = "Hockey" },
+                new Tag { Name = "Light-Gun Shooter" },
+                new Tag { Name = "Minigame Collection" },
+                new Tag { Name = "MOBA" },
+                new Tag { Name = "Music/Rhythm" },
+                new Tag { Name = "Pinball" },
+                new Tag { Name = "Platformer" },
+                new Tag { Name = "Puzzle" },
+                new Tag { Name = "Shoot 'Em Up" },
+                new Tag { Name = "Skateboarding" },
+                new Tag { Name = "Snowboarding/Skiing" },
+                new Tag { Name = "Soccer" },
+                new Tag { Name = "Sports" },
+                new Tag { Name = "Strategy" },
+                new Tag { Name = "Surfing" },
+                new Tag { Name = "Tennis" },
+                new Tag { Name = "Text Adventure" },
+                new Tag { Name = "Track & Field" },
+                new Tag { Name = "Trivia/Board Game" },
+                new Tag { Name = "Vehicular Combat" },
+                new Tag { Name = "Wrestling" }
             );
 
             context.Roles.AddOrUpdate(
@@ -400,7 +497,8 @@ namespace Veil.DataAccess.Migrations
                 LongDescription = "A mysterious and unstoppable force threatens the galaxy, the Master Chief is missing and his loyalty questioned. Experience the most dramatic Halo story to date in a 4-player cooperative epic that spans three worlds. Challenge friends and rivals in new multiplayer modes: Warzone, massive 24-player battles, and Arena, pure 4-vs-4 competitive combat.",
                 MinimumPlayerCount = 1,
                 MaximumPlayerCount = 24,
-                PrimaryImageURL = "http://edge.alluremedia.com.au/m/k/2015/10/halo-1980x1080.jpg"
+                PrimaryImageURL = "http://edge.alluremedia.com.au/m/k/2015/10/halo-1980x1080.jpg",
+                TrailerURL = "https://www.youtube.com/embed/Rh_NXwqFvHc"
             };
 
             Game vermintide = new Game
@@ -424,7 +522,7 @@ namespace Veil.DataAccess.Migrations
                 MinimumPlayerCount = 1,
                 MaximumPlayerCount = 1,
                 PrimaryImageURL = "http://cdn.akamai.steamstatic.com/steam/apps/377160/header.jpg?t=1446248342",
-                TrailerURL = "http://cdn.akamai.steamstatic.com/steam/apps/256657338/movie480.webm?t=1444922899"
+                TrailerURL = "https://www.youtube.com/embed/k3IlHBBGCIw"
             };
 
             context.Games.AddOrUpdate(
@@ -434,19 +532,27 @@ namespace Veil.DataAccess.Migrations
                 fallout4
             );
 
+            context.SaveChanges();
+
             Tag shooterTag = context.Tags.Find("Shooter");
-            Tag simulationTag = context.Tags.Find("Simulation");
+            Tag firstPerson = context.Tags.Find("First-Person");
+            Tag thirdPerson = context.Tags.Find("Third-Person");
 
             halo5.Tags = halo5.Tags ?? new List<Tag>();
             vermintide.Tags = vermintide.Tags ?? new List<Tag>();
             fallout4.Tags = fallout4.Tags ?? new List<Tag>();
 
-            halo5.Tags.Add(simulationTag);
-            vermintide.Tags.Add(simulationTag);
+            halo5.Tags.Add(firstPerson);
+            halo5.Tags.Add(shooterTag);
             vermintide.Tags.Add(shooterTag);
+            vermintide.Tags.Add(firstPerson);
             fallout4.Tags.Add(shooterTag);
+            fallout4.Tags.Add(thirdPerson);
 
-            bungie = context.Companies.FirstOrDefault(c => c.Name == bungie.Name);
+            Company bungie = context.Companies.FirstOrDefault(c => c.Name == "Bungie");
+            Company fatshark = context.Companies.FirstOrDefault(c => c.Name == "Fatshark");
+            Company bethesda = context.Companies.FirstOrDefault(c => c.Name == "Bethesda Softworks");
+
             halo5 = context.Games.FirstOrDefault(g => g.Name == halo5.Name);
             vermintide = context.Games.FirstOrDefault(g => g.Name == vermintide.Name);
             fallout4 = context.Games.FirstOrDefault(g => g.Name == fallout4.Name);
@@ -455,7 +561,7 @@ namespace Veil.DataAccess.Migrations
             {
                 DeveloperId = bungie.Id,
                 PublisherId = bungie.Id,
-                PlatformCode = ps4.PlatformCode,
+                PlatformCode = "XONE",
                 GameId = halo5.Id,
                 InternalNewSKU = "0000000000001",
                 InteralUsedSKU = "1000000000001",
@@ -464,13 +570,14 @@ namespace Veil.DataAccess.Migrations
                 ProductAvailabilityStatus = AvailabilityStatus.Available,
                 WillBuyBackUsedCopy = true,
                 UsedWebPrice = 50.00m,
-                SKUNameSuffix = "Inventory"
+                SKUNameSuffix = "Launch Edition",
+                BoxArtImageURL = "http://compass.xbox.com/assets/fd/27/fd27fe56-fb0d-48af-aadf-b06c9a9786db.jpg?n=Halo-guardians_digital-boxshot-standard-ed_307x421.jpg"
             };
 
             PhysicalGameProduct vermintideSKU = new PhysicalGameProduct
             {
-                DeveloperId = bungie.Id,
-                PublisherId = bungie.Id,
+                DeveloperId = fatshark.Id,
+                PublisherId = fatshark.Id,
                 PlatformCode = ps4.PlatformCode,
                 GameId = vermintide.Id,
                 InternalNewSKU = "0000000000002",
@@ -480,13 +587,14 @@ namespace Veil.DataAccess.Migrations
                 ProductAvailabilityStatus = AvailabilityStatus.Available,
                 WillBuyBackUsedCopy = true,
                 UsedWebPrice = 50.00m,
-                SKUNameSuffix = "Inventory"
+                SKUNameSuffix = "Launch Edition",
+                BoxArtImageURL = "http://static.giantbomb.com/uploads/scale_super/2/23724/2790382-vermintide_art_big.jpg"
             };
 
             PhysicalGameProduct fallout4SKU = new PhysicalGameProduct
             {
-                DeveloperId = bungie.Id,
-                PublisherId = bungie.Id,
+                DeveloperId = bethesda.Id,
+                PublisherId = bethesda.Id,
                 PlatformCode = ps4.PlatformCode,
                 GameId = fallout4.Id,
                 InternalNewSKU = "0000000000003",
@@ -496,7 +604,8 @@ namespace Veil.DataAccess.Migrations
                 ProductAvailabilityStatus = AvailabilityStatus.Available,
                 WillBuyBackUsedCopy = true,
                 UsedWebPrice = 50.00m,
-                SKUNameSuffix = "Inventory"
+                SKUNameSuffix = "Launch Edition",
+                BoxArtImageURL = "http://ecx.images-amazon.com/images/I/81aoDmHE7hL._SL1500_.jpg"
             };
 
             using (TransactionScope scope = new TransactionScope())

@@ -22,7 +22,7 @@ namespace Veil.DataAccess.Tests
 
         private DateTime releaseDate = new DateTime(635821676576588170L, DateTimeKind.Local);
         private decimal newWebPrice = 1.99m;
-        private int internalSkuNumber = 1;
+        private int internalSkuNumber = 1000;
 
         private PhysicalGameProduct CreateValidPhysicalGameProduct(AvailabilityStatus status)
         {

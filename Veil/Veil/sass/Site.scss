@@ -157,10 +157,9 @@ nav .title-area img {
 /* Transformation for the platform text beside game SKUs */
 @media #{$medium-up} {
     .platform-transform {
-        text-align: center;
-        vertical-align: central;
-        transform:rotate(-90deg)translateX(-50%)translateX(-3.25rem);
-        transform-origin: left top 0;
+        white-space: nowrap;
+        transform: rotate(-90deg) translateX(-90%) translateY(50%);
+        transform-origin: 0% 50% 0;
         float: left;
     }
 }

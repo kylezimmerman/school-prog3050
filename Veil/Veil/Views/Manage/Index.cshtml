@@ -113,76 +113,7 @@
                     }
                 </div>
             </div>
-
-            <div class="row collapse">
-                <div class="medium-3 columns">
-                    <span class="prefix"><strong>External Logins</strong></span>
-                </div>
-                <div class="medium-9 columns">
-                    @Html.ActionLink($"{Model.Logins.Count} [Manage]", "ManageLogins", null, new { @class = "button postfix" })
-                </div>
-            </div>
-
-            <div class="row collapse">
-                <div class="medium-3 columns">
-                    <span class="prefix"><strong>Two Factor Auth</strong></span>
-                </div>
-                <div class="medium-9 columns">
-                    <p class="postfix">
-                        There are no two-factor authentication providers configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
-                        for details.
-                    </p>
-
-                    @*@if (Model.TwoFactor)
-                            {
-                                using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-                                {
-                                    @Html.AntiForgeryToken()
-                                    <text>Enabled
-                                    <input type="submit" value="Disable" class="btn btn-link" />
-                                    </text>
-                                }
-                            }
-                            else
-                            {
-                                using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-                                {
-                                    @Html.AntiForgeryToken()
-                                    <text>Disabled
-                                    <input type="submit" value="Enable" class="btn btn-link" />
-                                    </text>
-                                }
-                        }*@
-                </div>
-            </div>
-
-            @*@if (Model.TwoFactor)
-            {
-                <div class="row collapse">
-                    <div class="medium-3 columns">
-                        <span class="prefix">Browser Remembered</span>
-                    </div>
-                    <div class="medium-9 columns">
-                        @if (Model.BrowserRemembered)
-                        {
-                            using (Html.BeginForm("ForgetBrowser", "Manage", FormMethod.Post))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="postfix">Browser is curently remembered for two factor: Forget Browser</button>
-                            }
-                        }
-                        else
-                        {
-                            using (Html.BeginForm("RememberBrowser", "Manage", FormMethod.Post))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="postfix">Browser is curently not remembered for two factor: Remember Browser</button>
-                            }
-                        }
-                    </div>
-                </div>
-            }*@
-
+            
             <div class="row collapse">
                 <div class="checkbox">
                     @Html.CheckBoxFor(m => m.ReceivePromotionalEmail, new { value = Model.ReceivePromotionalEmail })

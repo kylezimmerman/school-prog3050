@@ -198,7 +198,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             Assert.That(model.OrderCount, Is.EqualTo(1));
             Assert.That(model.Items[0].OrderNumber, Is.EqualTo(orders[0].Id));
             Assert.That(model.StartDate.Value, Is.EqualTo(new DateTime(2015, 10, 10)));
-            Assert.That(model.EndDate.Value, Is.EqualTo(DateTime.Now).Within(1).Minutes);
+            Assert.That(model.EndDate.Value, Is.EqualTo(DateTime.Today.AddDays(1)).Within(1).Seconds);
         }
     }
 }

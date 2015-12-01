@@ -1,3 +1,10 @@
+/* GameProductsController.cs
+ * Purpose: Controller for actions related to the GameProduct model and derived models
+ * 
+ * Revision History:
+ *      Kyle Zimmerman, 2015.11.9: Created
+ */ 
+
 using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
@@ -59,6 +66,16 @@ namespace Veil.Controllers
             return PartialView("_PhysicalGameProductPartial", model);
         }
 
+        /// <summary>
+        ///     Displays a delete confirmation page for the identified game SKU
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game SKU to delete
+        /// </param>
+        /// <returns>
+        ///     The delete confirmation page if a match is found
+        ///     404 Not Found page if a match is not found
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
@@ -78,12 +95,26 @@ namespace Veil.Controllers
             return View(gameProduct);
         }
 
+        /// <summary>
+        ///     Deletes the identified game including all of its empty ProductLocationInventories
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game SKU to delete
+        /// </param>
+        /// <returns>
+        ///     Redirection to Games/Index if successful
+        ///     Redirection to Delete to redisplay the confirmation page if unsuccessful
+        ///     404 Not Found if no game matches the Id
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(Guid id)
         {
-            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == id);
+            GameProduct gameProduct = await db.GameProducts.
+                Include(gp => gp.Game).
+                Include(gp => gp.Platform).
+                SingleOrDefaultAsync(gp => gp.Id == id);
 
             if (gameProduct == null)
             {
@@ -95,16 +126,14 @@ namespace Veil.Controllers
 
             try
             {
-                // TODO: This is new untested code.
                 db.ProductLocationInventories.RemoveRange(
                     await db.ProductLocationInventories.Where(
-                            pli =>
-                                pli.ProductId == id &&
+                        pli =>
+                            pli.ProductId == id &&
                                 pli.NewOnHand == 0 &&
                                 pli.UsedOnHand == 0 &&
                                 pli.NewOnOrder == 0).ToListAsync()
-                );
-                // TODO: End new untested code.
+                    );
 
                 db.GameProducts.Remove(gameProduct);
 
@@ -115,15 +144,15 @@ namespace Veil.Controllers
                 // Get the exception which states if a foreign key constraint was violated
                 SqlException innermostException = ex.GetBaseException() as SqlException;
 
-                bool errorWasProvinceForeignKeyConstraint = false;
+                bool errorWasConstraintViolation = false;
 
                 if (innermostException != null)
                 {
-                    errorWasProvinceForeignKeyConstraint =
-                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
+                    errorWasConstraintViolation =
+                        innermostException.Number == (int) SqlErrorNumbers.ConstraintViolation;
                 }
 
-                if (errorWasProvinceForeignKeyConstraint)
+                if (errorWasConstraintViolation)
                 {
                     this.AddAlert(
                         AlertType.Error,
@@ -132,9 +161,10 @@ namespace Veil.Controllers
                 }
                 else
                 {
-                    this.AddAlert(AlertType.Error, $"There was an error deleting {gameName} for {platform}.");
+                    this.AddAlert(
+                        AlertType.Error, $"There was an error deleting {gameName} for {platform}.");
                 }
-                
+
                 return RedirectToAction("Delete", new { id = id });
             }
 
@@ -177,8 +207,12 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> CreatePhysicalSKU(Guid id, 
-            [Bind(Exclude = nameof(PhysicalGameProduct.NewInventory) + "," + nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> CreatePhysicalSKU(
+            Guid id,
+            [Bind(
+                Exclude =
+                    nameof(PhysicalGameProduct.NewInventory) + "," +
+                        nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
         {
             if (!await db.Games.AnyAsync(g => g.Id == id))
             {
@@ -241,7 +275,7 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind]PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind] PhysicalGameProduct gameProduct)
         {
             if (id == null)
             {

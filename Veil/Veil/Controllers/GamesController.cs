@@ -1,6 +1,5 @@
 ﻿/* GamesController.cs
- * Purpose: Controller for the primarily for the Games model
- *          Also contains actions for GameProduct and derived models
+ * Purpose: Controller for the Games model
  * 
  * Revision History:
  *      Isaac West, 2015.10.13: Created
@@ -20,8 +19,8 @@ using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Transactions;
 using System.Web;
+using System.Web.Routing;
 using LinqKit;
-using Microsoft.Ajax.Utilities;
 using Veil.Extensions;
 using Veil.DataModels;
 
@@ -32,10 +31,12 @@ namespace Veil.Controllers
         private const int GAMES_PER_PAGE = 10;
 
         private readonly IVeilDataAccess db;
+        private readonly IGuidUserIdGetter idGetter;
 
-        public GamesController(IVeilDataAccess veilDataAccess)
+        public GamesController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
+            this.idGetter = idGetter;
         }
 
         public int GamesPerPage { get; set; } = GAMES_PER_PAGE;
@@ -234,6 +235,80 @@ namespace Veil.Controllers
         }
 
         /// <summary>
+        ///     Gets the 10 best matches to the current member's favorite platforms and tags.
+        ///     Current recommendation is sorted as follows:
+        ///         Games with at least one GameSku matching any of the member's favorite platforms
+        ///             AND at least one tag matching the member's favorite tags.
+        ///         Games with at least one tag matching, but no platforms.
+        ///         These first two categories are sorted by the number of tags that match the member's favorites.
+        ///         Games with at least platform matching, but no tags.
+        ///         Each of these three sections are last sorted by release date with newest games first.
+        ///     A game that a member has already purchased (regardless of format) will never be recommended.
+        /// </summary>
+        /// <returns>
+        ///     A view with the filtered list of games
+        /// </returns>
+        [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
+        public async Task<ActionResult> Recommended()
+        {
+            Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
+
+            if (currentMember.FavoritePlatforms.Count + currentMember.FavoriteTags.Count == 0)
+            {
+                this.AddAlert(AlertType.Info, "You do not have any favorite platforms or tags yet.");
+                return RedirectToAction("Index", "Manage");
+            }
+            
+            var tagGames = currentMember.FavoriteTags
+                .SelectMany(t => t.TaggedGames)
+                .Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale)
+                .ToList();
+
+            var platformGames = currentMember.FavoritePlatforms
+                .SelectMany(p => p.GameProducts)
+                .Select(gp => gp.Game)
+                .Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale)
+                .ToList();
+
+            var model = new GameListViewModel
+            {
+                CurrentPage = 1,
+                TotalPages = 1,
+                Games = tagGames.Intersect(platformGames)
+                        .OrderByDescending(g => g.Tags.Intersect(currentMember.FavoriteTags).Count())
+                        .ThenByDescending(g => g.GameSKUs.Min(gp => gp?.ReleaseDate))
+                    .Union(
+                        tagGames.Except(platformGames)
+                        .OrderByDescending(g => g.Tags.Intersect(currentMember.FavoriteTags).Count())
+                        .ThenByDescending(g => g.GameSKUs.Min(gp => gp?.ReleaseDate)))
+                    .Union(
+                        platformGames.Except(tagGames)
+                        .OrderByDescending(g => g.GameSKUs.Min(gp => gp?.ReleaseDate)))
+                    .Except(currentMember.WebOrders.SelectMany(
+                        wo => wo.OrderItems.Select(oi => (oi.Product as GameProduct)?.Game)))
+                    .Take(GamesPerPage)
+            };
+
+            if (!model.Games.Any())
+            {
+                string favoritesLink = HtmlHelper.GenerateLink(
+                    ControllerContext.RequestContext,
+                    RouteTable.Routes,
+                    "platforms and tags.",
+                    null,
+                    "Index",
+                    "Manage",
+                    null,
+                    null);
+
+                this.AddAlert(AlertType.Info, "We don't have any recommendations for you at this time. Try again later or consider updating your favorite ",
+                    favoritesLink);
+            }
+
+            return View("Index", model);
+        }
+
+        /// <summary>
         ///     Displays the details for the specified game, including its SKUs and reviews
         /// </summary>
         /// <param name="id">
@@ -252,7 +327,9 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Game));
             }
 
-            Game game = await db.Games.Include(g => g.GameSKUs)
+            Game game = await db.Games
+                .Include(g => g.ContentDescriptors)
+                .Include(g => g.GameSKUs)
                 .Include(g => g.GameSKUs.Select(sku => sku.Reviews.Select(r => r.Member)))
                 .FirstOrDefaultAsync(g => g.Id == id);
 
@@ -293,6 +370,7 @@ namespace Veil.Controllers
             return View();
         }
 
+        // TODO: Comments
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -316,6 +394,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        // TODO: Comments
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Edit(Guid? id)
         {
@@ -335,9 +414,7 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // POST: Games/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // TODO: Comments
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
@@ -372,6 +449,16 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        /// <summary>
+        ///     Displays a delete confirmation page for the identified game
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game to delete
+        /// </param>
+        /// <returns>
+        ///     The delete confirmation page if a match is found
+        ///     404 Not Found page if a match is not found
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Delete(Guid? id)
         {
@@ -390,6 +477,18 @@ namespace Veil.Controllers
             return View(game);
         }
 
+        /// <summary>
+        ///     Deletes the identified game including all of its SKUs and
+        ///     the empty ProductLocationInventories for those SKUs
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the game to delete
+        /// </param>
+        /// <returns>
+        ///     Redirection to Index if successful
+        ///     Redirection to Delete to redisplay the confirmation page if unsuccessful
+        ///     404 Not Found if no game matches the Id
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -410,7 +509,6 @@ namespace Veil.Controllers
                     {
                         foreach (var gameSKU in game.GameSKUs)
                         {
-                            // TODO: This is new untested code.
                             db.ProductLocationInventories.RemoveRange(
                                 await db.ProductLocationInventories.Where(
                                         pli =>
@@ -419,7 +517,6 @@ namespace Veil.Controllers
                                             pli.UsedOnHand == 0 &&
                                             pli.NewOnOrder == 0).ToListAsync()
                             );
-                            // TODO: End new untested code.
                         }
 
                         db.GameProducts.RemoveRange(game.GameSKUs);
@@ -435,17 +532,15 @@ namespace Veil.Controllers
                     // Get the exception which states if a foreign key constraint was violated
                     SqlException innermostException = ex.GetBaseException() as SqlException;
 
-                    bool errorWasProvinceForeignKeyConstraint = false;
+                    bool errorWasConstraintViolation = false;
 
                     if (innermostException != null)
                     {
-                        string exMessage = innermostException.Message;
-
-                        errorWasProvinceForeignKeyConstraint =
+                        errorWasConstraintViolation =
                             innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation;
                     }
 
-                    if (errorWasProvinceForeignKeyConstraint)
+                    if (errorWasConstraintViolation)
                     {
                         this.AddAlert(
                             AlertType.Error,
@@ -453,11 +548,12 @@ namespace Veil.Controllers
                                 " Consider marking all of its SKUs as not for sale instead.");
                     }
                     else
-                {
-                    this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
+                    {
+                        this.AddAlert(AlertType.Error, "There was an error deleting " + game.Name + ".");
                     }
 
-                    
+                    // We redirection instead of redisplaying because the failed delete removed the
+                    // navigation property values from the game.
                     return RedirectToAction("Delete", new { id = id });
                 }
             }

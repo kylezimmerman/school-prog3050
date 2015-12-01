@@ -6,13 +6,11 @@
  */ 
 
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using Antlr.Runtime;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -73,7 +71,7 @@ namespace Veil.Controllers
         [HttpPost]
         public async Task<ActionResult> GameList(DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
+            end = SetToEndOfDayIfInPast(end);
 
             var viewModel = new DateFilteredListViewModel<GameListViewModel>
             {
@@ -99,19 +97,144 @@ namespace Veil.Controllers
             return View(viewModel);
         }
 
-        //Game Detail report
+        /// <summary>
+        /// Genereates a report showing the number of sales of each SKU for a game.
+        /// </summary>
+        /// <param name="gameGuid">The GUID of a game.</param>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpGet]
-        public ActionResult GameDetail(Guid gameGuid)
+        public async Task<ActionResult> GameDetail(Guid gameGuid)
         {
-            return View();
+            var viewModel = new GameDetailViewModel
+            {
+                Game = await db.Games.FirstOrDefaultAsync(g => g.Id == gameGuid),
+                Items = await db.GameProducts
+                    .Where(gp => gp.GameId == gameGuid)
+                    .Select(
+                        gp =>
+                            new GameDetailRowViewModel
+                            {
+                                GameProduct = gp,
+                                NewQuantity = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                NewSales = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedQuantity = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedSales = db.WebOrders
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
+        /// <summary>
+        /// /// Genereates a report showing the number of sales of each SKU for a game, filtered by a date range.
+        /// </summary>
+        /// <param name="gameGuid">The GUID of a game.</param>
+        /// <param name="start">The date to start the filter range (inclusive).</param>
+        /// <param name="end">The date to end the filter range (inclusive).</param>
+        /// <returns>A view displaying the generated report.</returns>
         [HttpPost]
-        public ActionResult GameDetail(DateTime start, DateTime? end)
+        public async Task<ActionResult> GameDetail(Guid gameGuid, DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
+            end = SetToEndOfDayIfInPast(end);
 
-            return View();
+            var viewModel = new GameDetailViewModel
+            {
+                StartDate = start,
+                EndDate = end,
+                Game = await db.Games.FirstOrDefaultAsync(g => g.Id == gameGuid),
+                Items = await db.GameProducts
+                    .Where(gp => gp.GameId == gameGuid)
+                    .Select(
+                        gp =>
+                            new GameDetailRowViewModel
+                            {
+                                GameProduct = gp,
+                                NewQuantity = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                NewSales = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedQuantity = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum(),
+                                UsedSales = db.WebOrders
+                                    .Where(wo => wo.OrderDate >= start && wo.OrderDate <= end)
+                                    .Where(
+                                        wo =>
+                                            wo.OrderStatus != OrderStatus.EmployeeCancelled ||
+                                            wo.OrderStatus != OrderStatus.UserCancelled)
+                                    .SelectMany(wo => wo.OrderItems
+                                        .Where(oi => oi.ProductId == gp.Id))
+                                    .Where(oi => !oi.IsNew)
+                                    .Select(oi => oi.ListPrice * oi.Quantity)
+                                    .DefaultIfEmpty(0).Sum()
+                            }
+                    ).ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
         /// <summary>
@@ -158,21 +281,21 @@ namespace Veil.Controllers
         ///     Generates a report showing all <see cref="DataModels.Models.Member"/>s,
         ///     their names, total order count, total spent on orders, and average order amount from 
         ///     <see cref="DataModels.Models.WebOrder"/>s between the <see cref="start"/> date and 
-        ///     <see cref="end"/> date
+        ///     <see cref="optionalEnd"/> date
         /// </summary>
         /// <param name="start">
         ///     The start date to filter the <see cref="DataModels.Models.WebOrder"/>s by
         /// </param>
-        /// <param name="end">
+        /// <param name="optionalEnd">
         ///     Optional. The end date to filter the <see cref="DataModels.Models.WebOrder"/>s by. Defaults to Now.
         /// </param>
         /// <returns>
         ///     A view displaying the generated report
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult> MemberList(DateTime start, DateTime? end)
+        public async Task<ActionResult> MemberList(DateTime start, DateTime? optionalEnd)
         {
-            end = end ?? DateTime.Now;
+            DateTime end = SetToEndOfDayIfInPast(optionalEnd);
 
             var viewModel = new DateFilteredListViewModel<MemberListItemViewModel>
             {
@@ -259,10 +382,26 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        ///     Displays a report of all orders made by a member between specified dates as well as member
+        ///     information such as name, favorite tags, and favorite platforms
+        /// </summary>
+        /// <param name="username">
+        ///     The username of the member to view information of
+        /// </param>
+        /// <param name="start">
+        ///     The earliest time to include orders from
+        /// </param>
+        /// <param name="end">
+        ///     The latest time to include orders from
+        /// </param>
+        /// <returns>
+        ///     A view presenting the member's information, with orders filtered between dates
+        /// </returns>
         [HttpPost]
         public async Task<ActionResult> MemberDetail(string username, DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
+            end = SetToEndOfDayIfInPast(end);
 
             if (username == null)
             {
@@ -422,7 +561,7 @@ namespace Veil.Controllers
         [HttpPost]
         public async Task<ActionResult> Sales(DateTime start, DateTime? end)
         {
-            end = end ?? DateTime.Now;
+            end = SetToEndOfDayIfInPast(end);
 
             var model = new SalesViewModel
             {
@@ -444,5 +583,17 @@ namespace Veil.Controllers
 
             return View(model);
         }
+
+        private DateTime SetToEndOfDayIfInPast(DateTime? value)
+        {
+            DateTime end = value?.Date ?? DateTime.Today;
+
+            // Prevent under/overflowing MinValue and MaxValue
+            return end == DateTime.MinValue.Date 
+                ? end.AddDays(1).AddTicks(-1) 
+                : end.AddTicks(-1).AddDays(1);
+        }
     }
+
+    
 }

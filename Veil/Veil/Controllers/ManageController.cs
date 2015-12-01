@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Caching;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -47,7 +46,7 @@ namespace Veil.Controllers
 
         //
         // GET: /Manage/Index
-        public async Task<ActionResult> Index(ManageMessageId? message)
+        public async Task<ActionResult> Index(ManageController.ManageMessageId? message)
         {
             switch (message)
             {
@@ -612,7 +611,7 @@ namespace Veil.Controllers
             catch (StripeException ex)
             {
                 // Note: Stripe says their card_error messages are safe to display to the user
-                if (ex.StripeError.Code == "card_error")
+                if (ex.StripeError.ErrorType == "card_error")
                 {
                     this.AddAlert(AlertType.Error, ex.Message);
                     ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
@@ -634,6 +633,12 @@ namespace Veil.Controllers
             return RedirectToAction("ManageCreditCards");
         }
 
+        /// <summary>
+        ///     Allows a member to update their favorite platforms
+        /// </summary>
+        /// <returns>
+        ///     A view containing a form to set favorite platforms
+        /// </returns>
         public async Task<ActionResult> ManagePlatforms()
         {
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
@@ -641,6 +646,15 @@ namespace Veil.Controllers
             return View(currentMember.FavoritePlatforms.ToList());
         }
 
+        /// <summary>
+        ///     Persists the selected platfroms as the member's new favorites
+        /// </summary>
+        /// <param name="platforms">
+        ///     An updated list of the member's favorite platforms
+        /// </param>
+        /// <returns>
+        ///     Redirects to the index view.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ManagePlatforms(List<string> platforms)
@@ -663,6 +677,12 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        ///     Allows a member to update their favorite tags
+        /// </summary>
+        /// <returns>
+        ///     A view containing a form to set favorite tags
+        /// </returns>
         public async Task<ActionResult> ManageTags()
         {
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
@@ -670,6 +690,15 @@ namespace Veil.Controllers
             return View(currentMember.FavoriteTags.ToList());
         }
 
+        /// <summary>
+        ///     Persists the selected tags as the member's new favorites
+        /// </summary>
+        /// <param name="tags">
+        ///     An updated list of the member's favorite tags
+        /// </param>
+        /// <returns>
+        ///     Redirects to the index view.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ManageTags(List<string> tags)
@@ -691,30 +720,7 @@ namespace Veil.Controllers
 
             return RedirectToAction("Index");
         }
-
-        //
-        // POST: /Manage/LinkLogin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult LinkLogin(string provider)
-        {
-            // Request a redirect to the external login provider to link a login for the current user
-            return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), GetUserId().ToString());
-        }
-
-        //
-        // GET: /Manage/LinkLoginCallback
-        public async Task<ActionResult> LinkLoginCallback()
-        {
-            var loginInfo = await signInManager.AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, GetUserId().ToString());
-            if (loginInfo == null)
-            {
-                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
-            }
-            var result = await userManager.AddLoginAsync(GetUserId(), loginInfo.Login);
-            return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
-        }
-
+        
         //
         // POST: /Manage/RememberBrowser
         [HttpPost]
@@ -739,9 +745,6 @@ namespace Veil.Controllers
         }
 
         #region Helpers
-        // Used for XSRF protection when adding external logins
-        private const string XsrfKey = "XsrfId";
-
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)

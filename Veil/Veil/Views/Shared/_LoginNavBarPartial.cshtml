@@ -39,6 +39,9 @@
                 @if (User.IsInRole(VeilRoles.MEMBER_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
                 {
                     <li>
+                        @Html.ActionLink("Recommended For You", "Recommended", new { Controller = "Games" })
+                    </li>
+                    <li>
                         @Html.ActionLink("Friends", "Index", new {Controller = "FriendList"})
                     </li>
                     <li>

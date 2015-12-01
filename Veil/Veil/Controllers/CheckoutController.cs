@@ -346,11 +346,9 @@ namespace Veil.Controllers
                 catch (StripeException ex)
                 {
                     // Note: Stripe says their card_error messages are safe to display to the user
-                    if (ex.StripeError.Code == "card_error")
+                    if (ex.StripeError.ErrorType == "card_error")
                     {
                         this.AddAlert(AlertType.Error, ex.Message);
-                        ModelState.AddModelError(ManageController.STRIPE_ISSUES_MODELSTATE_KEY,
-                            ex.Message);
                     }
                     else
                     {
@@ -642,11 +640,22 @@ namespace Veil.Controllers
                 }
                 catch (StripeException ex)
                 {
-                    // TODO: Look into the error returned due to a declined card
-                    // TODO: We would want to log this
-                    this.AddAlert(AlertType.Error,
-                        "An error occured while talking to one of our backends. Sorry!");
+                    // Note: Stripe says their card_error messages are safe to display to the user
+                    if (ex.StripeError.ErrorType == "card_error")
+                    {
+                        this.AddAlert(AlertType.Error, ex.Message);
 
+                        ModelState.AddModelError(
+                            ManageController.STRIPE_ISSUES_MODELSTATE_KEY,
+                            ex.Message);
+                    }
+                    else
+                    {
+                        // TODO: We would want to log this
+                        this.AddAlert(AlertType.Error,
+                            "An error occured while talking to one of our backends. Sorry!");
+                    }
+                    
                     return RedirectToAction("ConfirmOrder");
                 }
 
