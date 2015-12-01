@@ -38,12 +38,9 @@
         }
         else
         {
-            using (Html.BeginForm("Register", "Events", FormMethod.Post))
-            {
-                @Html.AntiForgeryToken()
-                @Html.Hidden("id", Model.Event.Id)
-                <button type="submit" class="expand">Register</button>
-            }
+            @Html.ActionLink("Register", "Register", "Events",
+                    new { Id = Model.Event.Id },
+                    new { @class = "button expand" })
         }
     </div>
 </div>

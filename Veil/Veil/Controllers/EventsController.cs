@@ -146,8 +146,6 @@ namespace Veil.Controllers
         ///     404 Not Found view if the id does not match an Event
         /// </returns>
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(Guid? id)
         {
             if (id == null)

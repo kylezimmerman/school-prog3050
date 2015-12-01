@@ -46,7 +46,7 @@ namespace Veil.Controllers
 
         //
         // GET: /Manage/Index
-        public async Task<ActionResult> Index(ManageMessageId? message)
+        public async Task<ActionResult> Index(ManageController.ManageMessageId? message)
         {
             switch (message)
             {
@@ -119,21 +119,23 @@ namespace Veil.Controllers
 
             if (user == null)
             {
-                throw new HttpException(NotFound, "No user found with that ID");
+                // If this happens, the user has been deleted in the database but still has a valid login cookie
+                signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                return RedirectToAction("Index", "Home");
             }
-         
+            if (user.Member == null) 
+            {
+                this.AddAlert(AlertType.Error, "Employees do not have profiles to view you have been redirected to the home page");
+                return RedirectToAction("Index", "Home");
+            }
             if (ModelState.IsValid)
             {
                 user.FirstName = viewModel.MemberFirstName;
                 user.LastName = viewModel.MemberLastName;
-                user.PhoneNumber = viewModel.PhoneNumber;    
+                user.PhoneNumber = viewModel.PhoneNumber;
+                user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
+                user.Member.WishListVisibility = viewModel.MemberVisibility;
 
-                if (user.Member != null)
-                {
-                    user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
-                    user.Member.WishListVisibility = viewModel.MemberVisibility;
-                }
-              
                 if (user.Email != viewModel.MemberEmail)
                 {
                     //runs if newEmail was not null or empty and and the new email property is different than the one being set
@@ -142,11 +144,9 @@ namespace Veil.Controllers
                         //invalidates confirmation email stamp
                         await userManager.UpdateSecurityStampAsync(userId);
                     }
-
                     user.NewEmail = viewModel.MemberEmail;
                     isNewEmail = true;
                 }
-
                 try
                 {
                     db.MarkAsModified(user);
@@ -154,38 +154,25 @@ namespace Veil.Controllers
                     if (isNewEmail)
                     {
                         await SendConfirmationEmail(user);
-                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to " + user.NewEmail + 
-                            ", you can continue logging into your Veil account using "+ user.Email +" to login until you confirm the new email address");
+                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to " + user.NewEmail +
+                                                      ", you can continue logging into your Veil account using " +
+                                                      user.Email + " to login until you confirm the new email address");
                     }
                     this.AddAlert(AlertType.Success, "Your Profile has been updated");
                 }
                 catch (Exception e)
                 {
-                    this.AddAlert(AlertType.Error, e.ToString());
+                    this.AddAlert(AlertType.Error, "An Error occurred while trying to save your changes");
                 }
-            }                 
+            }
+            else
+            {
+                this.AddAlert(AlertType.Error, "A manadatory field was empty");
+            }                         
             return RedirectToAction("Index", new { Message = message });
         }
     
-        private async Task SendConfirmationEmail(User user)
-        {
-            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-            // Send an email with this link
-            string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ConfirmNewEmail", "Manage",
-                new
-                {
-                    userId = user.Id,
-                    code = code
-                },
-                protocol: Request.Url.Scheme);
-
-            await userManager.SendNewEmailConfirmationEmail(user.NewEmail,
-                "Veil - Email change request",
-                "<h1>Confirm this email to rejoin us at Veil</h1>" +
-                "An email change request has been made for this address if you requested this please click <a href=\"" + callbackUrl + "\">here</a>" +
-                "<br/> **Note once you click this link you need to use this email address to log in to Veil");
-        }
+       
 
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmNewEmail(Guid userId, string code)
@@ -204,6 +191,11 @@ namespace Veil.Controllers
             }
 
             var user = await userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             user.Email = user.NewEmail;
             user.NewEmail = null;
@@ -619,7 +611,7 @@ namespace Veil.Controllers
             catch (StripeException ex)
             {
                 // Note: Stripe says their card_error messages are safe to display to the user
-                if (ex.StripeError.Code == "card_error")
+                if (ex.StripeError.ErrorType == "card_error")
                 {
                     this.AddAlert(AlertType.Error, ex.Message);
                     ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
@@ -728,30 +720,7 @@ namespace Veil.Controllers
 
             return RedirectToAction("Index");
         }
-
-        //
-        // POST: /Manage/LinkLogin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult LinkLogin(string provider)
-        {
-            // Request a redirect to the external login provider to link a login for the current user
-            return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), GetUserId().ToString());
-        }
-
-        //
-        // GET: /Manage/LinkLoginCallback
-        public async Task<ActionResult> LinkLoginCallback()
-        {
-            var loginInfo = await signInManager.AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, GetUserId().ToString());
-            if (loginInfo == null)
-            {
-                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
-            }
-            var result = await userManager.AddLoginAsync(GetUserId(), loginInfo.Login);
-            return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
-        }
-
+        
         //
         // POST: /Manage/RememberBrowser
         [HttpPost]
@@ -776,9 +745,6 @@ namespace Veil.Controllers
         }
 
         #region Helpers
-        // Used for XSRF protection when adding external logins
-        private const string XsrfKey = "XsrfId";
-
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)
@@ -821,6 +787,26 @@ namespace Veil.Controllers
             RemoveLoginSuccess,
             RemovePhoneSuccess,
             Error
+        }
+
+        private async Task SendConfirmationEmail(User user)
+        {
+            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+            // Send an email with this link
+            string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
+            var callbackUrl = Url.Action("ConfirmNewEmail", "Manage",
+                new
+                {
+                    userId = user.Id,
+                    code = code
+                },
+                protocol: Request.Url.Scheme);
+
+            await userManager.SendNewEmailConfirmationEmailAsync(user.NewEmail,
+                "Veil - Email change request",
+                "<h1>Confirm this email to rejoin us at Veil</h1>" +
+                "An email change request has been made for this address if you requested this please click <a href=\"" + callbackUrl + "\">here</a>" +
+                "<br/> **Note once you click this link you need to use this email address to log in to Veil");
         }
         #endregion
     }
