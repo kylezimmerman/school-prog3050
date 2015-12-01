@@ -1478,7 +1478,7 @@ namespace Veil.Tests.Controllers
                 HttpStatusCode.BadRequest,
                 new StripeError
                 {
-                    Code = "card_error"
+                    ErrorType = "card_error"
                 },
                 stripeErrorMessage);
 

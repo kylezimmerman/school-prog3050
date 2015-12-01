@@ -12,12 +12,7 @@
         <li class="has-dropdown">
             <a href="#">My Stuff</a>
             <ul class="dropdown">
-                @if (Context.IsDebuggingEnabled)
-                {
-                    <li style="color:white;">Debugging is Enabled</li>
-                }
-
-                @if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+                @if (User.IsInRole(VeilRoles.EMPLOYEE_ROLE))
                 {
                     <li>
                         @Html.ActionLink("Create Game", "Create", new { Controller = "Games" })
@@ -36,7 +31,7 @@
                     </li>
                 }
 
-                @if (User.IsInRole(VeilRoles.MEMBER_ROLE) || this.Context.IsDebuggingEnabled) /* TODO: Remove the debugging check */
+                @if (User.IsInRole(VeilRoles.MEMBER_ROLE))
                 {
                     <li>
                         @Html.ActionLink("Recommended For You", "Recommended", new { Controller = "Games" })

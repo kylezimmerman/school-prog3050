@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
@@ -14,6 +15,7 @@ using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
@@ -938,6 +940,45 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
                 Throws.Nothing,
                 "This test should not touch the member's credit cards." +
                 " It has been set up to throw when trying to select from member.CreditCards by setting that to null");
+        }
+
+        [Test]
+        public async void PlaceOrder_StripeChargeCardThrowsCardError_AddsCardErrorMessageToAlertMessages()
+        {
+            string stripeErrorMessage = "A card error message";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            StripeException exception = new StripeException(
+                HttpStatusCode.BadRequest,
+                new StripeError
+                {
+                    ErrorType = "card_error"
+                },
+                stripeErrorMessage);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(controller.TempData[AlertHelper.ALERT_MESSAGE_KEY], Has.Some.Matches<AlertMessage>(am => am.Message == stripeErrorMessage));
         }
 
         [Test]

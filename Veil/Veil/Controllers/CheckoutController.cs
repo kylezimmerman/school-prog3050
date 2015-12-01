@@ -641,7 +641,7 @@ namespace Veil.Controllers
                 catch (StripeException ex)
                 {
                     // Note: Stripe says their card_error messages are safe to display to the user
-                    if (ex.StripeError.ErrorType == "card_error")
+                    if (ex.StripeError?.ErrorType == "card_error")
                     {
                         this.AddAlert(AlertType.Error, ex.Message);
 

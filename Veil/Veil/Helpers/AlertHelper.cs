@@ -44,9 +44,11 @@ namespace Veil.Helpers
 
     public static class AlertHelper
     {
+        public const string ALERT_MESSAGE_KEY = "AlertMessages";
+
         public static void AddAlert(this Controller controller, AlertType type, string message, string link = null)
         {
-            List<AlertMessage> alerts = controller.TempData["AlertMessages"] as List<AlertMessage> ?? new List<AlertMessage>();
+            List<AlertMessage> alerts = controller.TempData[ALERT_MESSAGE_KEY] as List<AlertMessage> ?? new List<AlertMessage>();
             alerts.Add(new AlertMessage() {Type = type, Message = message, Link = link});
             controller.TempData["AlertMessages"] = alerts;
         }

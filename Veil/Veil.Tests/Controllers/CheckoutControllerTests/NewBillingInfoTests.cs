@@ -10,6 +10,7 @@ using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Helpers;
 using Veil.Models;
 using Veil.Services.Interfaces;
 
@@ -138,7 +139,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
         }
 
         [Test]
-        public async void NewBillingInfo_StripeExceptionCardError_AddsCardErrorMessageToModelState()
+        public async void NewBillingInfo_StripeExceptionCardError_AddsCardErrorMessageToAlertMessages()
         {
             Member currentMember = member;
             string cardToken = "cardToken";
@@ -153,7 +154,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
                 HttpStatusCode.BadRequest,
                 new StripeError
                 {
-                    Code = "card_error"
+                    ErrorType = "card_error"
                 },
                 stripeErrorMessage);
 
@@ -166,7 +167,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
 
             await controller.NewBillingInfo(cardToken, saveCard: true);
 
-            Assert.That(controller.ModelState[ManageController.STRIPE_ISSUES_MODELSTATE_KEY].Errors, Has.Some.Matches<ModelError>(modelError => modelError.ErrorMessage == stripeErrorMessage));
+            Assert.That(controller.TempData[AlertHelper.ALERT_MESSAGE_KEY], Has.Some.Matches<AlertMessage>(am => am.Message == stripeErrorMessage));
         }
 
         [Test]
