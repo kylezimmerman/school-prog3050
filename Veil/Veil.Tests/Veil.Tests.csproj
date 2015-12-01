@@ -169,6 +169,7 @@
     <Compile Include="Controllers\GamesControllerTests\DeleteTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\DetailsTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\EditTests.cs" />
+    <Compile Include="Controllers\GamesControllerTests\RecommendedTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\IndexTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\SearchTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\_GamesControllerTestsBase.cs" />

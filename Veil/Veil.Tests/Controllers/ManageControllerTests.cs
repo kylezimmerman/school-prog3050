@@ -5,9 +5,11 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security;
 using Moq;
 using NUnit.Framework;
 using Stripe;
@@ -1659,10 +1661,272 @@ namespace Veil.Tests.Controllers
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();   
-            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
 
             userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
             dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.UpdateProfile(viewModel) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void UpdateProfile_NullUser()
+        {
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberEmail = "person@email.com",
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmals = true
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
+
+            authenticationManagerStub.Setup(am => am.SignOut(It.IsAny<string>()));
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(null);
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerStub.Object, authenticationManagerStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            ManageController controller = new ManageController(userManagerStub.Object, signInManagerStub.Object, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.UpdateProfile(viewModel) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void UpdateProfile_MemberNull()
+        {
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberEmail = "person@email.com",
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmals = true
+            };
+
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com",
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object
+            };
+
+            var result = await controller.UpdateProfile(viewModel) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void UpdateProfile_SetNewEmail()
+        {
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberEmail = "newEmail@email.com",
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmals = true
+            };
+
+            Member member = new Member()
+            {
+                UserId = memberId,
+                WishListVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmails = true
+            };
+
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com",
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            userManagerStub.Setup(um => um.GenerateEmailConfirmationTokenAsync(It.IsAny<Guid>())).ReturnsAsync("emailToken");
+            userManagerStub.Setup(um => um.SendNewEmailConfirmationEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(0));
+
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+            Uri requestUrl = new Uri("http://localhost/");
+            Mock<HttpRequestBase> requestStub = new Mock<HttpRequestBase>();
+            requestStub.SetupGet(r => r.Url).Returns(requestUrl);
+            context.SetupGet(c => c.HttpContext.Request).Returns(requestStub.Object);
+
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object,
+                Url = urlHelperStub.Object
+            };
+
+            var result = await controller.UpdateProfile(viewModel) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+        [Test]
+        public async void UpdateProfile_ReplaceNewEmailWithNewerEmail()
+        {
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberEmail = "newerEmail@email.com",
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmals = true
+            };
+
+            Member member = new Member()
+            {
+                UserId = memberId,
+                WishListVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmails = true
+            };
+
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com",
+                Member = member,
+                NewEmail = "newEmail@email.com"
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            userManagerStub.Setup(um => um.GenerateEmailConfirmationTokenAsync(It.IsAny<Guid>())).ReturnsAsync("emailToken");
+            userManagerStub.Setup(um => um.SendNewEmailConfirmationEmailAsync (It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(0));
+
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+            Uri requestUrl = new Uri("http://localhost/");
+            Mock<HttpRequestBase> requestStub = new Mock<HttpRequestBase>();
+            requestStub.SetupGet(r => r.Url).Returns(requestUrl);
+            context.SetupGet(c => c.HttpContext.Request).Returns(requestStub.Object);
+
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object,
+                Url = urlHelperStub.Object
+            };
+
+            var result = await controller.UpdateProfile(viewModel) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+        [Test]
+        public async void UpdateProfile_CatchOnSave()
+        {
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberEmail = "person@email.com",
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmals = true
+            };
+
+            Member member = new Member()
+            {
+                UserId = memberId,
+                WishListVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmails = true
+            };
+
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com",
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+            dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
             context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
@@ -1784,10 +2048,64 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        [Ignore]
         public async void ManagePlatformsPOST_RemovePlatforms_ReturnsUpdatedModel()
         {
-            // TODO
+            List<Platform> platforms = new List<Platform>
+            {
+                new Platform
+                {
+                    PlatformCode = "TPlat",
+                    PlatformName = "Test Platform"
+                },
+                new Platform
+                {
+                    PlatformCode = "2Plat",
+                    PlatformName = "Second Platform"
+                }
+            };
+
+            List<string> platformStrings = new List<string>
+            {
+                "TPlat"
+            };
+
+            Member member = new Member
+            {
+                UserId = memberId,
+                FavoritePlatforms = new List<Platform>
+                {
+                    platforms[0],
+                    platforms[1]
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Platform>> platformDbSetStub = TestHelpers.GetFakeAsyncDbSet(platforms.AsQueryable());
+            dbStub.Setup(db => db.Platforms).Returns(platformDbSetStub.Object);
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null,
+                veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ManagePlatforms(platformStrings);
+
+            Assert.That(member.FavoritePlatforms.Count, Is.EqualTo(1));
+            Assert.That(member.FavoritePlatforms.Any(p => p.PlatformCode == "TPlat"));
+            Assert.That(member.FavoritePlatforms.All(p => p.PlatformCode != "2Plat"));
         }
 
         [Test]
@@ -1944,10 +2262,61 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        [Ignore]
         public async void ManageTagsPOST_RemoveTags_ReturnsUpdatedModel()
         {
-            // TODO
+            List<Tag> tags = new List<Tag>
+            {
+                new Tag
+                {
+                    Name = "Test Tag"
+                },
+                new Tag
+                {
+                    Name = "Second Tag"
+                }
+            };
+
+            List<string> tagStrings = new List<string>
+            {
+                "Test Tag"
+            };
+
+            Member member = new Member
+            {
+                UserId = memberId,
+                FavoriteTags = new List<Tag>
+                {
+                    tags[0]
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Tag>> tagDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
+            dbStub.Setup(db => db.Tags).Returns(tagDbSetStub.Object);
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null,
+                veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ManageTags(tagStrings);
+
+            Assert.That(member.FavoriteTags.Count, Is.EqualTo(1));
+            Assert.That(member.FavoriteTags.Any(t => t.Name == "Test Tag"));
+            Assert.That(member.FavoriteTags.All(t => t.Name != "Second Tag"));
         }
 
         [Test]

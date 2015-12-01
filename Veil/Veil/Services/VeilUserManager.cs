@@ -69,7 +69,8 @@ namespace Veil.Services
             }
         }
 
-        public Task SendNewEmailConfirmationEmail(string address, string title, string body)
+        
+        public virtual Task SendNewEmailConfirmationEmailAsync(string address, string title, string body)
         {
             IdentityMessage message = new IdentityMessage();
 
