@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
-using Microsoft.Owin.Security;
 using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
@@ -499,6 +498,8 @@ namespace Veil.Controllers
         ///     Redirection to ManageAddresses if successful
         ///     404 Not Found view if the id does not match a credit card
         /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteAddress(Guid id)
         {
             MemberAddress address = await db.MemberAddresses.FindAsync(id);
@@ -606,6 +607,8 @@ namespace Veil.Controllers
         ///     A redirection back to ManageCreditCards if successful.
         ///     404 Not Found view if the id does not match a credit card
         /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteCreditCard(Guid id)
         {
             MemberCreditCard card = await db.MemberCreditCards.FindAsync(id);
