@@ -44,6 +44,25 @@ namespace Veil.Controllers
         private readonly IShippingCostService shippingCostService;
         private readonly VeilUserManager userManager;
 
+        /// <summary>
+        ///     Instantiates a new instance of CheckoutController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
+        /// <param name="stripeService">
+        ///     The <see cref="IStripeService"/> to use for Stripe interaction
+        /// </param>
+        /// <param name="shippingCostService">
+        ///     The <see cref="IShippingCostService"/> to use for getting the shipping cost for
+        ///     the items in the cart
+        /// </param>
+        /// <param name="userManager">
+        ///     The <see cref="VeilUserManager"/> to use for sending an order confirmation email
+        /// </param>
         public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter,
             IStripeService stripeService, IShippingCostService shippingCostService,
             VeilUserManager userManager)

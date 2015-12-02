@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* AccountController.cs
+ * Purpose: Controller for account related actions
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.09.25: Created
+ */ 
+
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
@@ -17,13 +24,13 @@ using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to Accounts including logging in and registering
+    /// </summary>
     [Authorize]
     public class AccountController : Controller
     {
-        /* This must be kept in sync with the value used in _LoginAccountPartial */
         public const string LOGIN_MODEL_ERRORS_KEY = "loginModel";
-
-        /* This must be kept in sync with the value used in _RegisterAccountParial */
         public const string REGISTER_MODEL_ERRORS_KEY = "registerModel";
 
         private readonly VeilSignInManager signInManager;
@@ -36,7 +43,8 @@ namespace Veil.Controllers
         /// <param name="userManager">The UserManager for the controller to use</param>
         /// <param name="signInManager">The SingInManager for the controller to use</param>
         /// <param name="stripeService">The IStripeService for the controller to use</param>
-        public AccountController(VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService)
+        public AccountController(
+            VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
@@ -61,11 +69,12 @@ namespace Veil.Controllers
             }
 
             ViewBag.ReturnUrl = returnUrl;
-            return View(new LoginRegisterViewModel
-            {
-                LoginViewModel = new LoginViewModel(),
-                RegisterViewModel = new RegisterViewModel()
-            });
+            return View(
+                new LoginRegisterViewModel
+                {
+                    LoginViewModel = new LoginViewModel(),
+                    RegisterViewModel = new RegisterViewModel()
+                });
         }
 
         /// <summary>
@@ -124,7 +133,7 @@ namespace Veil.Controllers
                     // To enable password failures to trigger account lockout, change to shouldLockout: true
                     result =
                         await signInManager.PasswordSignInAsync(
-                                user.UserName, model.LoginPassword, model.RememberMe, shouldLockout: false);
+                            user.UserName, model.LoginPassword, model.RememberMe, shouldLockout: false);
                 }
                 else
                 {
@@ -135,7 +144,8 @@ namespace Veil.Controllers
                 }
             }
 
-            if (result == SignInStatus.Success && await userManager.IsInRoleAsync(user.Id, VeilRoles.MEMBER_ROLE))
+            if (result == SignInStatus.Success &&
+                await userManager.IsInRoleAsync(user.Id, VeilRoles.MEMBER_ROLE))
             {
                 // Set the Cart Quantity in the Session for use in the NavBar
                 Session[CartController.CART_QTY_SESSION_KEY] = user.Member.Cart.Items.Count;
@@ -225,7 +235,9 @@ namespace Veil.Controllers
 
                 // We need a transaction as we don't want to create the User if we fail to create and
                 // save a Stripe customer for them
-                using (TransactionScope stripeCustomerScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                using (
+                    TransactionScope stripeCustomerScope =
+                        new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     result = await userManager.CreateAsync(user, model.Password);
 
@@ -239,11 +251,12 @@ namespace Veil.Controllers
                         }
                         catch (StripeException ex)
                         {
-                            if (ex.HttpStatusCode >= HttpStatusCode.InternalServerError 
-                                || (int)ex.HttpStatusCode == 429 /* Too Many Requests */ 
-                                || (int)ex.HttpStatusCode == 402 /* Request Failed */)
+                            if (ex.HttpStatusCode >= HttpStatusCode.InternalServerError
+                                || (int) ex.HttpStatusCode == 429 /* Too Many Requests */
+                                || (int) ex.HttpStatusCode == 402 /* Request Failed */)
                             {
-                                ModelState.AddModelError(REGISTER_MODEL_ERRORS_KEY,
+                                ModelState.AddModelError(
+                                    REGISTER_MODEL_ERRORS_KEY,
                                     "An error occured while creating a customer account for you. Please try again later.");
                             }
                             else if (ex.HttpStatusCode == HttpStatusCode.Unauthorized)
@@ -263,7 +276,8 @@ namespace Veil.Controllers
                                 Debug.WriteLine($"Stripe Code: {ex.StripeError.Code}");
                                 Debug.WriteLine($"Stripe Param: {ex.StripeError.Parameter}");
 
-                                ModelState.AddModelError(REGISTER_MODEL_ERRORS_KEY, 
+                                ModelState.AddModelError(
+                                    REGISTER_MODEL_ERRORS_KEY,
                                     "An unknown error occured while creating a customer account for you. Please try again later.");
                             }
 
@@ -346,7 +360,7 @@ namespace Veil.Controllers
 
             // Need to cast the email to object otherwise the method 
             // interprets it as masterName instead of model
-            return View("ConfirmResendConfirmationEmail", (object)emailAddress);
+            return View("ConfirmResendConfirmationEmail", (object) emailAddress);
         }
 
         /// <summary>
@@ -465,17 +479,20 @@ namespace Veil.Controllers
             // Send an email with this link
             string code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
 
-            var callbackUrl = Url.Action("ResetPassword", "Account",
+            var callbackUrl = Url.Action(
+                "ResetPassword", "Account",
                 new
                 {
                     userId = user.Id,
                     code = code
                 },
-                protocol: Request.Url.Scheme);	
-                	
-            await userManager.SendEmailAsync(user.Id,
+                protocol: Request.Url.Scheme);
+
+            await userManager.SendEmailAsync(
+                user.Id,
                 "Veil - Password Reset",
-                "Please reset your Veil account password by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                "Please reset your Veil account password by clicking <a href=\"" + callbackUrl +
+                    "\">here</a>");
 
             return RedirectToAction("ForgotPasswordConfirmation");
         }
@@ -577,7 +594,7 @@ namespace Veil.Controllers
 
             return RedirectToAction("Index", "Home");
         }
-        
+
         /// <summary>
         ///     Ensures the user is only in the member or employee roles if they are a member or an employee
         /// </summary>
@@ -587,7 +604,7 @@ namespace Veil.Controllers
         /// <returns>
         ///     True if roles were modified, false otherwise
         /// </returns>
-        private async Task<bool> EnsureCorrectRolesAsync([NotNull]User user)
+        private async Task<bool> EnsureCorrectRolesAsync([NotNull] User user)
         {
             bool rolesChanged = false;
 
@@ -635,10 +652,9 @@ namespace Veil.Controllers
         /// </returns>
         private async Task SendConfirmationEmail(User user)
         {
-            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-            // Send an email with this link
             string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ConfirmEmail", "Account", 
+            var callbackUrl = Url.Action(
+                "ConfirmEmail", "Account",
                 new
                 {
                     userId = user.Id,
@@ -646,13 +662,20 @@ namespace Veil.Controllers
                 },
                 protocol: Request.Url.Scheme);
 
-            await userManager.SendEmailAsync(user.Id,
+            await userManager.SendEmailAsync(
+                user.Id,
                 "Veil - Please Confirm Your Account",
                 "<h1>Welcome to Veil!</h1>" +
-                "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                    "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
         }
 
         #region Helpers
+        /// <summary>
+        ///     Adds all errors in an IdentityResult to ModelState
+        /// </summary>
+        /// <param name="result">
+        ///     The <see cref="IdentityResult"/> to add errors from
+        /// </param>
         private void AddErrors(IdentityResult result, string tag)
         {
             foreach (var error in result.Errors)
@@ -661,6 +684,15 @@ namespace Veil.Controllers
             }
         }
 
+        /// <summary>
+        ///     Redirects to <see cref="returnUrl"/> if it is local, otherwise redirects to Home Index
+        /// </summary>
+        /// <param name="returnUrl">
+        ///     The Url to potentially redirect to
+        /// </param>
+        /// <returns>
+        ///     The resulting redirection result
+        /// </returns>
         private ActionResult RedirectToLocal(string returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))

@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* FriendListController.cs
+ * Purpose: Controller for friend list related actions
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.15: Created
+ */ 
+
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -12,23 +19,36 @@ using Veil.Models;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for Friendship related actions
+    /// </summary>
     [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class FriendListController : BaseController
     {
-        protected readonly IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of FriendListController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public FriendListController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
         }
 
-        // GET: FriendList
         /// <summary>
-        /// Returns the list of friends and requests sent/received for the current user
+        ///     Displays a view showing a list of friends and requests sent/received for the user
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        ///     The view displaying the friend list
+        /// </returns>
         [HttpGet]
         public async Task<ActionResult> Index()
         {
@@ -39,22 +59,23 @@ namespace Veil.Controllers
                 PendingSentFriendships = new List<Member>()
             };
 
-            Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
+            Guid currentMemberId = idGetter.GetUserId(User.Identity);
 
             Member member = await db.Members
                 .Include(m => m.RequestedFriendships)
                 .Include(m => m.ReceivedFriendships)
-                .Where(m => m.UserId == currentMemberGuid)
+                .Where(m => m.UserId == currentMemberId)
                 .FirstOrDefaultAsync();
 
             var friendships = member.RequestedFriendships
-                .Concat(member.ReceivedFriendships);
+                .Concat(member.ReceivedFriendships).ToList();
 
             friendsListViewModel.ConfirmedFriends = member.ConfirmedFriends.ToList();
 
             var pendingReceivedFriendships = friendships
                 .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending &&
-                    f.ReceiverId == currentMemberGuid);
+                            f.ReceiverId == currentMemberId);
+
             foreach (var friendship in pendingReceivedFriendships)
             {
                 friendsListViewModel.PendingReceivedFriendships
@@ -63,7 +84,8 @@ namespace Veil.Controllers
 
             var pendingSentFriendships = friendships
                 .Where(f => f.RequestStatus == FriendshipRequestStatus.Pending &&
-                    f.RequesterId == currentMemberGuid);
+                            f.RequesterId == currentMemberId);
+
             foreach (var friendship in pendingSentFriendships)
             {
                 friendsListViewModel.PendingSentFriendships
@@ -73,12 +95,15 @@ namespace Veil.Controllers
             return View(friendsListViewModel);
         }
 
-        // POST: FriendList
         /// <summary>
-        /// Processes a friends request made by the user.
+        ///     Processes a friends request made by the user.
         /// </summary>
-        /// <param name="username">The username entered by the user.</param>
-        /// <returns>Redirect to 'Index' action.</returns>
+        /// <param name="username">
+        ///     The username entered by the user.
+        /// </param>
+        /// <returns>
+        ///     Redirect to 'Index' action.
+        /// </returns>
         [HttpPost]
         public async Task<ActionResult> AddFriendRequest(string username)
         {
@@ -107,8 +132,11 @@ namespace Veil.Controllers
             }
 
             Friendship existingFriendship = await db.Friendships
-                .Where(f => (f.Requester.UserId == currentUser.UserId && f.Receiver.UserId == targetUser.UserId) ||
-                            (f.Requester.UserId == targetUser.UserId && f.Receiver.UserId == currentUser.UserId))
+                .Where(
+                    f =>
+                        (f.Requester.UserId == currentUser.UserId && f.Receiver.UserId == targetUser.UserId) ||
+                            (f.Requester.UserId == targetUser.UserId &&
+                                f.Receiver.UserId == currentUser.UserId))
                 .FirstOrDefaultAsync();
 
             if (existingFriendship == null)
@@ -119,7 +147,7 @@ namespace Veil.Controllers
                     ReceiverId = targetUser.UserId,
                     RequestStatus = FriendshipRequestStatus.Pending
                 };
-                
+
                 db.Friendships.Add(friendship);
                 await db.SaveChangesAsync();
 
@@ -127,11 +155,13 @@ namespace Veil.Controllers
             }
             else if (existingFriendship.RequestStatus == FriendshipRequestStatus.Accepted)
             {
-                this.AddAlert(AlertType.Info, $"You are already friends with {targetUser.UserAccount.UserName}.");
+                this.AddAlert(
+                    AlertType.Info, $"You are already friends with {targetUser.UserAccount.UserName}.");
             }
             else if (existingFriendship.Requester == currentUser)
             {
-                this.AddAlert(AlertType.Info, $"Request already sent to {targetUser.UserAccount.UserName}.");
+                this.AddAlert(
+                    AlertType.Info, $"Request already sent to {targetUser.UserAccount.UserName}.");
             }
             else if (existingFriendship.Receiver == currentUser)
             {
@@ -139,24 +169,30 @@ namespace Veil.Controllers
 
                 await db.SaveChangesAsync();
 
-                this.AddAlert(AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved.");
+                this.AddAlert(
+                    AlertType.Success, $"Request from {targetUser.UserAccount.UserName} approved.");
             }
-            
+
             return RedirectToAction("Index");
         }
 
         /// <summary>
-        /// Approves a received friend request.
+        ///     Approves a received friend request.
         /// </summary>
-        /// <param name="memberId">The GUID of the requesting user.</param>
-        /// <returns>Redirect to 'Index' action.</returns>
+        /// <param name="memberId">
+        ///     The GUID of the requesting user.
+        /// </param>
+        /// <returns>
+        ///     Redirect to 'Index' action.
+        /// </returns>
         public async Task<ActionResult> Approve(Guid memberId)
         {
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
 
             Friendship existingFriendship = await db.Friendships
-                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
-                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .Where(
+                    f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                        (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
                 .FirstOrDefaultAsync();
 
             if (existingFriendship == null)
@@ -173,10 +209,14 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Declines the a received friend request.
+        ///     Declines the a received friend request.
         /// </summary>
-        /// <param name="memberId">The GUID of the requesting user.</param>
-        /// <returns>Result from Delete method.</returns>
+        /// <param name="memberId">
+        ///     The GUID of the requesting user.
+        /// </param>
+        /// <returns>
+        ///     Result from Delete method.
+        /// </returns>
         public async Task<ActionResult> Decline(Guid memberId)
         {
             this.AddAlert(AlertType.Success, "Friend request declined.");
@@ -187,10 +227,14 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Removes a friend from the user's friend list.
+        ///     Removes a friend from the user's friend list.
         /// </summary>
-        /// <param name="memberId">The GUID of the user being removed from the friend list.</param>
-        /// <returns>Result from Delete method.</returns>
+        /// <param name="memberId">
+        ///     The GUID of the user being removed from the friend list.
+        /// </param>
+        /// <returns>
+        ///     Result from Delete method.
+        /// </returns>
         public async Task<ActionResult> Remove(Guid memberId)
         {
             this.AddAlert(AlertType.Success, "Friend removed.");
@@ -201,10 +245,14 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Cancels the current user's friend request sent to another user.
+        ///     Cancels the current user's friend request sent to another user.
         /// </summary>
-        /// <param name="memberId">The GUID of the requested user.</param>
-        /// <returns>Result from Delete method.</returns>
+        /// <param name="memberId">
+        ///     The GUID of the requested user.
+        /// </param>
+        /// <returns>
+        ///     Result from Delete method.
+        /// </returns>
         public async Task<ActionResult> Cancel(Guid memberId)
         {
             this.AddAlert(AlertType.Success, "Friend request cancelled.");
@@ -215,18 +263,23 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Method to delete any friendship between the current user and another user.
+        ///     Method to delete any friendship between the current user and another user.
         /// </summary>
-        /// <param name="memberId">The GUID of the requesting/requested/friend user (not the current user).</param>
-        /// <returns>Redirect to 'Index' action.</returns>
+        /// <param name="memberId">
+        ///     The GUID of the requesting/requested/friend user (not the current user).
+        /// </param>
+        /// <returns>
+        ///     Redirect to 'Index' action.
+        /// </returns>
         [NonAction]
         private async Task<ActionResult> Delete(Guid memberId)
         {
             Guid currentMemberGuid = idGetter.GetUserId(User.Identity);
 
             Friendship existingFriendship = await db.Friendships
-                .Where(f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
-                            (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
+                .Where(
+                    f => (f.Requester.UserId == currentMemberGuid && f.Receiver.UserId == memberId) ||
+                        (f.Requester.UserId == memberId && f.Receiver.UserId == currentMemberGuid))
                 .FirstOrDefaultAsync();
 
             if (existingFriendship == null)

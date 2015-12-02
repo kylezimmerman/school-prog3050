@@ -103,14 +103,7 @@
                     <span class="prefix"><strong>Password</strong></span>
                 </div>
                 <div class="medium-9 columns">
-                    @if (Model.HasPassword)
-                    {
-                        @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Create", "SetPassword", null, new { @class = "button postfix" })
-                    }
+                    @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
                 </div>
             </div>
             

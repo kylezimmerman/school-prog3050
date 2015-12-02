@@ -18,17 +18,31 @@ using Veil.Models.Reports;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for generating/viewing reports
+    /// </summary>
     [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
     public class ReportsController : BaseController
     {
         private readonly IVeilDataAccess db;
 
+        /// <summary>
+        ///     Instantiates a new instance of ReportsController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
         public ReportsController(IVeilDataAccess veilDataAccess)
         {
             db = veilDataAccess;
         }
 
-        // GET: Reports
+        /// <summary>
+        ///     Displays the list of possible reports
+        /// </summary>
+        /// <returns>
+        ///     The view containing a list of all the reports which can be viewed
+        /// </returns>
         public ActionResult Index()
         {
             return View();
@@ -98,7 +112,7 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// Genereates a report showing the number of sales of each SKU for a game.
+        /// Generates a report showing the number of sales of each SKU for a game.
         /// </summary>
         /// <param name="gameGuid">The GUID of a game.</param>
         /// <returns>A view displaying the generated report.</returns>
@@ -163,7 +177,7 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        /// /// Genereates a report showing the number of sales of each SKU for a game, filtered by a date range.
+        /// Generates a report showing the number of sales of each SKU for a game, filtered by a date range.
         /// </summary>
         /// <param name="gameGuid">The GUID of a game.</param>
         /// <param name="start">The date to start the filter range (inclusive).</param>
