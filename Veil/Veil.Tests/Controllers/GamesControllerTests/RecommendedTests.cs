@@ -150,7 +150,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
 
             var model = (GameListViewModel)result.Model;
 
-            Assert.That(model.Games.Count, Is.EqualTo(0));
+            Assert.That(model.Games.Count(), Is.EqualTo(0));
         }
 
         [Test]

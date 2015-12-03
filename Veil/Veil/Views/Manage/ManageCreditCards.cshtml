@@ -16,21 +16,26 @@
 
 @if (Model.CreditCards != null && Model.CreditCards.Any())
 {
-    <div class="row panel">
-        <div class="column">
-            <h4>Your Credit Cards</h4>
+    using (Html.BeginForm("DeleteCreditCard", "Manage", FormMethod.Post))
+    {
+        Html.AntiForgeryToken();
 
-            <div class="row collapse">
-                <div class="medium-4 columns">
-                    @Html.DropDownList("creditCardId", Model.CreditCards)
-                </div>
+        <div class="row panel">
+            <div class="column">
+                <h4>Your Credit Cards</h4>
 
-                <div class="medium-4 columns end">
-                    <button class="postfix alert">Delete Selected Credit Card</button>
+                <div class="row collapse">
+                    <div class="medium-4 columns">
+                        @Html.DropDownList("id", Model.CreditCards)
+                    </div>
+
+                    <div class="medium-4 columns end">
+                        <button type="submit" class="postfix alert">Delete Selected Credit Card</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 }
 
 

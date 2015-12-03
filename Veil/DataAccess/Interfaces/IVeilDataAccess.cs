@@ -46,6 +46,11 @@ namespace Veil.DataAccess.Interfaces
         DbSet<Country> Countries { get; }
 
         /// <summary>
+        ///     DbSet of Member Credit Cards
+        /// </summary>
+        DbSet<MemberCreditCard> MemberCreditCards { get; }
+
+            /// <summary>
         ///     DbSet of Departments
         /// </summary>
         DbSet<Department> Departments { get; }

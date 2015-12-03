@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* WebOrdersController.cs
+ * Purpose: Controller for actions related to WebOrder including viewing and processing
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.13: Created
+ */ 
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -19,6 +26,9 @@ using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to <see cref="WebOrder"/> including viewing and processing
+    /// </summary>
     [Authorize]
     public class WebOrdersController : BaseController
     {
@@ -27,7 +37,23 @@ namespace Veil.Controllers
         private readonly IStripeService stripeService;
         private readonly VeilUserManager userManager;
 
-        public WebOrdersController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter,
+        /// <summary>
+        ///     Instantiates a new instance of WebOrdersController with the specified arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
+        /// <param name="stripeService">
+        ///     The <see cref="IStripeService"/> to use for Stripe interaction
+        /// </param>
+        /// <param name="userManager">
+        ///     The <see cref="VeilUserManager"/> to use for sending an order confirmation email
+        /// </param>
+        public WebOrdersController(
+            IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter,
             IStripeService stripeService, VeilUserManager userManager)
         {
             db = veilDataAccess;
@@ -36,7 +62,6 @@ namespace Veil.Controllers
             this.userManager = userManager;
         }
 
-        // GET: WebOrders
         /// <summary>
         ///     Displays a list of orders
         /// </summary>
@@ -51,8 +76,9 @@ namespace Veil.Controllers
             if (User.IsEmployeeOrAdmin())
             {
                 model = await db.WebOrders
-                    .Where(wo => wo.OrderStatus == OrderStatus.PendingProcessing ||
-                        wo.OrderStatus == OrderStatus.BeingProcessed)
+                    .Where(
+                        wo => wo.OrderStatus == OrderStatus.PendingProcessing ||
+                            wo.OrderStatus == OrderStatus.BeingProcessed)
                     .OrderBy(wo => wo.OrderDate).ToListAsync();
                 return View("Index_Employee", model);
             }
@@ -65,7 +91,6 @@ namespace Veil.Controllers
             return View(model);
         }
 
-        // GET: WebOrders/Details/5
         /// <summary>
         ///     Displays information about a specific order
         /// </summary>
@@ -84,7 +109,8 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(WebOrder));
             }
 
-            WebOrder webOrder = await db.WebOrders.Include(wo => wo.Member).FirstOrDefaultAsync(wo => wo.Id == id);
+            WebOrder webOrder =
+                await db.WebOrders.Include(wo => wo.Member).FirstOrDefaultAsync(wo => wo.Id == id);
 
             if (webOrder == null)
             {
@@ -100,7 +126,6 @@ namespace Veil.Controllers
             return View(webOrder);
         }
 
-        // POST: WebOrders/CancelOrder/5
         /// <summary>
         ///     The customer cancels an order they made
         /// </summary>
@@ -127,7 +152,8 @@ namespace Veil.Controllers
 
             if (webOrder.OrderStatus != OrderStatus.PendingProcessing)
             {
-                this.AddAlert(AlertType.Error,
+                this.AddAlert(
+                    AlertType.Error,
                     "This order could not be cancelled. Only orders that are pending processing can be cancelled.");
             }
             else
@@ -155,12 +181,14 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> SetStatusCancelled(long? id, string reasonForCancellation, bool? confirmed)
+        public async Task<ActionResult> SetStatusCancelled(
+            long? id, string reasonForCancellation, bool? confirmed)
         {
             bool badArguments = false;
             if (confirmed == null || !confirmed.Value)
             {
-                this.AddAlert(AlertType.Error, "You must confirm your action by checking \"Confirm Cancellation.\"");
+                this.AddAlert(
+                    AlertType.Error, "You must confirm your action by checking \"Confirm Cancellation.\"");
                 badArguments = true;
             }
 
@@ -180,7 +208,9 @@ namespace Veil.Controllers
             if (webOrder.OrderStatus != OrderStatus.PendingProcessing &&
                 webOrder.OrderStatus != OrderStatus.BeingProcessed)
             {
-                this.AddAlert(AlertType.Error, "You can only cancel an order if it is pending processing or being processed.");
+                this.AddAlert(
+                    AlertType.Error,
+                    "You can only cancel an order if it is pending processing or being processed.");
             }
             else
             {
@@ -208,7 +238,8 @@ namespace Veil.Controllers
         {
             if (confirmed == null || !confirmed.Value)
             {
-                this.AddAlert(AlertType.Error, "You must confirm your action by checking \"Confirm Processing.\"");
+                this.AddAlert(
+                    AlertType.Error, "You must confirm your action by checking \"Confirm Processing.\"");
                 return RedirectToAction("Details", new { id = id });
             }
 
@@ -216,7 +247,9 @@ namespace Veil.Controllers
 
             if (webOrder.OrderStatus != OrderStatus.PendingProcessing)
             {
-                this.AddAlert(AlertType.Error, "An order can only begin processing if its status is Pending Processing.");
+                this.AddAlert(
+                    AlertType.Error,
+                    "An order can only begin processing if its status is Pending Processing.");
             }
             else
             {
@@ -244,7 +277,8 @@ namespace Veil.Controllers
         {
             if (confirmed == null || !confirmed.Value)
             {
-                this.AddAlert(AlertType.Error, "You must confirm your action by checking \"Confirm Processed.\"");
+                this.AddAlert(
+                    AlertType.Error, "You must confirm your action by checking \"Confirm Processed.\"");
                 return RedirectToAction("Details", new { id = id });
             }
 
@@ -252,7 +286,8 @@ namespace Veil.Controllers
 
             if (webOrder.OrderStatus != OrderStatus.BeingProcessed)
             {
-                this.AddAlert(AlertType.Error, "An order can only be processed if its status is Being Processed.");
+                this.AddAlert(
+                    AlertType.Error, "An order can only be processed if its status is Being Processed.");
             }
             else
             {
@@ -331,7 +366,7 @@ namespace Veil.Controllers
                 }
             }
         }
-        
+
         /// <summary>
         ///     Adds the items in a cancelled order back to the OnHand inventory levels
         /// </summary>

@@ -21,11 +21,23 @@ using Veil.Models;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to <see cref="GameProduct"/>
+    /// </summary>
     public class GameProductsController : BaseController
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of GameProductsController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public GameProductsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;

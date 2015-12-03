@@ -21,6 +21,12 @@ namespace Veil.Controllers
     {
         protected const int NotFound = (int) HttpStatusCode.NotFound;
 
+        /// <summary>
+        ///     Handles 404 Not Found exceptions and passes anything else on to the base implementation
+        /// </summary>
+        /// <param name="filterContext">
+        ///     Information about the current request and action.
+        /// </param>
         protected override void OnException(ExceptionContext filterContext)
         {
             HttpException httpException = filterContext.Exception as HttpException;

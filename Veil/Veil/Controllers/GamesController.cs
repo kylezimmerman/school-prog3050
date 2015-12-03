@@ -26,6 +26,9 @@ using Veil.DataModels;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to <see cref="Game"/>
+    /// </summary>
     public class GamesController : BaseController
     {
         private const int GAMES_PER_PAGE = 10;
@@ -33,6 +36,15 @@ namespace Veil.Controllers
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of GamesController with the provided argument
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public GamesController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
