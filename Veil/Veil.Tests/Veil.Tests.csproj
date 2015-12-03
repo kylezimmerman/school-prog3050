@@ -173,6 +173,7 @@
     <Compile Include="Controllers\GamesControllerTests\IndexTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\SearchTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\_GamesControllerTestsBase.cs" />
+    <Compile Include="Controllers\CompaniesControllerTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\GameDetailTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\IndexTest.cs" />
     <Compile Include="Controllers\ReportsControllerTests\MemberDetailTests.cs" />

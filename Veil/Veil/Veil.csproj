@@ -219,6 +219,7 @@
     <Compile Include="Controllers\GameProductsController.cs" />
     <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\PlatformsController.cs" />
+    <Compile Include="Controllers\CompaniesController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Exceptions\NotEnoughInventoryException.cs" />
     <Compile Include="Extensions\CountryExtensions.cs" />
@@ -231,6 +232,7 @@
     <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\CartViewModel.cs" />
+    <Compile Include="Models\CompanyViewModel.cs" />
     <Compile Include="Models\ESRBDescriptionViewModel.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
     <Compile Include="Models\EventListItemViewModel.cs" />
@@ -512,6 +514,7 @@
     <Content Include="Views\GameProducts\CreatePhysicalSKU.cshtml" />
     <Content Include="Views\GameProducts\Delete.cshtml" />
     <Content Include="Views\ESRBDescription\Index.cshtml" />
+    <Content Include="Views\Companies\Manage.cshtml" />
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />

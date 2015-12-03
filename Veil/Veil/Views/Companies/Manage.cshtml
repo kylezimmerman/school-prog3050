@@ -1,0 +1,43 @@
+﻿@model Veil.Models.CompanyViewModel
+
+@{
+    ViewBag.Title = "Manage Companies";
+}
+
+<div class="row">
+    <div class="column">
+        <h2>@ViewBag.Title</h2>
+
+        @using (Html.BeginForm("Create", "Companies", FormMethod.Post))
+        {
+            <div class="row collapse">
+                @Html.LabelFor(m => m.NewCompany)
+                <div class="small-8 medium-6 columns">
+                    @Html.EditorFor(m => m.NewCompany)
+                    @Html.ValidationMessageFor(m => m.NewCompany)
+                </div>
+                <div class="small-4 medium-3 end columns">
+                    <button type="submit" class="expand postfix">Save</button>
+                </div>
+            </div>
+        }
+
+        @using (Html.BeginForm("Delete", "Companies", FormMethod.Post))
+        {
+            <div class="row collapse">
+                <label for="deleteDropdown">The companies listed have no related products and can be deleted.</label>
+                <div class="small-8 medium-6 columns">
+                    <select name="toDelete" id="deleteDropdown">
+                        @foreach (var item in Model.Deletable)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="small-4 medium-3 end columns">
+                    <button type="submit" class="expand postfix">Delete</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

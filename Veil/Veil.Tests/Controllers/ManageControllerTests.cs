@@ -1634,7 +1634,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void UpdateUserInformation_NoEmailChange()
+        public async void UpdateUserInformation_NoEmailChange()
         {      
             IndexViewModel viewModel = new IndexViewModel()
             {
