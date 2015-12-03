@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* CompaniesController.cs
+ * Purpose: Controller for adding or removing publisher/development companies
+ * 
+ * Revision History:
+ *      Isaac West, 2015.12.02: Created
+ */ 
+
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,13 +25,13 @@ namespace Veil.Controllers
     [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
     public class CompaniesController : BaseController
     {
-        protected readonly IVeilDataAccess db;
+        private readonly IVeilDataAccess db;
 
         /// <summary>
-        ///     Constructor for the CompaniesController
+        ///     Instantiates a new instance of CompaniesController with the provided arguments
         /// </summary>
         /// <param name="veilDataAccess">
-        ///     Database access field
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
         /// </param>
         public CompaniesController(IVeilDataAccess veilDataAccess)
         {
@@ -42,9 +49,10 @@ namespace Veil.Controllers
         /// </returns>
         public async Task<ActionResult> Manage(string newCompanyName)
         {
-            var deletableCompanies = await db.Companies.Where(c => 
-                c.DevelopedGameProducts.Count +
-                c.PublishedGameProducts.Count < 1)
+            var deletableCompanies = await db.Companies.Where(
+                c =>
+                    c.DevelopedGameProducts.Count +
+                        c.PublishedGameProducts.Count < 1)
                 .OrderBy(c => c.Name).ToListAsync();
 
             var model = new CompanyViewModel
@@ -71,14 +79,16 @@ namespace Veil.Controllers
             {
                 if (await db.Companies.AnyAsync(c => c.Name == newCompany))
                 {
-                    this.AddAlert(AlertType.Info, $"{newCompany} is already in the system and cannot be added again.");
+                    this.AddAlert(
+                        AlertType.Info, $"{newCompany} is already in the system and cannot be added again.");
                 }
                 else
                 {
-                    db.Companies.Add(new Company
-                    {
-                        Name = newCompany
-                    });
+                    db.Companies.Add(
+                        new Company
+                        {
+                            Name = newCompany
+                        });
 
                     await db.SaveChangesAsync();
 
@@ -119,7 +129,8 @@ namespace Veil.Controllers
             if (company.DevelopedGameProducts.Count +
                 company.PublishedGameProducts.Count > 0)
             {
-                this.AddAlert(AlertType.Error, $"{company.Name} cannot be deleted because it has related products.");
+                this.AddAlert(
+                    AlertType.Error, $"{company.Name} cannot be deleted because it has related products.");
             }
             else
             {

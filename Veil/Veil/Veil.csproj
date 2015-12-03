@@ -226,10 +226,10 @@
     <Compile Include="Extensions\HtmlHelperExtensions.cs" />
     <Compile Include="Extensions\IPrincipalExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\GuidUserIdGetter.cs" />
     <Compile Include="Helpers\IGuidUserIdGetter.cs" />
-    <Compile Include="Helpers\UriExtensions.cs" />
     <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\CartViewModel.cs" />
     <Compile Include="Models\CompanyViewModel.cs" />
@@ -467,7 +467,6 @@
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <Content Include="Views\Manage\ChangePassword.cshtml" />
     <Content Include="Views\Manage\Index.cshtml" />
-    <Content Include="Views\Manage\SetPassword.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginNavBarPartial.cshtml" />
     <Content Include="Views\Shared\_NavBarPartial.cshtml" />
