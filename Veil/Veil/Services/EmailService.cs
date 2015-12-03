@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* EmailService.cs
+ * Purpose: Email service implementation of IIdentityMEssageService using SendGrid
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.26: Created
+ */ 
+
+using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.Net;
@@ -11,9 +18,21 @@ using SendGrid;
 
 namespace Veil.Services
 {
+    /// <summary>
+    ///     Implementation of <see cref="IIdentityMessageService"/> using SendGrid
+    /// </summary>
     [UsedImplicitly]
     public class EmailService : IIdentityMessageService
     {
+        /// <summary>
+        ///     Sends the message via SendGrid
+        /// </summary>
+        /// <param name="message">
+        ///     The <see cref="IdentityMessage"/> containing the details to be used for sending the email
+        /// </param>
+        /// <returns>
+        ///     A task to be awaited
+        /// </returns>
         public async Task SendAsync(IdentityMessage message)
         {
             SendGridMessage mail = new SendGridMessage
@@ -35,7 +54,7 @@ namespace Veil.Services
             }
             catch (InvalidApiRequestException ex)
             {
-                // TODO: We would want to log this, but don't really have any course of action for resolving
+                // Note: We would want to log this, but don't really have any course of action for resolving
                 Debug.WriteLine(ex.Message);
                 Debug.WriteLine(ex.ResponseStatusCode);
 
@@ -46,12 +65,12 @@ namespace Veil.Services
             }
             catch (ProtocolViolationException ex)
             {
-                // TODO: We would want to log this, but don't really have any course of action for resolving
+                // Note: We would want to log this, but don't really have any course of action for resolving
                 Debug.WriteLine(ex.Message);
             }
             catch (ArgumentException ex)
             {
-                // TODO: We would want to log this, but don't really have any course of action for resolving
+                // Note: We would want to log this, but don't really have any course of action for resolving
                 Debug.WriteLine(ex.Message);
             }
         }

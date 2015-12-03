@@ -1,3 +1,10 @@
+/* VeilUserManager.cs
+ * Purpose: Subclass of UserManager using Veil's User class and Guid keys
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.26: Created
+ */ 
+
 using System;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -15,7 +22,22 @@ namespace Veil.Services
     [UsedImplicitly]
     public class VeilUserManager : UserManager<User, Guid>
     {
-        public VeilUserManager(IVeilDataAccess veilDataAccess, IIdentityMessageService emailService, IDataProtectionProvider dataProtectionProvider)
+        /// <summary>
+        ///     Instantiates a new instance of VeilUserManager with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="emailService">
+        ///     The <see cref="IIdentityMessageService"/> to use for sending emails
+        /// </param>
+        /// <param name="dataProtectionProvider">
+        ///     The <see cref="IDataProtectionProvider"/> to use for generating tokens such as
+        ///     password reset and email confirmation tokens
+        /// </param>
+        public VeilUserManager(
+            IVeilDataAccess veilDataAccess, IIdentityMessageService emailService,
+            IDataProtectionProvider dataProtectionProvider)
             : base(veilDataAccess.UserStore)
         {
             // Configure the application user manager used in this application. 
@@ -42,16 +64,8 @@ namespace Veil.Services
 
             // Configure user lockout defaults
             UserLockoutEnabledByDefault = true;
-            DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(15);
             MaxFailedAccessAttemptsBeforeLockout = 5;
-
-            // Register two factor authentication providers. This application uses Phone and Emails as a step of receiving a code for verifying the user
-            // You can write your own provider and plug it in here.
-            base.RegisterTwoFactorProvider("Email Code", new EmailTokenProvider<User, Guid>
-            {
-                Subject = "Security Code",
-                BodyFormat = "Your security code is {0}"
-            });
 
             EmailService = emailService;
 
@@ -65,22 +79,35 @@ namespace Veil.Services
                 };
 
                 UserTokenProvider = userTokenProvider;
-                
             }
         }
 
-        
+        // TODO: Rename this method to SendEmailAsync
+        /// <summary>
+        ///     Sends an email with the provided information
+        /// </summary>
+        /// <param name="address">
+        ///     The email address to send the email to
+        /// </param>
+        /// <param name="title">
+        ///     The subject line for the email
+        /// </param>
+        /// <param name="body">
+        ///     The body for the email
+        /// </param>
+        /// <returns>
+        ///     A task to await
+        /// </returns>
         public virtual Task SendNewEmailConfirmationEmailAsync(string address, string title, string body)
         {
-            IdentityMessage message = new IdentityMessage();
-
-            message.Body = body;
-            message.Subject = title;
-            message.Destination = address;
+            IdentityMessage message = new IdentityMessage
+            {
+                Body = body,
+                Subject = title,
+                Destination = address
+            };
 
             return EmailService.SendAsync(message);
-
-            
         }
     }
 }

@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* StripeService.cs
+ * Purpose: Implementation of IStripeService for interacting with Stripe using Stripe.net
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.27: Created
+ */ 
+
+using System;
 using JetBrains.Annotations;
 using Stripe;
 using Veil.DataModels.Models;
@@ -7,6 +14,9 @@ using Veil.Services.Interfaces;
 
 namespace Veil.Services
 {
+    /// <summary>
+    ///     Implementation of IStripeService using Stripe.net
+    /// </summary>
     [UsedImplicitly]
     public class StripeService : IStripeService
     {
@@ -83,11 +93,12 @@ namespace Veil.Services
         /// <summary>
         ///     Implements <see cref="IStripeService.ChargeCard"/>
         /// </summary>
-        public string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null, string description = null)
+        public string ChargeCard(
+            decimal chargeAmount, string cardToken, string customerId = null, string description = null)
         {
             var newCharge = new StripeChargeCreateOptions
             {
-                Amount = (int)Math.Round(chargeAmount, 2) * 100,
+                Amount = (int) Math.Round(chargeAmount, 2) * 100,
                 Description = description,
                 Capture = true,
                 Currency = "CAD",
