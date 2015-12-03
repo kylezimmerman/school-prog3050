@@ -910,5 +910,56 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
         }
+
+        [Test]
+        public void SetSessionCartQty_WhenCalled_SetsSessionCartQuantityToCartCount()
+        {
+            Cart cart = new Cart
+            {
+                MemberId = UserId,
+                Items = new List<CartItem>
+                {
+                    new CartItem(),
+                    new CartItem(),
+                    new CartItem()
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Cart>> cartDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Cart> { cart }.AsQueryable());
+
+            dbStub.
+                Setup(db => db.Carts).
+                Returns(cartDbSetStub.Object);
+
+            Mock<ControllerContext> contextMock = new Mock<ControllerContext>();
+            contextMock.
+                Setup(c => c.HttpContext.User.Identity).
+                Returns<IIdentity>(null);
+            contextMock.
+                SetupGet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY]).
+                Returns(null);
+            contextMock.
+                SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<object>()).
+                Verifiable();
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.
+                Setup(id => id.GetUserId(It.IsAny<IIdentity>())).
+                Returns(UserId);
+
+            CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
+            {
+                ControllerContext = contextMock.Object
+            };
+
+            controller.SetSessionCartQty();
+
+            Assert.That(
+                () => 
+                    contextMock.VerifySet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = cart.Items.Count,
+                    Times.Once),
+                Throws.Nothing);
+        }
     }
 }
