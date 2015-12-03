@@ -2,7 +2,7 @@
  * Purpose: Extension methods for Uri
  * 
  * Revision History:
- *      Drew Matheson, 2015.12.03: Created
+ *      Kyle Zimmerman, 2015.11.06: Created
  */
 
 using System;
