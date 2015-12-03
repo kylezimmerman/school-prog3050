@@ -129,7 +129,8 @@ namespace Veil.Controllers
 
                     await EnsureCorrectRolesAsync(user);
 
-                    // This doesn't count login failures towards account lockout
+                    // This doesn't count login failures towards account lockout.
+                    // This isn't needed as the password is already confirmed as correct.
                     // To enable password failures to trigger account lockout, change to shouldLockout: true
                     result =
                         await signInManager.PasswordSignInAsync(
@@ -137,10 +138,8 @@ namespace Veil.Controllers
                 }
                 else
                 {
-                    // This doesn't count login failures towards account lockout
-                    // To enable password failures to trigger account lockout, uncomment this line
-                    // NOTE: This returns an Identity result if you wish to do anything with it
-                    // await userManager.AccessFailedAsync(user.Id);
+                    // Enable password failures to trigger account lockout
+                    await userManager.AccessFailedAsync(user.Id);
                 }
             }
 
@@ -669,7 +668,7 @@ namespace Veil.Controllers
                     "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
         }
 
-        #region Helpers
+#region Helpers
         /// <summary>
         ///     Adds all errors in an IdentityResult to ModelState
         /// </summary>
@@ -701,6 +700,6 @@ namespace Veil.Controllers
             }
             return RedirectToAction("Index", "Home");
         }
-        #endregion
+#endregion
     }
 }

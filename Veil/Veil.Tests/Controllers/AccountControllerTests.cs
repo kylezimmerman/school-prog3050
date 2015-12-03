@@ -233,6 +233,44 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public async void Login_IncorrectPassword_CallsUserManagerAccessFailedAsync()
+        {
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password"
+            };
+
+            User user = new User
+            {
+                Id = new Guid("65ED1E57-D246-4A20-9937-E5C129E67064"),
+                Email = viewModel.LoginEmail
+            };
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(false);
+            userManagerMock.
+                Setup(um => um.AccessFailedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            AccountController controller = new AccountController(userManagerMock.Object, signInManager: null, stripeService: null);
+
+            await controller.Login(viewModel, null);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.AccessFailedAsync(user.Id),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
         public async void Login_ValidModelAndUserFoundAndCorrectPassword_CallsUserManagerIsEmailConfirmedAsync()
         {
             LoginViewModel viewModel = new LoginViewModel
