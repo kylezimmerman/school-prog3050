@@ -361,7 +361,7 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> MemberDetail(string username)
         {
-            if (username == null)
+            if (string.IsNullOrWhiteSpace(username))
             {
                 throw new HttpException(NotFound, nameof(Member));
             }
@@ -417,7 +417,7 @@ namespace Veil.Controllers
         {
             end = SetToEndOfDayIfInPast(end);
 
-            if (username == null)
+            if (string.IsNullOrWhiteSpace(username))
             {
                 throw new HttpException(NotFound, nameof(Member));
             }
@@ -446,6 +446,11 @@ namespace Veil.Controllers
                         OrderTotal = o.OrderSubtotal + o.ShippingCost + o.TaxAmount
                     }).OrderByDescending(o => o.OrderDate).ToList()
             }).FirstOrDefaultAsync(m => m.UserName == username);
+
+            if (model == null)
+            {
+                throw new HttpException(NotFound, nameof(Member));
+            }
 
             return View(model);
         }
