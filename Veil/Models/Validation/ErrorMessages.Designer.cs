@@ -61,6 +61,15 @@ namespace Veil.DataModels.Validation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} must be between {1:N0} and {2:N0}. .
+        /// </summary>
+        public static string Range {
+            get {
+                return ResourceManager.GetString("Range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} has a maximum length of {1}..
         /// </summary>
         public static string StringLength {

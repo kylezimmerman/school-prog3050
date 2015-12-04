@@ -80,7 +80,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's minimum player count
         /// </summary>
-        [Range(1, int.MaxValue)]
+        [Range(1, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         [DisplayName("Minimum Player Count")]
         public int MinimumPlayerCount { get; set; }
@@ -89,7 +89,7 @@ namespace Veil.DataModels.Models
         /// The Game's maximum player count
         /// </summary>
         [CompareValues(nameof(MinimumPlayerCount), ComparisonCriteria.GreatThanOrEqualTo)]
-        [Range(1, int.MaxValue)]
+        [Range(1, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         [DisplayName("Maximum Player Count")]
         public int MaximumPlayerCount { get; set; }

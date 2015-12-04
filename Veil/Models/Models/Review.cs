@@ -43,7 +43,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     A 1-5 rating
         /// </summary>
-        [Range(1, 5)]
+        [Range(1, 5, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         public int Rating { get; set; }
 
