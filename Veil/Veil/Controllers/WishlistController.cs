@@ -174,14 +174,16 @@ namespace Veil.Controllers
             if (currentMember.Wishlist.Contains(newItem))
             {
                 this.AddAlert(AlertType.Info, newItem.Name + " is already on your wishlist.");
-                return View("Index", currentMember);
+            }
+            else
+            {
+                currentMember.Wishlist.Add(newItem);
+                await db.SaveChangesAsync();
+
+                this.AddAlert(AlertType.Success, newItem.Name + " was added to your wishlist.");
             }
 
-            currentMember.Wishlist.Add(newItem);
-            await db.SaveChangesAsync();
-
-            this.AddAlert(AlertType.Success, newItem.Name + " was added to your wishlist.");
-            return View("Index", currentMember);
+            return RedirectToAction("Index");
         }
 
         /// <summary>
