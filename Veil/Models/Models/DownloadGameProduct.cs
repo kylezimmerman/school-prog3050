@@ -29,7 +29,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// An approximate size in megabytes for the download
         /// </summary>
-        [Range(0, int.MaxValue)]
+        [Range(0, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Approximate Size")]
         public int ApproximateSizeInMB { get; set; }
     }

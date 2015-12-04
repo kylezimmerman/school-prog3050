@@ -49,7 +49,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The month in which the credit card expires
         /// </summary>
-        [Range(1, 12)]
+        [Range(1, 12, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         public int ExpiryMonth { get; set; }
 
         /// <summary>
