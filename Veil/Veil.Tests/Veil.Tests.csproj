@@ -143,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\AccountControllerTests.cs" />
+    <Compile Include="Controllers\BaseControllerTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\BillingInfoTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\_CheckoutControllerTestsBase.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\ConfirmOrderTests.cs" />

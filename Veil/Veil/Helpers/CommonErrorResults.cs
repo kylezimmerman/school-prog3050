@@ -43,7 +43,7 @@ namespace Veil.Helpers
                 Message = message
             };
 
-            var result = new ViewResult()
+            var result = new ViewResult
             {
                 ViewName = "NotFound",
                 ViewData = controller.ViewData,
