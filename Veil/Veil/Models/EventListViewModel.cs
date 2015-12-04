@@ -8,4 +8,11 @@ namespace Veil.Models
         public IEnumerable<Event> Events { get; set; }
         public bool OnlyRegisteredEvents { get; set; }
     }
+
+    public class EventListItemViewModel
+    {
+        public Event Event { get; set; }
+        public bool OnlyRegisteredEvents { get; set; }
+        public bool CurrentMemberIsRegistered { get; set; }
+    }
 }
