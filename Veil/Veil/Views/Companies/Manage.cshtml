@@ -11,7 +11,9 @@
         @using (Html.BeginForm("Create", "Companies", FormMethod.Post))
         {
             <div class="row collapse">
-                @Html.LabelFor(m => m.NewCompany)
+                <div class="medium-3 columns">
+                    @Html.LabelFor(m => m.NewCompany, new { @class = "prefix" } )
+                </div>
                 <div class="small-8 medium-6 columns">
                     @Html.EditorFor(m => m.NewCompany)
                     @Html.ValidationMessageFor(m => m.NewCompany)
@@ -24,18 +26,29 @@
 
         @using (Html.BeginForm("Delete", "Companies", FormMethod.Post))
         {
-            <div class="row collapse">
-                <label for="deleteDropdown">The companies listed have no related products and can be deleted.</label>
-                <div class="small-8 medium-6 columns">
-                    <select name="toDelete" id="deleteDropdown">
-                        @foreach (var item in Model.Deletable)
-                        {
-                            <option value="@item.Value">@item.Text</option>
-                        }
-                    </select>
+            <div class="row panel collapse">
+                <div class="row">
+                    <div class="column">
+                        The companies listed have no related products and can be removed.
+                    </div>
                 </div>
-                <div class="small-4 medium-3 end columns">
-                    <button type="submit" class="expand postfix">Delete</button>
+
+                <div class="row collapse">
+                    <div class="medium-3 columns">
+                        <label for="deleteDropdown" class="prefix">Removable Companies</label>
+                    </div>
+
+                    <div class="small-8 medium-6 columns">
+                        <select name="toDelete" id="deleteDropdown">
+                            @foreach (var item in Model.Deletable)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="small-4 medium-3 end columns">
+                        <button type="submit" class="expand postfix alert">Delete</button>
+                    </div>
                 </div>
             </div>
         }
