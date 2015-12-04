@@ -236,7 +236,6 @@
     <Compile Include="Models\CompanyViewModel.cs" />
     <Compile Include="Models\ESRBDescriptionViewModel.cs" />
     <Compile Include="Models\EventDetailsViewModel.cs" />
-    <Compile Include="Models\EventListItemViewModel.cs" />
     <Compile Include="Models\EventListViewModel.cs" />
     <Compile Include="Models\FriendsListViewModel.cs" />
     <Compile Include="Models\GameListViewModel.cs" />
