@@ -64,28 +64,28 @@ namespace Veil.DataModels.Models.Identity
         ///     This must be unique in the system.
         /// </summary>
         [Required]
-        [MaxLength(256)]
+        [StringLength(maximumLength: 256, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public override string UserName { get; set; }
 
         /// <summary>
         ///     The User's Phone Number
         /// </summary>
         [RegularExpression(ValidationRegex.STORED_PHONE)]
-        [MaxLength(32)]
+        [StringLength(maximumLength: 32, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public override string PhoneNumber { get; set; }
 
         /// <summary>
         ///     The User's first name
         /// </summary>
         [Required]
-        [StringLength(maximumLength: 64, MinimumLength = 1)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string FirstName { get; set; }
 
         /// <summary>
         ///     The User's last name
         /// </summary>
         [Required]
-        [StringLength(maximumLength: 64, MinimumLength = 1)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string LastName { get; set; }
 
         /// <summary>

@@ -6,6 +6,7 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -24,7 +25,7 @@ namespace Veil.DataModels.Models
         /// The department's name
         /// </summary>
         [Required]
-        [MaxLength(128)]
+        [StringLength(128, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages) )]
         public string Name { get; set; }
     }
 }

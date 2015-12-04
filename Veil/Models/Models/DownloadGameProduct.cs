@@ -7,6 +7,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -21,7 +22,7 @@ namespace Veil.DataModels.Models
         [Required]
         [DataType(DataType.Url)]
         [Url]
-        [MaxLength(2048)]
+        [StringLength(2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Download Link")]
         public string DownloadLink { get; set; }
 

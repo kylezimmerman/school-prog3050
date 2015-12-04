@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -19,14 +20,14 @@ namespace Veil.DataModels.Models
         /// The country's two letter code
         /// </summary>
         [Key]
-        [StringLength(2, MinimumLength = 2)]
+        [StringLength(2, MinimumLength = 2, ErrorMessageResourceName = nameof(ErrorMessages.StringLengthFixedLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string CountryCode { get; set; }
 
         /// <summary>
         /// The country's full name
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string CountryName { get; set; }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The acronym for the federal tax
         /// </summary>
-        [MaxLength(16)]
+        [StringLength(16, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string FederalTaxAcronym { get; set; }
 
         /// <summary>

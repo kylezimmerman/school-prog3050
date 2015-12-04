@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.Models
 {
@@ -15,7 +16,7 @@ namespace Veil.Models
         /// <summary>
         /// The credit card's number
         /// </summary>
-        [MaxLength(19)]
+        [StringLength(maximumLength: 19, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Card Number")]
         [Required]
         public string Number { get; set; }
@@ -38,7 +39,7 @@ namespace Veil.Models
         /// <summary>
         /// The security code found on the card
         /// </summary>
-        [MaxLength(4)]
+        [StringLength(maximumLength: 4, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("CVC Number")]
         public string Cvc { get; set; } 
 
@@ -46,7 +47,7 @@ namespace Veil.Models
         /// The street address for the billing information
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Street Address")]
         public string AddressLine1 { get; set; }
 
@@ -54,7 +55,7 @@ namespace Veil.Models
         /// The city for the billing information
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("City")]
         public string AddressCity { get; set; }
 
@@ -63,7 +64,7 @@ namespace Veil.Models
         /// </summary>
         [Required]
         [DataType(DataType.PostalCode)]
-        [MaxLength(10)]
+        [StringLength(maximumLength: 10, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Postal Code")]
         public string AddressZip { get; set; }
 

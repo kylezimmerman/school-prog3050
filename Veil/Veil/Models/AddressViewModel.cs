@@ -44,14 +44,14 @@ namespace Veil.Models
         /// The Address's street address, including apartment number
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Street Address")]
         public string StreetAddress { get; set; }
 
         /// <summary>
         /// The Addresses optional post office box number
         /// </summary>
-        [MaxLength(16)]
+        [StringLength(16, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("PO Box # (optional)")]
         public string POBoxNumber { get; set; }
 
@@ -59,7 +59,7 @@ namespace Veil.Models
         /// The Address's city
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string City { get; set; }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Veil.Models
         /// </summary>
         [Required]
         [DataType(DataType.PostalCode)]
-        [MaxLength(16)]
+        [StringLength(10, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Postal Code")]
         [RegularExpression(ValidationRegex.POSTAL_ZIP_CODE,
             ErrorMessage =

@@ -8,7 +8,7 @@
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// A review for a specific GameProduct by a Member
+    ///     A review for a specific GameProduct by a Member
     /// </summary>
     public class GameReview : Review<GameProduct> { }
 }

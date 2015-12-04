@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Veil.DataModels.Models;
+﻿using Veil.DataModels.Models;
 
 namespace Veil.Models
 {

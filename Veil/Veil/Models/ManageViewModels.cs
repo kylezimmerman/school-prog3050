@@ -8,17 +8,17 @@ namespace Veil.Models
     {
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(ValidationRegex.INPUT_PHONE, ErrorMessage = "Must be in the format 800-555-0199 or 800-555-0199, ext. 1234")]
-        [MaxLength(24, ErrorMessage = "Can't be longer than 24 characters")]
+        [StringLength(maximumLength:24, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
 
         [Display(Name = "Receive Promotional Emails?")]
         public bool ReceivePromotionalEmail { get; set; }
         [Required]
-        [StringLength(maximumLength: 64, MinimumLength = 1)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string MemberFirstName { get; set; }
         [Required]
-        [StringLength(maximumLength: 64, MinimumLength = 1)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string MemberLastName { get; set; }
 
         [Required]
@@ -30,20 +30,6 @@ namespace Veil.Models
         public bool ReceivePromotionalEmals { get; set; }
     }
 
-    public class SetPasswordViewModel
-    {
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "New password")]
-        public string NewPassword { get; set; }
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm new password")]
-        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; }
-    }
-
     public class ChangePasswordViewModel
     {
         [Required]
@@ -52,14 +38,14 @@ namespace Veil.Models
         public string OldPassword { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(maximumLength: 100, MinimumLength = 6, ErrorMessageResourceName = nameof(ErrorMessages.StringLengthBetween), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DataType(DataType.Password)]
         [Display(Name = "New Password")]
         public string NewPassword { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm New Password")]
-        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+        [Compare(nameof(NewPassword), ErrorMessage = "The new password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
     }
 }
