@@ -42,7 +42,7 @@ namespace Veil.Controllers
         ///     The partial view to be rendered
         /// </returns>
         [ChildActionOnly]
-        public ActionResult Index(List<Platform> selected)
+        public PartialViewResult Index(List<Platform> selected)
         {
             var platformsViewModel = new PlatformViewModel()
             {

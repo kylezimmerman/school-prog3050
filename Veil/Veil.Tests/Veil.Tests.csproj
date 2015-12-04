@@ -153,6 +153,7 @@
     <Compile Include="Controllers\CheckoutControllerTests\NewShippingInfoTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\PlaceOrderTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\ShippingInfoTests.cs" />
+    <Compile Include="Controllers\ESRBDescriptionControllerTests.cs" />
     <Compile Include="Controllers\FriendListControllerTests.cs" />
     <Compile Include="Controllers\EventsControllerTests.cs" />
     <Compile Include="Controllers\GameProductsControllerTests\CreateDownloadSKUTests.cs" />
@@ -175,6 +176,7 @@
     <Compile Include="Controllers\GamesControllerTests\SearchTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\_GamesControllerTestsBase.cs" />
     <Compile Include="Controllers\CompaniesControllerTests.cs" />
+    <Compile Include="Controllers\PlatformsControllerTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\GameDetailTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\IndexTest.cs" />
     <Compile Include="Controllers\ReportsControllerTests\MemberDetailTests.cs" />
@@ -184,6 +186,7 @@
     <Compile Include="Controllers\ReportsControllerTests\MemberListTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\_ReportsControllerTestsBase.cs" />
     <Compile Include="Controllers\ReviewsControllerTests.cs" />
+    <Compile Include="Controllers\TagsControllerTests.cs" />
     <Compile Include="Controllers\WebOrdersControllerTests.cs" />
     <Compile Include="Controllers\WishlistControllerTests.cs" />
     <Compile Include="Controllers\ManageControllerTests.cs" />

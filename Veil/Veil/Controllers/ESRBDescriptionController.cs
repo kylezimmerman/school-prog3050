@@ -6,6 +6,8 @@
  */ 
 
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -45,7 +47,7 @@ namespace Veil.Controllers
         {
             var viewModel = new ESRBDescriptionViewModel
             {
-                All = db.ESRBContentDescriptors,
+                All = db.ESRBContentDescriptors.ToList(),
                 Selected = selected
             };
 

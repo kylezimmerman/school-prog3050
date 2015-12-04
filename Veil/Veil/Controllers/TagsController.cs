@@ -42,7 +42,7 @@ namespace Veil.Controllers
         ///     The partial view to be rendered
         /// </returns>
         [ChildActionOnly]
-        public ActionResult Index(List<Tag> selected)
+        public PartialViewResult Index(List<Tag> selected)
         {
             var tagsViewModel = new TagViewModel()
             {
