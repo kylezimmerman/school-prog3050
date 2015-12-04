@@ -10,15 +10,16 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.Exceptions;
 using Veil.Extensions;
 using Veil.Helpers;
 using Veil.Services;
@@ -337,7 +338,7 @@ namespace Veil.Controllers
 
                     await userManager.SendEmailAsync(order.MemberId, subject, body);
                 }
-                catch (Exception ex) when (ex is DataException || ex is StripeException)
+                catch (Exception ex) when (ex is DataException || ex is StripeServiceException)
                 {
                     string customerSupportLink = HtmlHelper.GenerateLink(
                         ControllerContext.RequestContext,
@@ -355,6 +356,10 @@ namespace Veil.Controllers
                     {
                         errorMessage =
                             "An error occurred cancelling the order. Payment has not been refunded. Please try again. If this issue persists please contact ";
+                    }
+                    else if (((StripeServiceException) ex).ExceptionType == StripeExceptionType.ApiKeyError)
+                    {
+                        throw new HttpException((int)HttpStatusCode.InternalServerError, ex.Message, ex);
                     }
                     else
                     {

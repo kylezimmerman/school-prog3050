@@ -15,6 +15,7 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
@@ -1182,7 +1183,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Register_IStripeServiceThrowing_Handles500LevelException()
+        public void Register_IStripeServiceThrowing_HandlesStripeServiceException()
         {
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
@@ -1191,7 +1192,7 @@ namespace Veil.Tests.Controllers
 
             stripeServiceStub.
                 Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.InternalServerError, new StripeError(), "message"));
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError));
 
             RegisterViewModel viewModel = new RegisterViewModel();
             AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
@@ -1200,7 +1201,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Register_IStripeServiceThrowing_HandlesUnauthorizedException()
+        public void Register_IStripeServiceThrowing_HandlesApiKeyException()
         {
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
@@ -1209,29 +1210,9 @@ namespace Veil.Tests.Controllers
 
             stripeServiceStub.
                 Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.Unauthorized, new StripeError(), "message"));
+                Throws(new StripeServiceException("message", StripeExceptionType.ApiKeyError));
 
             RegisterViewModel viewModel = new RegisterViewModel();
-
-            AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
-
-            Assert.That(async () => await controller.Register(viewModel, null), Throws.Nothing);
-        }
-
-        [Test]
-        public void Register_IStripeServiceThrowing_HandlesUnknownException()
-        {
-            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
-            userManagerStub.
-                Setup(um => um.CreateAsync(It.IsAny<User>(), It.IsAny<string>())).
-                ReturnsAsync(IdentityResult.Success);
-
-            stripeServiceStub.
-                Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.BadRequest, new StripeError(), "message"));
-
-            RegisterViewModel viewModel = new RegisterViewModel();
-
             AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
 
             Assert.That(async () => await controller.Register(viewModel, null), Throws.Nothing);
@@ -1258,7 +1239,8 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Register_StripeThrowingError_ReturnsLoginViewWithInitializedViewModel()
+        public async void Register_IStripeServiceThrowingNonApiKeyError_ReturnsLoginViewWithInitializedViewModel(
+            [Values(StripeExceptionType.UnknownError, StripeExceptionType.ServiceError)]StripeExceptionType exceptionType)
         {
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
@@ -1267,7 +1249,7 @@ namespace Veil.Tests.Controllers
 
             stripeServiceStub.
                 Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.InternalServerError, new StripeError(), "message"));
+                Throws(new StripeServiceException("message", exceptionType));
 
             RegisterViewModel viewModel = new RegisterViewModel();
             AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
@@ -1281,7 +1263,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(model.RegisterViewModel != null);
             Assert.That(model.RegisterViewModel, Is.EqualTo(viewModel));
-            Assert.That(model.LoginViewModel != null);
+            Assert.That(model.LoginViewModel, Is.Not.Null);
         }
 
         [Test]

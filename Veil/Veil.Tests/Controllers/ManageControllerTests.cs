@@ -18,6 +18,7 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 using Veil.DataModels.Validation;
+using Veil.Exceptions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -1504,13 +1505,7 @@ namespace Veil.Tests.Controllers
                 Setup(db => db.Members).
                 Returns(memberDbSetStub.Object);
 
-            StripeException exception = new StripeException(
-                HttpStatusCode.BadRequest, 
-                new StripeError
-                {
-                    Code = "Any"
-                },
-                "message");
+            StripeServiceException exception = new StripeServiceException("message", StripeExceptionType.UnknownError);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
@@ -1524,6 +1519,45 @@ namespace Veil.Tests.Controllers
             controller.ControllerContext = contextStub.Object;
 
             Assert.That(async () => await controller.CreateCreditCard(stripeCardToken), Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_IStripeServiceThrowsApiKeyException_ReturnsInternalServerError()
+        {
+            Member member = new Member
+            {
+                UserId = memberId
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            StripeServiceException exception = new StripeServiceException("message", StripeExceptionType.ApiKeyError);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            var result = await controller.CreateCreditCard(stripeCardToken) as HttpStatusCodeResult;
+
+            Assert.That(result != null);
+            Assert.That(result.StatusCode, Is.GreaterThanOrEqualTo((int)HttpStatusCode.InternalServerError));
         }
 
         [Test]
@@ -1546,13 +1580,7 @@ namespace Veil.Tests.Controllers
                 Setup(db => db.Members).
                 Returns(memberDbSetStub.Object);
 
-            StripeException exception = new StripeException(
-                HttpStatusCode.BadRequest,
-                new StripeError
-                {
-                    Code = "Any"
-                },
-                "message");
+            StripeServiceException exception = new StripeServiceException("message", StripeExceptionType.UnknownError);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
@@ -1593,13 +1621,7 @@ namespace Veil.Tests.Controllers
 
             string stripeErrorMessage = "A card Error Message";
 
-            StripeException exception = new StripeException(
-                HttpStatusCode.BadRequest,
-                new StripeError
-                {
-                    ErrorType = "card_error"
-                },
-                stripeErrorMessage);
+            StripeServiceException exception = new StripeServiceException(stripeErrorMessage, StripeExceptionType.CardError);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.

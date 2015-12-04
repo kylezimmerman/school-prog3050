@@ -6,7 +6,6 @@
  */ 
 
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -14,10 +13,10 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using Stripe;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
@@ -248,37 +247,14 @@ namespace Veil.Controllers
                         {
                             stripeCustomerId = stripeService.CreateCustomer(user);
                         }
-                        catch (StripeException ex)
+                        catch (StripeServiceException ex)
                         {
-                            if (ex.HttpStatusCode >= HttpStatusCode.InternalServerError
-                                || (int) ex.HttpStatusCode == 429 /* Too Many Requests */
-                                || (int) ex.HttpStatusCode == 402 /* Request Failed */)
+                            if (ex.ExceptionType == StripeExceptionType.ApiKeyError)
                             {
-                                ModelState.AddModelError(
-                                    REGISTER_MODEL_ERRORS_KEY,
-                                    "An error occured while creating a customer account for you. Please try again later.");
-                            }
-                            else if (ex.HttpStatusCode == HttpStatusCode.Unauthorized)
-                            {
-                                // TODO: We want to log this as it means we don't have a valid API key
-                                Debug.WriteLine("Stripe API Key is Invalid");
-                                Debug.WriteLine(ex.Message);
-
                                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
                             }
-                            else
-                            {
-                                // TODO: Log unknown errors
-                                Debug.WriteLine(ex.HttpStatusCode);
-                                Debug.WriteLine($"Stripe Type: {ex.StripeError.ErrorType}");
-                                Debug.WriteLine($"Stripe Message: {ex.StripeError.Message}");
-                                Debug.WriteLine($"Stripe Code: {ex.StripeError.Code}");
-                                Debug.WriteLine($"Stripe Param: {ex.StripeError.Parameter}");
 
-                                ModelState.AddModelError(
-                                    REGISTER_MODEL_ERRORS_KEY,
-                                    "An unknown error occured while creating a customer account for you. Please try again later.");
-                            }
+                            ModelState.AddModelError(REGISTER_MODEL_ERRORS_KEY, ex.Message);
 
                             viewModel = new LoginRegisterViewModel
                             {

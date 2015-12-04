@@ -17,11 +17,11 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
-using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -571,19 +571,17 @@ namespace Veil.Controllers
             {
                 newCard = stripeService.CreateCreditCard(currentMember, stripeCardToken);
             }
-            catch (StripeException ex)
+            catch (StripeServiceException ex)
             {
-                // Note: Stripe says their card_error messages are safe to display to the user
-                if (ex.StripeError.ErrorType == "card_error")
-                {
-                    this.AddAlert(AlertType.Error, ex.Message);
-                    ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
+                switch (ex.ExceptionType) {
+                    case StripeExceptionType.CardError:
+                        ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
+                        break;
+                    case StripeExceptionType.ApiKeyError:
+                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
                 }
-                else
-                {
-                    this.AddAlert(
-                        AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
-                }
+
+                this.AddAlert(AlertType.Error, ex.Message);
 
                 return RedirectToAction("ManageCreditCards");
             }

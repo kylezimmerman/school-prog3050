@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Web;
@@ -16,6 +17,7 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Helpers;
 using Veil.Services;
 using Veil.Services.Interfaces;
@@ -523,7 +525,7 @@ namespace Veil.Tests.Controllers
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
-            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Throws(new StripeException());
+            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Throws(new StripeServiceException("message", StripeExceptionType.UnknownError));
 
             WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeServiceStub.Object, userManager: null)
             {
@@ -534,6 +536,73 @@ namespace Veil.Tests.Controllers
 
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Details"));
+        }
+
+        [Test]
+        public void Cancel_UserIsMember_ValidCancellation_RefundFailsDueToApiKey_ThrowsInternalServerError()
+        {
+            List<WebOrder> orders = new List<WebOrder>
+            {
+                new WebOrder
+                {
+                    Id = 1,
+                    MemberId = UserId,
+                    OrderStatus = OrderStatus.PendingProcessing,
+                    OrderItems = new List<OrderItem>
+                    {
+                        new OrderItem
+                        {
+                            IsNew = true,
+                            ProductId = Id,
+                            Quantity = 2
+                        },
+                        new OrderItem
+                        {
+                            IsNew = false,
+                            ProductId = Id,
+                            Quantity = 1
+                        },
+                    }
+                }
+            };
+
+            ProductLocationInventory inventory = new ProductLocationInventory
+            {
+                Location = new Location
+                {
+                    SiteName = Location.ONLINE_WAREHOUSE_NAME
+                },
+                ProductId = Id,
+                NewOnHand = 0,
+                UsedOnHand = 0
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<WebOrder>> webOrdersDbSetStub = TestHelpers.GetFakeAsyncDbSet(orders.AsQueryable());
+            webOrdersDbSetStub.Setup(wo => wo.FindAsync(orders[0].Id)).ReturnsAsync(orders[0]);
+            dbStub.Setup(db => db.WebOrders).Returns(webOrdersDbSetStub.Object);
+
+            Mock<DbSet<ProductLocationInventory>> inventoryDbSetStub =
+                TestHelpers.GetFakeAsyncDbSet(new List<ProductLocationInventory> { inventory }.AsQueryable());
+            dbStub.Setup(db => db.ProductLocationInventories).Returns(inventoryDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.Setup(s => s.RefundCharge(It.IsAny<string>())).Throws(new StripeServiceException("message", StripeExceptionType.ApiKeyError));
+
+            WebOrdersController controller = new WebOrdersController(dbStub.Object, idGetterStub.Object, stripeServiceStub.Object, userManager: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            Assert.That(async () => await controller.Cancel(1) as RedirectToRouteResult, 
+                Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() >= (int)HttpStatusCode.InternalServerError));
         }
 
         [Test]

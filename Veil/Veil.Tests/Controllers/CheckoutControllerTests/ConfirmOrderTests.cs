@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Web;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -9,6 +11,7 @@ using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Exceptions;
 using Veil.Extensions;
 using Veil.Models;
 using Veil.Services.Interfaces;
@@ -194,7 +197,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
-                Throws<StripeException>();
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError));
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
 
@@ -203,6 +206,28 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
+        }
+
+        [Test]
+        public void ConfirmOrder_CardIsTokenAndStripeApiKeyExceptionThrown_ThrowsInternalServerError()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Throws(new StripeServiceException("message", StripeExceptionType.ApiKeyError));
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
+            
+            Assert.That(async () => await controller.ConfirmOrder(), 
+                Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() >= (int)HttpStatusCode.InternalServerError));
         }
 
         [Test]
