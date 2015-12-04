@@ -46,16 +46,16 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, new ShippingCostService())
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.Index() as ViewResult;
@@ -112,16 +112,16 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, new ShippingCostService())
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.Index() as ViewResult;
@@ -221,16 +221,16 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             Assert.That(async () => await controller.UpdateQuantity(gameProductId, true, 2), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
@@ -285,16 +285,16 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, new ShippingCostService())
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.UpdateQuantity(gameProduct.Id, true, 4) as ViewResult;
@@ -357,16 +357,16 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, new ShippingCostService())
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.UpdateQuantity(gameProduct.Id, true, 8) as ViewResult;
@@ -429,16 +429,16 @@ namespace Veil.Tests.Controllers
             cartDbSetStub.Setup(db => db.FindAsync(cart.MemberId)).ReturnsAsync(cart);
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, new ShippingCostService())
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.UpdateQuantity(gameProduct.Id, false, 4) as ViewResult;
@@ -501,19 +501,19 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
-            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
-            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+            Mock<HttpSessionStateBase> sessionStub = new Mock<HttpSessionStateBase>();
+            contextStub.Setup(s => s.HttpContext.Session).Returns(sessionStub.Object);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.AddItem(gameProduct.Id, true) as RedirectToRouteResult;
@@ -571,19 +571,19 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
-            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
-            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+            Mock<HttpSessionStateBase> sessionStub = new Mock<HttpSessionStateBase>();
+            contextStub.Setup(s => s.HttpContext.Session).Returns(sessionStub.Object);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             Guid nonMatch = new Guid("45B0752E-998B-477A-AAAD-3ED535BA3559");
@@ -631,16 +631,16 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             Assert.That(async () => await controller.AddItem(gameProduct.Id, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
@@ -696,16 +696,16 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
             dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.AddItem(gameProduct.Id, true) as RedirectToRouteResult;
@@ -772,19 +772,19 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.GameProducts).Returns(gameProductDbSetStub.Object);
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
-            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
-            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+            Mock<HttpSessionStateBase> sessionStub = new Mock<HttpSessionStateBase>();
+            contextStub.Setup(s => s.HttpContext.Session).Returns(sessionStub.Object);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.RemoveItem(gameProduct.Id, cartItem.IsNew) as RedirectToRouteResult;
@@ -817,16 +817,16 @@ namespace Veil.Tests.Controllers
 
             dbStub.Setup(db => db.Carts).Returns(cartDbSetStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             Assert.That(async () => await controller.RemoveItem(Id, true), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
@@ -890,19 +890,19 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
             dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
-            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            contextStub.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
 
-            Mock<HttpSessionStateBase> session = new Mock<HttpSessionStateBase>();
-            context.Setup(s => s.HttpContext.Session).Returns(session.Object);
+            Mock<HttpSessionStateBase> sessionStub = new Mock<HttpSessionStateBase>();
+            contextStub.Setup(s => s.HttpContext.Session).Returns(sessionStub.Object);
 
             Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
             idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(UserId);
 
             CartController controller = new CartController(dbStub.Object, idGetterStub.Object, shippingCostService: null)
             {
-                ControllerContext = context.Object
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.RemoveItem(gameProduct.Id, cartItem.IsNew) as RedirectToRouteResult;
