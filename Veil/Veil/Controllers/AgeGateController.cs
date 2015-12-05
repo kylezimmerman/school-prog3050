@@ -42,13 +42,7 @@ namespace Veil.Controllers
         [HttpPost]
         public ActionResult Index(AgeGateViewModel model)
         {
-            if (DateTime.DaysInMonth(model.Year, model.Month) < model.Day)
-            {
-                ModelState.AddModelError(nameof(model.Day), "Invalid");
-                return View(model);
-            }
-
-            if (DateTime.MinValue.Year > model.Year || DateTime.MaxValue.Year < model.Year)
+            if (DateTime.MinValue.Year > model.Year || DateTime.UtcNow.Year < model.Year)
             {
                 ModelState.AddModelError(nameof(model.Year), "Invalid");
                 return View(model);
@@ -60,11 +54,17 @@ namespace Veil.Controllers
                 return View(model);
             }
 
+            if (DateTime.DaysInMonth(model.Year, model.Month) < model.Day)
+            {
+                ModelState.AddModelError(nameof(model.Day), "Invalid");
+                return View(model);
+            }
+
             DateTime dateOfBirth = new DateTime(model.Year, model.Month, model.Day);
 
             HttpCookie cookie = new HttpCookie(DATE_OF_BIRTH_COOKIE, dateOfBirth.ToShortDateString())
             {
-                Expires = DateTime.Now.AddDays(1)
+                Expires = DateTime.UtcNow.AddDays(1)
             };
 
             Response.Cookies.Add(cookie);

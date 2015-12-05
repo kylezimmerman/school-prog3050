@@ -10,6 +10,7 @@ using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
+using Veil.Helpers;
 using Veil.Models;
 
 namespace Veil.Tests.Controllers.GamesControllerTests
@@ -321,6 +322,49 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             Assert.That(result != null);
             Assert.That(result.Model != null);
             Assert.That(result.Model, Is.InstanceOf<Game>());
+        }
+
+        [TestCase(VeilRoles.MEMBER_ROLE)]
+        [TestCase(null /* Stand-in for No Role */)]
+        public async void Details_UserIsUnprivilegedRole_GameWithRatingMinimumAgeGreaterThanZero_CookieWithAgeLessThanMinimumAge_AddsAlert(string role)
+        {
+            Game matchingGame = new Game
+            {
+                Id = gameId,
+                GameAvailabilityStatus = AvailabilityStatus.PreOrder,
+                GameSKUs = GetGameSKUsListWithAllAvailabilityStatuses(),
+                Rating = matureESRBRating,
+                Name = "a game"
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Game>> gameDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Game> { matchingGame }.AsQueryable());
+            gameDbSetStub.SetupForInclude();
+
+            dbStub.
+                Setup(db => db.Games).
+                Returns(gameDbSetStub.Object);
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.
+                SetupUser().
+                IsInRole(role);
+            contextStub.
+                Setup(c => c.HttpContext.Request.Cookies).
+                Returns(new HttpCookieCollection
+                {
+                    new HttpCookie(AgeGateController.DATE_OF_BIRTH_COOKIE, DateTime.MaxValue.ToShortDateString())
+                });
+
+            GamesController controller = new GamesController(dbStub.Object, idGetter: null)
+            {
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.Details(matchingGame.Id);
+
+            Assert.That(controller.TempData[AlertHelper.ALERT_MESSAGE_KEY],
+                Has.Some.Matches<AlertMessage>(am => am.Message == AgeGateController.AgeBlockMessage));
         }
 
         [TestCase(VeilRoles.MEMBER_ROLE)]

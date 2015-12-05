@@ -43,7 +43,7 @@ namespace Veil.Models
         /// </summary>
         [BindNever]
         public IEnumerable<SelectListItem> Years
-            => new SelectList(Enumerable.Range(DateTime.Today.Year - 120, 121), DateTime.Today.Year);
+            => new SelectList(Enumerable.Range(DateTime.UtcNow.Year - 119, 120), DateTime.UtcNow.Year);
 
         /// <summary>
         ///     The list of months
@@ -104,6 +104,6 @@ namespace Veil.Models
         /// </summary>
         [DisplayName("Year")]
         [Required]
-        public int Year { get; set; } = DateTime.Today.Year; // So it is the selected value
+        public int Year { get; set; } = DateTime.UtcNow.Year; // So it is the selected value
     }
 }
