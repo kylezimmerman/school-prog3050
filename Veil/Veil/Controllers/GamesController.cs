@@ -340,6 +340,7 @@ namespace Veil.Controllers
             }
 
             Game game = await db.Games
+                .Include(g => g.Rating)
                 .Include(g => g.ContentDescriptors)
                 .Include(g => g.GameSKUs)
                 .Include(g => g.GameSKUs.Select(sku => sku.Reviews.Select(r => r.Member)))
@@ -365,6 +366,24 @@ namespace Veil.Controllers
             game.GameSKUs = game.GameSKUs.
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
+
+            if (game.Rating.MinimumAge <= 0)
+            {
+                return View(game);
+            }
+
+            DateTime? userAge = AgeGateController.GetDateOfBirthValue(Request.Cookies);
+
+            if (userAge == null)
+            {
+                return View("~/Views/AgeGate/Index.cshtml", new AgeGateViewModel(Request.RawUrl, game.Name));
+            }
+
+            if ((DateTime.Now.Year - userAge.Value.Year) < game.Rating.MinimumAge)
+            {
+                this.AddAlert(AlertType.Info, AgeGateController.AgeBlockMessage);
+                return RedirectToAction("Index", new { Controller = "Games" });
+            }
 
             return View(game);
         }

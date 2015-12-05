@@ -45,6 +45,12 @@ namespace Veil.DataModels.Models
         public string ImageURL { get; set; }
 
         /// <summary>
+        ///     The minimum suitable age for the game
+        /// </summary>
+        [Required]
+        public byte MinimumAge { get; set; }
+
+        /// <summary>
         ///     Collection navigation property for games with this rating
         /// </summary>
         public virtual ICollection<Game> Games { get; set; }

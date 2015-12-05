@@ -69,5 +69,23 @@ namespace Veil.Controllers
                 return sw.GetStringBuilder().ToString();
             }
         }
+
+        /// <summary>
+        ///     Redirects to <see cref="returnUrl"/> if it is local, otherwise redirects to Home Index
+        /// </summary>
+        /// <param name="returnUrl">
+        ///     The Url to potentially redirect to
+        /// </param>
+        /// <returns>
+        ///     The resulting redirection result
+        /// </returns>
+        protected ActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

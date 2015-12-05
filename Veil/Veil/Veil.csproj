@@ -214,6 +214,7 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\Bundles\Foundation.cs" />
+    <Compile Include="Controllers\AgeGateController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ESRBDescriptionController.cs" />
     <Compile Include="Controllers\GameProductsController.cs" />
@@ -231,6 +232,7 @@
     <Compile Include="Helpers\AlertHelper.cs" />
     <Compile Include="Helpers\GuidUserIdGetter.cs" />
     <Compile Include="Helpers\IGuidUserIdGetter.cs" />
+    <Compile Include="Models\AgeGateViewModel.cs" />
     <Compile Include="Models\BillingInfoViewModel.cs" />
     <Compile Include="Models\CartViewModel.cs" />
     <Compile Include="Models\CompanyViewModel.cs" />
@@ -513,6 +515,7 @@
     <Content Include="Views\GameProducts\Delete.cshtml" />
     <Content Include="Views\ESRBDescription\Index.cshtml" />
     <Content Include="Views\Companies\Manage.cshtml" />
+    <Content Include="Views\AgeGate\Index.cshtml" />
     <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
     <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />
