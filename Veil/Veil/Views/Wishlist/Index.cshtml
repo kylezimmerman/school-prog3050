@@ -9,6 +9,12 @@
     <div class="column">
         <h2>@ViewBag.Title</h2>
         <p>Wishlist Visibility: @Html.DisplayFor(m => m.WishListVisibility)</p>
+        @if (Model.WishListVisibility == WishListVisibility.Public)
+        {
+            <p>You can share your wishlist with others by sending them this link:
+                <a href="@HttpContext.Current.Request.Url.AbsoluteUri">@HttpContext.Current.Request.Url.AbsoluteUri</a>
+            </p>
+        }
     </div>
 </div>
 
@@ -16,7 +22,7 @@
 {
     <div class="row">
         <div class="column">
-            <p>The wishlist is empty.</p>
+            <p>This wishlist is empty.</p>
         </div>
     </div>
 }
