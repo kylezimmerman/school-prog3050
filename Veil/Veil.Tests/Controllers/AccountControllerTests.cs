@@ -619,6 +619,166 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public async void Login_SignInSuccessOfUserWithMemberInMemberRole_DoesNotAddsOrRemoveUserFromMemberRole()
+        {
+            string returnUrl = "/Games";
+
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password",
+                RememberMe = true
+            };
+
+            User user = new User
+            {
+                Id = Guid.ParseExact("65ED1E57-D246-4A20-9937-E5C129E67064", "D"),
+                Email = viewModel.LoginEmail,
+                UserName = "userName",
+                Member = new Member()
+            };
+
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsInRoleAsync(It.Is<Guid>(val => val == user.Id), VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.AddToRoleAsync(It.Is<Guid>(val => val == user.Id), VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+            userManagerMock.
+                Setup(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerMock.Object, authenticationManagerStub.Object);
+            signInManagerStub.
+                Setup(sim => sim.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>())).
+                ReturnsAsync(SignInStatus.Success);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
+
+            AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
+            {
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.Login(viewModel, returnUrl);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.AddToRoleAsync(user.Id, VeilRoles.MEMBER_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.MEMBER_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void Login_SignInSuccessOfUserWithEmployeeInEmployeeRole_DoesNotAddsOrRemoveUserFromEmployeeRole()
+        {
+            string returnUrl = "/Games";
+
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password",
+                RememberMe = true
+            };
+
+            User user = new User
+            {
+                Id = Guid.ParseExact("65ED1E57-D246-4A20-9937-E5C129E67064", "D"),
+                Email = viewModel.LoginEmail,
+                UserName = "userName",
+                Employee = new Employee()
+            };
+
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsInRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE)).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.AddToRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+            userManagerMock.
+                Setup(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerMock.Object, authenticationManagerStub.Object);
+            signInManagerStub.
+                Setup(sim => sim.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>())).
+                ReturnsAsync(SignInStatus.Success);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
+
+            AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
+            {
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.Login(viewModel, returnUrl);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.AddToRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+        }
+
+        [Test]
         public async void Login_SignInSuccessOfUserWithMemberNotInMemberRole_AddsUserToMemberRole()
         {
             string returnUrl = "/Games";

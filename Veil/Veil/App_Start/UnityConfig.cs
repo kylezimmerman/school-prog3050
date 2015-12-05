@@ -69,7 +69,7 @@ namespace Veil
             container.RegisterType<IIdentityMessageService, EmailService>(
                 new HierarchicalLifetimeManager());
 
-            // Note: IDataProtectionProvider required by VeilUserManager is setup in Startup.Auth.cs
+            // Note: IDataProtectionProvider, required by VeilUserManager, is setup in Startup.Auth.cs
 
             // This is required for VeilSignInManager's constructor
             container.RegisterType<IAuthenticationManager>(

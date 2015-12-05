@@ -602,7 +602,7 @@ namespace Veil.Controllers
                 await userManager.AddToRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE);
                 rolesChanged = true;
             }
-            else if (isInEmployeeRole && user.Member == null)
+            else if (isInEmployeeRole && user.Employee == null)
             {
                 await userManager.RemoveFromRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE);
                 rolesChanged = true;
