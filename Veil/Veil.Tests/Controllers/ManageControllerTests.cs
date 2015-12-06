@@ -1634,7 +1634,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void UpdateUserInformation_NoEmailChange()
+        public async void UpdateProfile_NoEmailChange()
         {      
             IndexViewModel viewModel = new IndexViewModel()
             {
@@ -1939,6 +1939,34 @@ namespace Veil.Tests.Controllers
             {
                 ControllerContext = context.Object
             };
+
+            var result = await controller.UpdateProfile(viewModel) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+        }
+
+        [Test]
+        public async void ConfirmNewEmail_SuccessfulConfirmation()
+        {
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com"
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            userManagerStub.Setup(um => um.ConfirmEmailAsync(It.IsAny<Guid>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
+            userManagerStub.Setup(um => um.UpdateSecurityStampAsync(It.IsAny<Guid>())).ReturnsAsync(IdentityResult.Success);
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+
         }
 
         [Test]
