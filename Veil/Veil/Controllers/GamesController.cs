@@ -401,7 +401,24 @@ namespace Veil.Controllers
             return View();
         }
 
-        // TODO: Comments
+        /// <summary>
+        ///     Creates a new game with the information provided if it is valid
+        /// </summary>
+        /// <param name="game">
+        ///     The <see cref="Game"/> containing the information excluding tags and content descriptors
+        /// </param>
+        /// <param name="tags">
+        ///     The <see cref="List{T}"/> of <see cref="string"/>s matching the names of the selected
+        ///     <see cref="Tag"/>s
+        /// </param>
+        /// <param name="contentDescriptors">
+        ///     The <see cref="List{T}"/> of <see cref="int"/>s matching the Ids of the selected
+        ///     <see cref="ESRBContentDescriptor"/>s
+        /// </param>
+        /// <returns>
+        ///     Redirection to the new <see cref="Game"/>s details if successful
+        ///     Redisplay of the page with errors if any information is invalid
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]

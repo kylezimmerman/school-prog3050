@@ -638,7 +638,7 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        ///     Persists the selected platfroms as the member's new favorites
+        ///     Persists the selected platforms as the member's new favorites
         /// </summary>
         /// <param name="platforms">
         ///     An updated list of the member's favorite platforms
