@@ -55,12 +55,12 @@ namespace Veil.Controllers
         [HttpGet]
         public async Task<ActionResult> GameList()
         {
-            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            var viewModel = new DateFilteredListViewModel<GameListRowViewModel>
             {
                 Items = await db.Games
                 .Select(
                     g =>
-                        new GameListViewModel
+                        new GameListRowViewModel
                         {
                             Game = g,
                             QuantitySold = db.WebOrders
@@ -87,14 +87,14 @@ namespace Veil.Controllers
         {
             end = SetToEndOfDayIfInPast(end);
 
-            var viewModel = new DateFilteredListViewModel<GameListViewModel>
+            var viewModel = new DateFilteredListViewModel<GameListRowViewModel>
             {
                 StartDate = start,
                 EndDate = end,
                 Items = await db.Games
                     .Select(
                         g =>
-                            new GameListViewModel
+                            new GameListRowViewModel
                             {
                                 Game = g,
                                 QuantitySold = db.WebOrders

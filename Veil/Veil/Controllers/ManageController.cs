@@ -117,7 +117,7 @@ namespace Veil.Controllers
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
                 MemberVisibility = user.Member.WishListVisibility,
-                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails,
+                ReceivePromotionalEmails = user.Member.ReceivePromotionalEmails,
                 FavoritePlatformCount = user.Member.FavoritePlatforms.Count,
                 FavoriteTagCount = user.Member.FavoriteTags.Count
             };
@@ -150,7 +150,7 @@ namespace Veil.Controllers
                 user.FirstName = viewModel.MemberFirstName;
                 user.LastName = viewModel.MemberLastName;
                 user.PhoneNumber = viewModel.PhoneNumber;
-                user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
+                user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmails;
                 user.Member.WishListVisibility = viewModel.MemberVisibility;
 
                 if (user.Email != viewModel.MemberEmail)

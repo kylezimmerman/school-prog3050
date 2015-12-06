@@ -161,12 +161,12 @@ namespace Veil.Controllers
 
             if (tags.Count == 0 && title == "" && platform == "")
             {
-                AdvancedSearchViewModel advancedAdvancedSearchViewModel = new AdvancedSearchViewModel
+                AdvancedGameSearchViewModel advancedGameAdvancedGameSearchViewModel = new AdvancedGameSearchViewModel
                 {
                     Platforms = await db.Platforms.ToListAsync()
                 };
 
-                return View(advancedAdvancedSearchViewModel);
+                return View(advancedGameAdvancedGameSearchViewModel);
             }
 
             for (int i = 0; i < tags.Count; i++)

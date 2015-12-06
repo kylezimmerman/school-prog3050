@@ -1,8 +1,18 @@
-﻿using System;
+﻿/* WebOrderCheckoutDetails.cs
+ * Purpose: Class to hold the web order checkout information
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.11.14: Created
+ */ 
+
+using System;
 using Veil.DataModels.Models;
 
 namespace Veil.Models
 {
+    /// <summary>
+    ///     Class to hold the <see cref="WebOrder"/> checkout information
+    /// </summary>
     public class WebOrderCheckoutDetails
     {
         private Guid? memberAddressId;

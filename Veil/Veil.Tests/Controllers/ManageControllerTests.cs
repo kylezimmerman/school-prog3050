@@ -12,7 +12,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Moq;
 using NUnit.Framework;
-using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -1881,7 +1880,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -1933,7 +1932,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
@@ -1974,7 +1973,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             User user = new User()
@@ -2018,7 +2017,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -2079,7 +2078,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -2141,7 +2140,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
