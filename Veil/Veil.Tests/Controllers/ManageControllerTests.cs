@@ -12,12 +12,12 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Moq;
 using NUnit.Framework;
-using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
 using Veil.DataModels.Validation;
+using Veil.Exceptions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -30,12 +30,14 @@ namespace Veil.Tests.Controllers
     {
         private Guid memberId;
         private Guid addressId;
+        private Guid creditCardId;
 
         [SetUp]
         public void Setup()
         {
             memberId = new Guid("59EF92BE-D71F-49ED-992D-DF15773DAF98");
             addressId = new Guid("53BE47E4-0C74-4D49-97BB-7246A7880B39");
+            creditCardId = new Guid("9E77DA3D-F27B-4390-9088-95D157070D06");
         }
 
         private ManageController CreateManageController(
@@ -1089,6 +1091,121 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public void DeleteAddress_IdNotInDb_Throws404Exception()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(null);
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            Assert.That(async () => await controller.DeleteAddress(addressId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void DeleteAddress_IdInDb_RemovesReturnedAddress()
+        {
+            MemberAddress addressToDelete = new MemberAddress
+            {
+                Id = addressId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetMock = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetMock.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToDelete);
+
+            addressDbSetMock.
+                Setup(adb => adb.Remove(It.IsAny<MemberAddress>())).
+                Returns<MemberAddress>(val => val).
+                Verifiable();
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetMock.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            await controller.DeleteAddress(addressId);
+
+            Assert.That(
+                () => 
+                    addressDbSetMock.Verify(adb => adb.Remove(addressToDelete),
+                    Times.Once),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void DeleteAddress_IdInDb_CallsSaveChangesAsync()
+        {
+            MemberAddress addressToDelete = new MemberAddress
+            {
+                Id = addressId
+            };
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToDelete);
+            addressDbSetStub.
+                Setup(adb => adb.Remove(It.IsAny<MemberAddress>())).
+                Returns<MemberAddress>(val => val);
+
+            dbMock.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+            dbMock.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1).
+                Verifiable();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbMock.Object);
+
+            await controller.DeleteAddress(addressId);
+
+            Assert.That(
+                () =>
+                    dbMock.Verify(db => db.SaveChangesAsync(),
+                    Times.Once),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void DeleteAddress_IdInDb_ReturnsRedirectionToManageAddresses()
+        {
+            MemberAddress addressToDelete = new MemberAddress
+            {
+                Id = addressId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberAddress>> addressDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberAddress>().AsQueryable());
+            addressDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(addressToDelete);
+
+            dbStub.
+                Setup(db => db.MemberAddresses).
+                Returns(addressDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.DeleteAddress(addressId) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageAddresses)));
+            Assert.That(result.RouteValues["Controllers"], Is.Null.Or.EqualTo("Manage"));
+        }
+
+        [Test]
         public async void ManageCreditCards_WhenCalled_SetsUpViewModel()
         {
             List<Country> countries = GetCountries();
@@ -1147,22 +1264,6 @@ namespace Veil.Tests.Controllers
             Assert.That(model.Countries, Has.Count.EqualTo(countries.Count));
             Assert.That(model.CreditCards, Is.Not.Empty);
             Assert.That(model.CreditCards.Count(), Is.EqualTo(creditCards.Count));
-            Assert.That(model.Years, Is.Not.Empty);
-            Assert.That(model.Years.Count(), Is.EqualTo(20));
-            Assert.That(model.Months, Is.Not.Empty);
-            Assert.That(model.Months.Count(), Is.EqualTo(12));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("January") && i.Text.Contains("01")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("February") && i.Text.Contains("02")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("March") && i.Text.Contains("03")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("April") && i.Text.Contains("04")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("May") && i.Text.Contains("05")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("June") && i.Text.Contains("06")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("July") && i.Text.Contains("07")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("August") && i.Text.Contains("08")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("September") && i.Text.Contains("09")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("October") && i.Text.Contains("10")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("November") && i.Text.Contains("11")));
-            Assert.That(model.Months, Has.Exactly(1).Matches<SelectListItem>(i => i.Text.Contains("December") && i.Text.Contains("12")));
         }
 
         [Test]
@@ -1387,13 +1488,7 @@ namespace Veil.Tests.Controllers
                 Setup(db => db.Members).
                 Returns(memberDbSetStub.Object);
 
-            StripeException exception = new StripeException(
-                HttpStatusCode.BadRequest, 
-                new StripeError
-                {
-                    Code = "Any"
-                },
-                "message");
+            StripeServiceException exception = new StripeServiceException("message", StripeExceptionType.UnknownError);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
@@ -1407,6 +1502,45 @@ namespace Veil.Tests.Controllers
             controller.ControllerContext = contextStub.Object;
 
             Assert.That(async () => await controller.CreateCreditCard(stripeCardToken), Throws.Nothing);
+        }
+
+        [Test]
+        public async void CreateCreditCard_IStripeServiceThrowsApiKeyException_ReturnsInternalServerError()
+                {
+            Member member = new Member
+            {
+                UserId = memberId
+            };
+
+            string stripeCardToken = "stripeCardToken";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.
+                Setup(mdb => mdb.FindAsync(memberId)).
+                ReturnsAsync(member);
+
+            dbStub.
+                Setup(db => db.Members).
+                Returns(memberDbSetStub.Object);
+
+            StripeServiceException exception = new StripeServiceException("message", StripeExceptionType.ApiKeyError);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.CreateCreditCard(It.IsAny<Member>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IGuidUserIdGetter> idGetterStub = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+            Mock<ControllerContext> contextStub = TestHelpers.GetSetupControllerContextFakeWithUserIdentitySetup();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: stripeServiceStub.Object);
+            controller.ControllerContext = contextStub.Object;
+
+            var result = await controller.CreateCreditCard(stripeCardToken) as HttpStatusCodeResult;
+
+            Assert.That(result != null);
+            Assert.That(result.StatusCode, Is.GreaterThanOrEqualTo((int)HttpStatusCode.InternalServerError));
         }
 
         [Test]
@@ -1429,13 +1563,7 @@ namespace Veil.Tests.Controllers
                 Setup(db => db.Members).
                 Returns(memberDbSetStub.Object);
 
-            StripeException exception = new StripeException(
-                HttpStatusCode.BadRequest,
-                new StripeError
-                {
-                    Code = "Any"
-                },
-                "message");
+            StripeServiceException exception = new StripeServiceException("message", StripeExceptionType.UnknownError);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
@@ -1476,13 +1604,7 @@ namespace Veil.Tests.Controllers
 
             string stripeErrorMessage = "A card Error Message";
 
-            StripeException exception = new StripeException(
-                HttpStatusCode.BadRequest,
-                new StripeError
-                {
-                    Code = "card_error"
-                },
-                stripeErrorMessage);
+            StripeServiceException exception = new StripeServiceException(stripeErrorMessage, StripeExceptionType.CardError);
 
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
@@ -1634,7 +1756,123 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void UpdateProfile_NoEmailChange()
+        public void DeleteCreditCard_IdNotInDb_Throws404Exception()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberCreditCard>> creditCardDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberCreditCard>().AsQueryable());
+            creditCardDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(null);
+
+            dbStub.
+                Setup(db => db.MemberCreditCards).
+                Returns(creditCardDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            Assert.That(async () => await controller.DeleteCreditCard(creditCardId), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void DeleteCreditCard_IdInDb_RemovesReturnedAddress()
+        {
+            MemberCreditCard creditCardToDelete = new MemberCreditCard
+            {
+                Id = creditCardId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberCreditCard>> creditCardDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberCreditCard>().AsQueryable());
+            creditCardDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(creditCardToDelete);
+
+            creditCardDbSetStub.
+                Setup(adb => adb.Remove(It.IsAny<MemberCreditCard>())).
+                Returns<MemberCreditCard>(val => val).
+                Verifiable();
+
+            dbStub.
+                Setup(db => db.MemberCreditCards).
+                Returns(creditCardDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            await controller.DeleteCreditCard(creditCardId);
+
+            Assert.That(
+                () =>
+                    creditCardDbSetStub.Verify(adb => adb.Remove(creditCardToDelete),
+                    Times.Once),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void DeleteCreditCard_IdInDb_CallsSaveChangesAsync()
+        {
+            MemberCreditCard creditCardToDelete = new MemberCreditCard
+            {
+                Id = creditCardId
+            };
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberCreditCard>> creditCardDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberCreditCard>().AsQueryable());
+            creditCardDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(creditCardToDelete);
+
+            creditCardDbSetStub.
+                Setup(adb => adb.Remove(It.IsAny<MemberCreditCard>())).
+                Returns<MemberCreditCard>(val => val);
+
+            dbMock.
+                Setup(db => db.MemberCreditCards).
+                Returns(creditCardDbSetStub.Object);
+            dbMock.
+                Setup(db => db.SaveChangesAsync()).
+                ReturnsAsync(1).
+                Verifiable();
+
+            ManageController controller = CreateManageController(veilDataAccess: dbMock.Object);
+
+            await controller.DeleteCreditCard(creditCardId);
+
+            Assert.That(
+                () =>
+                    dbMock.Verify(db => db.SaveChangesAsync(),
+                    Times.Once),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void DeleteCreditCard_IdInDb_ReturnsRedirectionToManageAddresses()
+        {
+            MemberCreditCard creditCardToDelete = new MemberCreditCard
+            {
+                Id = creditCardId
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<MemberCreditCard>> creditCardDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<MemberCreditCard>().AsQueryable());
+            creditCardDbSetStub.
+                Setup(adb => adb.FindAsync(It.IsAny<Guid>())).
+                ReturnsAsync(creditCardToDelete);
+
+            dbStub.
+                Setup(db => db.MemberCreditCards).
+                Returns(creditCardDbSetStub.Object);
+
+            ManageController controller = CreateManageController(veilDataAccess: dbStub.Object);
+
+            var result = await controller.DeleteCreditCard(creditCardId) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(ManageController.ManageCreditCards)));
+            Assert.That(result.RouteValues["Controllers"], Is.Null.Or.EqualTo("Manage"));
+        }
+
+        [Test]
+        public async void UpdateUserInformation_NoEmailChange()
         {      
             IndexViewModel viewModel = new IndexViewModel()
             {
@@ -1642,7 +1880,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -1694,7 +1932,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
@@ -1735,7 +1973,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             User user = new User()
@@ -1779,7 +2017,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -1840,7 +2078,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -1902,7 +2140,7 @@ namespace Veil.Tests.Controllers
                 MemberFirstName = "firstName",
                 MemberLastName = "lastName",
                 MemberVisibility = WishListVisibility.FriendsOnly,
-                ReceivePromotionalEmals = true
+                ReceivePromotionalEmails = true
             };
 
             Member member = new Member()
@@ -2076,10 +2314,64 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        [Ignore]
         public async void ManagePlatformsPOST_RemovePlatforms_ReturnsUpdatedModel()
         {
-            // TODO
+            List<Platform> platforms = new List<Platform>
+            {
+                new Platform
+                {
+                    PlatformCode = "TPlat",
+                    PlatformName = "Test Platform"
+                },
+                new Platform
+                {
+                    PlatformCode = "2Plat",
+                    PlatformName = "Second Platform"
+        }
+            };
+
+            List<string> platformStrings = new List<string>
+            {
+                "TPlat"
+            };
+
+            Member member = new Member
+            {
+                UserId = memberId,
+                FavoritePlatforms = new List<Platform>
+                {
+                    platforms[0],
+                    platforms[1]
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Platform>> platformDbSetStub = TestHelpers.GetFakeAsyncDbSet(platforms.AsQueryable());
+            dbStub.Setup(db => db.Platforms).Returns(platformDbSetStub.Object);
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null,
+                veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ManagePlatforms(platformStrings);
+
+            Assert.That(member.FavoritePlatforms.Count, Is.EqualTo(1));
+            Assert.That(member.FavoritePlatforms.Any(p => p.PlatformCode == "TPlat"));
+            Assert.That(member.FavoritePlatforms.All(p => p.PlatformCode != "2Plat"));
         }
 
         [Test]
@@ -2236,10 +2528,61 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        [Ignore]
         public async void ManageTagsPOST_RemoveTags_ReturnsUpdatedModel()
         {
-            // TODO
+            List<Tag> tags = new List<Tag>
+            {
+                new Tag
+                {
+                    Name = "Test Tag"
+                },
+                new Tag
+                {
+                    Name = "Second Tag"
+                }
+            };
+
+            List<string> tagStrings = new List<string>
+            {
+                "Test Tag"
+            };
+
+            Member member = new Member
+            {
+                UserId = memberId,
+                FavoriteTags = new List<Tag>
+                {
+                    tags[0]
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+
+            Mock<DbSet<Tag>> tagDbSetStub = TestHelpers.GetFakeAsyncDbSet(tags.AsQueryable());
+            dbStub.Setup(db => db.Tags).Returns(tagDbSetStub.Object);
+
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            memberDbSetStub.Setup(db => db.FindAsync(member.UserId)).ReturnsAsync(member);
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(member.UserId);
+
+            ManageController controller = new ManageController(userManager: null, signInManager: null,
+                veilDataAccess: dbStub.Object, idGetter: idGetterStub.Object, stripeService: null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ManageTags(tagStrings);
+
+            Assert.That(member.FavoriteTags.Count, Is.EqualTo(1));
+            Assert.That(member.FavoriteTags.Any(t => t.Name == "Test Tag"));
+            Assert.That(member.FavoriteTags.All(t => t.Name != "Second Tag"));
         }
 
         [Test]

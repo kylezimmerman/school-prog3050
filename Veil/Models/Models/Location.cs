@@ -34,14 +34,14 @@ namespace Veil.DataModels.Models
         ///     The location type name for this Location's type
         /// </summary>
         [Required]
-        [MaxLength(64)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string LocationTypeName { get; set; }
 
         /// <summary>
         ///     The Location's site name
         /// </summary>
         [Required]
-        [MaxLength(128)]
+        [StringLength(maximumLength: 128, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string SiteName { get; set; }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Veil.DataModels.Models
         [Required]
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(ValidationRegex.INPUT_PHONE)]
-        [MaxLength(32)]
+        [StringLength(maximumLength: 32, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string PhoneNumber { get; set; }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Veil.DataModels.Models
         /// </summary>
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(ValidationRegex.INPUT_PHONE)]
-        [MaxLength(32)]
+        [StringLength(maximumLength: 32, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string FaxNumber { get; set; }
 
         /// <summary>
@@ -67,27 +67,27 @@ namespace Veil.DataModels.Models
         /// </summary>
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(ValidationRegex.INPUT_PHONE, ErrorMessage = "Must be in the format (800)555-0199 or 800-555-0199. Extensions must come after the phone number in the format \", ext. 5555\" with at least one digit.")]
-        [MaxLength(32)]
+        [StringLength(maximumLength: 32, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string TollFreeNumber { get; set; }
 
         /// <summary>
         ///     The Address's street address, including apartment number
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string StreetAddress { get; set; }
 
         /// <summary>
         ///     The Addresses optional post office box number
         /// </summary>
-        [MaxLength(16)]
+        [StringLength(maximumLength: 16, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string POBoxNumber { get; set; }
 
         /// <summary>
         ///     The Address's city
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string City { get; set; }
 
         /// <summary>
@@ -95,13 +95,13 @@ namespace Veil.DataModels.Models
         /// </summary>
         [Required]
         [DataType(DataType.PostalCode)]
-        [MaxLength(16)]
+        [StringLength(maximumLength: 16, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string PostalCode { get; set; }
 
         /// <summary>
         ///     The province code for this Address's Province
         /// </summary>
-        [StringLength(2, MinimumLength = 2)]
+        [StringLength(2, MinimumLength = 2, ErrorMessageResourceName = nameof(ErrorMessages.StringLengthFixedLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         public string ProvinceCode { get; set; }
 
@@ -113,7 +113,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The country code for this Address's Country
         /// </summary>
-        [StringLength(2, MinimumLength = 2)]
+        [StringLength(2, MinimumLength = 2, ErrorMessageResourceName = nameof(ErrorMessages.StringLengthFixedLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         public string CountryCode { get; set; }
 

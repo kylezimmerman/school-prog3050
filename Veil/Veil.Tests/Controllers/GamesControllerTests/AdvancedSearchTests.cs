@@ -63,9 +63,9 @@ namespace Veil.Tests.Controllers.GamesControllerTests
             var result = await controller.AdvancedSearch(null) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<AdvancedSearchViewModel>());
+            Assert.That(result.Model, Is.InstanceOf<AdvancedGameSearchViewModel>());
 
-            var model = (AdvancedSearchViewModel)result.Model;
+            var model = (AdvancedGameSearchViewModel)result.Model;
 
             Assert.That(model.Platforms, Has.Count.EqualTo(platforms.Count));
         }

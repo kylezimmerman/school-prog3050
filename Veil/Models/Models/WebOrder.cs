@@ -84,7 +84,7 @@ namespace Veil.DataModels.Models
         public Address Address { get; set; }
 
         /// <summary>
-        /// The province code for this Address's Province
+        ///     The province code for this Address's Province
         /// </summary>
         [Required]
         [StringLength(2, MinimumLength = 2)]
@@ -96,7 +96,7 @@ namespace Veil.DataModels.Models
         public virtual Province Province { get; set; }
 
         /// <summary>
-        /// The country code for this Address's Country
+        ///     The country code for this Address's Country
         /// </summary>
         [StringLength(2, MinimumLength = 2)]
         [Required]

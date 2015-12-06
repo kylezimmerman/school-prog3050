@@ -168,6 +168,10 @@
     <Compile Include="Migrations\201511241728533_AddedNewEmailToUser.Designer.cs">
       <DependentUpon>201511241728533_AddedNewEmailToUser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201512042145516_Added_MinimumAge_ToESRBRating.cs" />
+    <Compile Include="Migrations\201512042145516_Added_MinimumAge_ToESRBRating.Designer.cs">
+      <DependentUpon>201512042145516_Added_MinimumAge_ToESRBRating.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VeilDataContext.cs" />
@@ -224,6 +228,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511241728533_AddedNewEmailToUser.resx">
       <DependentUpon>201511241728533_AddedNewEmailToUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512042145516_Added_MinimumAge_ToESRBRating.resx">
+      <DependentUpon>201512042145516_Added_MinimumAge_ToESRBRating.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

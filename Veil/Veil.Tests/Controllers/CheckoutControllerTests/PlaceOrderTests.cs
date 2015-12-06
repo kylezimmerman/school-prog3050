@@ -4,7 +4,9 @@ using System.Data;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Moq;
@@ -14,6 +16,8 @@ using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
+using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
@@ -403,7 +407,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
-                Throws<StripeException>();
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError));
 
             CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
 
@@ -412,6 +416,28 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Assert.That(result != null);
             Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(CheckoutController.BillingInfo)));
             Assert.That(result.RouteValues["Controller"], Is.Null);
+        }
+
+        [Test]
+        public void PlaceOrder_CardIsTokenAndStripeApiKeyExceptionThrown_ThrowsInternalServerError()
+        {
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithCountriesSetupForInclude(dbStub, GetCountries());
+            SetupVeilDataAccessWithProvincesSetupForInclude(dbStub, GetProvinceList(validNotSavedShippingBillingDetails));
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validNotSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.GetLast4ForToken(It.IsAny<string>())).
+                Throws(new StripeServiceException("message", StripeExceptionType.ApiKeyError));
+
+            CheckoutController controller = CreateCheckoutController(dbStub.Object, context: contextStub.Object, stripeService: stripeServiceMock.Object);
+
+            Assert.That(async () => await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList()),
+                Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() >= (int)HttpStatusCode.InternalServerError));
         }
 
         [Test]
@@ -436,7 +462,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -499,7 +525,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -557,7 +583,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -614,7 +640,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -677,7 +703,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -742,7 +768,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -771,7 +797,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>().
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)).
                 Verifiable(); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
@@ -805,7 +831,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>().
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)).
                 Verifiable(); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
@@ -839,7 +865,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>().
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)).
                 Verifiable(); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
@@ -876,7 +902,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
             stripeServiceMock.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>().
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)).
                 Verifiable(); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
@@ -920,7 +946,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
                 Returns("4242");
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>(); // Throw to end execution early
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError)); // Throw to end execution early
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
             shippingServiceStub.
@@ -941,6 +967,39 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
         }
 
         [Test]
+        public async void PlaceOrder_StripeChargeCardThrowsCardError_AddsCardErrorMessageToAlertMessages()
+        {
+            string stripeErrorMessage = "A card error message";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            StripeServiceException exception = new StripeServiceException(stripeErrorMessage, StripeExceptionType.CardError);
+
+            Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
+            stripeServiceStub.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Throws(exception);
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceStub.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(controller.TempData[AlertHelper.ALERT_MESSAGE_KEY], Has.Some.Matches<AlertMessage>(am => am.Message == stripeErrorMessage));
+        }
+
+        [Test]
         public async void PlaceOrder_ValidInventoryLevelsAndStripeChargeCardExceptionThrow_RedirectsToConfirmOrder()
         {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
@@ -954,7 +1013,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Mock<IStripeService> stripeServiceStub = new Mock<IStripeService>();
             stripeServiceStub.
                 Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
-                Throws<StripeException>();
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError));
 
             Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
 
@@ -1200,6 +1259,46 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
                     stripeServiceMock.Verify(s => s.RefundCharge(stripeChargeId),
                     Times.Once),
                 Throws.Nothing);
+        }
+
+        [Test]
+        public async void PlaceOrder_SaveChangesThrowsThenRefundThrows_AddsErrorMessageToAlerts()
+        {
+            string stripeChargeId = "chargeToken";
+            string stripeErrorMessage = "a stripe error message";
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            SetupVeilDataAccessWithCarts(dbStub, GetCartsListContainingCartWithNewAndUsed());
+            SetupVeilDataAccessWithAddresses(dbStub, GetMemberAddresses());
+            SetupVeilDataAccessWithMember(dbStub, member);
+            SetupVeilDataAccessWithInventoriesForBothCartProducts(dbStub);
+            SetupVeilDataAccessWithWebOrders(dbStub, new List<WebOrder>());
+
+            dbStub.
+                Setup(db => db.SaveChangesAsync()).
+                Throws<DataException>();
+
+            Mock<ControllerContext> contextStub = GetControllerContextWithSessionSetupToReturn(validSavedShippingBillingDetails);
+
+            Mock<IStripeService> stripeServiceMock = new Mock<IStripeService>();
+            stripeServiceMock.
+                Setup(s => s.ChargeCard(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).
+                Returns(stripeChargeId);
+            stripeServiceMock.
+                Setup(s => s.RefundCharge(It.IsAny<string>())).
+                Throws(new StripeServiceException(stripeErrorMessage, StripeExceptionType.UnknownError));
+
+            Mock<IShippingCostService> shippingServiceStub = new Mock<IShippingCostService>();
+
+            CheckoutController controller = CreateCheckoutController(
+                dbStub.Object,
+                context: contextStub.Object,
+                stripeService: stripeServiceMock.Object,
+                shippingCostService: shippingServiceStub.Object);
+
+            await controller.PlaceOrder(cartWithNewAndUsed.Items.ToList());
+
+            Assert.That(controller.TempData[AlertHelper.ALERT_MESSAGE_KEY], Has.Some.Matches<AlertMessage>(am => am.Message == stripeErrorMessage));
         }
 
         [Test]

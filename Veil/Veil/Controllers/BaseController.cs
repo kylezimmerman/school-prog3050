@@ -21,6 +21,12 @@ namespace Veil.Controllers
     {
         protected const int NotFound = (int) HttpStatusCode.NotFound;
 
+        /// <summary>
+        ///     Handles 404 Not Found exceptions and passes anything else on to the base implementation
+        /// </summary>
+        /// <param name="filterContext">
+        ///     Information about the current request and action.
+        /// </param>
         protected override void OnException(ExceptionContext filterContext)
         {
             HttpException httpException = filterContext.Exception as HttpException;
@@ -62,6 +68,24 @@ namespace Veil.Controllers
                 viewResult.ViewEngine.ReleaseView(ControllerContext, viewResult.View);
                 return sw.GetStringBuilder().ToString();
             }
+        }
+
+        /// <summary>
+        ///     Redirects to <see cref="returnUrl"/> if it is local, otherwise redirects to Home Index
+        /// </summary>
+        /// <param name="returnUrl">
+        ///     The Url to potentially redirect to
+        /// </param>
+        /// <returns>
+        ///     The resulting redirection result
+        /// </returns>
+        protected ActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

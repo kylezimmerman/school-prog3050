@@ -1,5 +1,5 @@
 ﻿/* CommonErrorResults.cs
- * Purpose:
+ * Purpose: Controller extension methods for common error results
  * 
  * Revision History:
  *      Drew Matheson, 2015.11.06: Created
@@ -19,11 +19,17 @@ namespace Veil.Helpers
         private const string NOT_FOUND_TITLE = " Not Found";
 
         /// <summary>
-        /// Returns the error page with a item not found error message
+        ///     Returns the error page with a item not found error message
         /// </summary>
-        /// <param name="controller">The controller executing this result</param>
-        /// <param name="modelName">User-friendly model name to display in the title and message</param>
-        /// <returns>Error page for a item not found error</returns>
+        /// <param name="controller">
+        ///     The controller executing this result
+        /// </param>
+        /// <param name="modelName">
+        ///     User-friendly model name to display in the title and message
+        /// </param>
+        /// <returns>
+        ///     Error page for a item not found error
+        /// </returns>
         public static ViewResult NotFoundErrorResult(this Controller controller, string modelName)
         {
             string message = $"The {modelName} you requested could not be found.";
@@ -37,7 +43,7 @@ namespace Veil.Helpers
                 Message = message
             };
 
-            var result = new ViewResult()
+            var result = new ViewResult
             {
                 ViewName = "NotFound",
                 ViewData = controller.ViewData,

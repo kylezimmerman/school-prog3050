@@ -35,43 +35,50 @@ namespace Veil.DataAccess.Migrations
                 {
                     RatingId = "EC",
                     Description = "Early Childhood",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ec.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ec.png",
+                    MinimumAge = 0
                 },
                 new ESRBRating
                 {
                     RatingId = "E",
                     Description = "Everyone",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e.png",
+                    MinimumAge = 0
                 },
                 new ESRBRating
                 {
                     RatingId = "E10+",
                     Description = "Everyone 10+",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e10.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_e10.png",
+                    MinimumAge = 10
                 },
                 new ESRBRating
                 {
                     RatingId = "T",
                     Description = "Teen",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_t.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_t.png",
+                    MinimumAge = 13
                 },
                 new ESRBRating
                 {
                     RatingId = "M",
                     Description = "Mature",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_m.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_m.png",
+                    MinimumAge = 17
                 },
                 new ESRBRating
                 {
                     RatingId = "AO",
                     Description = "Adults Only",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ao.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_ao.png",
+                    MinimumAge = 18
                 },
                 new ESRBRating
                 {
                     RatingId = "RP",
                     Description = "Rating Pending",
-                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_rp.png"
+                    ImageURL = "https://esrbstorage.blob.core.windows.net/esrbcontent/images/ratingsymbol_rp.png",
+                    MinimumAge = 0
                 }
             );
 

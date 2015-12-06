@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* CartController.cs
+ * Purpose: Controller for cart related actions
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.13: Created
+ */ 
+
+using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -14,6 +21,9 @@ using Veil.Services.Interfaces;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to Cart
+    /// </summary>
     [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class CartController : BaseController
     {
@@ -22,15 +32,29 @@ namespace Veil.Controllers
         private readonly IShippingCostService shippingCostService;
 
         public const string CART_QTY_SESSION_KEY = "Session.Cart.Quantity";
-        
-        public CartController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IShippingCostService shippingCostService)
+
+        /// <summary>
+        ///     Instantiates a new instance of CartController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
+        /// <param name="shippingCostService">
+        ///     The <see cref="IShippingCostService"/> to use for getting the shipping cost for
+        ///     the items in the cart
+        /// </param>
+        public CartController(
+            IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter,
+            IShippingCostService shippingCostService)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
             this.shippingCostService = shippingCostService;
         }
 
-        // GET: Cart
         /// <summary>
         ///     Displays a list of items in the current member's cart
         /// </summary>
@@ -44,7 +68,8 @@ namespace Veil.Controllers
                 Cart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)),
             };
 
-            model.ShippingCost = shippingCostService.CalculateShippingCost(model.Cart.TotalCartItemsPrice,
+            model.ShippingCost = shippingCostService.CalculateShippingCost(
+                model.Cart.TotalCartItemsPrice,
                 model.Cart.Items);
 
             return View(model);
@@ -67,8 +92,12 @@ namespace Veil.Controllers
 
             var membersId = idGetter.GetUserId(User.Identity);
             Cart memberCart = await db.Carts.FindAsync(membersId);
-            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == productId);
-           
+            GameProduct gameProduct =
+                await
+                    db.GameProducts.Include(db => db.Game).
+                        Include(db => db.Platform).
+                        FirstOrDefaultAsync(x => x.Id == productId);
+
             if (gameProduct == null)
             {
                 throw new HttpException(NotFound, nameof(Product));
@@ -92,12 +121,14 @@ namespace Veil.Controllers
             {
                 memberCart.Items.Add(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, $"{name} for {platform} was succesfully added to your your cart.");
+                this.AddAlert(
+                    AlertType.Success, $"{name} for {platform} was succesfully added to your your cart.");
                 Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, $"An error occured while adding {name} for {platform} to your cart");
+                this.AddAlert(
+                    AlertType.Error, $"An error occured while adding {name} for {platform} to your cart");
             }
 
             return RedirectToAction("Details", "Games", new { id = gameId });
@@ -114,7 +145,7 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemoveItem(Guid? productId, bool? isNew)
-        { 
+        {
             if (productId == null || isNew == null)
             {
                 throw new HttpException(NotFound, nameof(Product));
@@ -126,27 +157,34 @@ namespace Veil.Controllers
                 throw new HttpException(NotFound, nameof(Cart));
             }
 
-            CartItem cartItem = memberCart.Items.FirstOrDefault(x => x.ProductId == productId && x.IsNew == isNew);
-            GameProduct gameProduct = await db.GameProducts.Include(db => db.Game).Include(db => db.Platform).FirstOrDefaultAsync(x => x.Id == cartItem.ProductId);
+            CartItem cartItem =
+                memberCart.Items.FirstOrDefault(x => x.ProductId == productId && x.IsNew == isNew);
+            GameProduct gameProduct =
+                await
+                    db.GameProducts.Include(db => db.Game).
+                        Include(db => db.Platform).
+                        FirstOrDefaultAsync(x => x.Id == cartItem.ProductId);
             string name = gameProduct.Game.Name;
             string platform = gameProduct.Platform.PlatformName;
-            
+
             try
             {
                 memberCart.Items.Remove(cartItem);
                 await db.SaveChangesAsync();
-                this.AddAlert(AlertType.Success, $"{name} for {platform} was succesfully removed for your cart");
+                this.AddAlert(
+                    AlertType.Success, $"{name} for {platform} was succesfully removed for your cart");
                 Session[CART_QTY_SESSION_KEY] = memberCart.Items.Count;
             }
             catch (DbUpdateException)
             {
-                this.AddAlert(AlertType.Error, $"An error occured while removing {name} for {platform} from your cart");
+                this.AddAlert(
+                    AlertType.Error,
+                    $"An error occured while removing {name} for {platform} from your cart");
             }
 
             return RedirectToAction("Index");
         }
 
-        // POST: Cart/UpdateQuantity
         /// <summary>
         ///     Updates the quantity of an item
         /// </summary>
@@ -178,13 +216,15 @@ namespace Veil.Controllers
 
             if (quantity.Value < 0)
             {
-                this.AddAlert(AlertType.Error,
+                this.AddAlert(
+                    AlertType.Error,
                     "Your cart cannot contain less than 1 of a product. Consider removing the item from your cart instead.");
                 return RedirectToAction("Index");
             }
 
             Cart currentMemberCart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity));
-            CartItem item = currentMemberCart.Items.FirstOrDefault(i => i.ProductId == productId && i.IsNew == isNew);
+            CartItem item =
+                currentMemberCart.Items.FirstOrDefault(i => i.ProductId == productId && i.IsNew == isNew);
 
             if (item == null)
             {
@@ -197,7 +237,8 @@ namespace Veil.Controllers
 
                 if (newInventory < quantity.Value)
                 {
-                    this.AddAlert(AlertType.Info,
+                    this.AddAlert(
+                        AlertType.Info,
                         $"We currently have {newInventory} new copies of {item.Product.Name}. Your order may take longer to process than usual.");
                 }
             }
@@ -208,7 +249,8 @@ namespace Veil.Controllers
                 if (usedInventory < quantity.Value)
                 {
                     quantity = usedInventory;
-                    this.AddAlert(AlertType.Warning,
+                    this.AddAlert(
+                        AlertType.Warning,
                         $"We currently have {usedInventory} used copies of {item.Product.Name}. Your cart has been set to the maximum deliverable quantity.");
                 }
             }
@@ -223,7 +265,8 @@ namespace Veil.Controllers
                 Cart = await db.Carts.FindAsync(idGetter.GetUserId(User.Identity)),
             };
 
-            model.ShippingCost = shippingCostService.CalculateShippingCost(model.Cart.TotalCartItemsPrice,
+            model.ShippingCost = shippingCostService.CalculateShippingCost(
+                model.Cart.TotalCartItemsPrice,
                 model.Cart.Items);
 
             return View("Index", model);
@@ -237,7 +280,10 @@ namespace Veil.Controllers
         {
             Guid currentUserId = idGetter.GetUserId(User.Identity);
 
-            int cartCount = db.Carts.Where(c => c.MemberId == currentUserId).Select(c => c.Items.Count).SingleOrDefault();
+            int cartCount =
+                db.Carts.Where(c => c.MemberId == currentUserId).
+                    Select(c => c.Items.Count).
+                    SingleOrDefault();
 
             Session[CART_QTY_SESSION_KEY] = cartCount;
         }

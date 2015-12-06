@@ -1,11 +1,17 @@
-﻿using System;
+﻿/* ReviewsController.cs
+ * Purpose: Controller for product reviews
+ * 
+ * Revision History:
+ *      Kyle Zimmerman, 2015.11.13: Created
+ */ 
+
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
-using Microsoft.AspNet.Identity;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -14,25 +20,50 @@ using Veil.Models;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to <see cref="Review{T}"/>
+    /// </summary>
     public class ReviewsController : BaseController
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of ReviewsController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public ReviewsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
             this.idGetter = idGetter;
         }
 
+        /// <summary>
+        ///     Renders a partial for allowing a member to review a game.
+        ///     If they have already reviewed the game, they will be able to edit it.
+        /// </summary>
+        /// <param name="game">
+        ///     The game to be reviewed
+        /// </param>
+        /// <returns>
+        ///     Null if the user isn't authenticated.
+        ///     Partial view for reviewing if the user is authenticated
+        /// </returns>
         [ChildActionOnly]
-        public PartialViewResult CreateReviewForGame([NotNull]Game game)
+        public PartialViewResult CreateReviewForGame([NotNull] Game game)
         {
-            if (!(HttpContext?.User?.Identity?.IsAuthenticated ?? false))
+            if (!(HttpContext.User?.Identity?.IsAuthenticated ?? false))
+            {
                 return null;
+            }
 
-            var memberId = idGetter.GetUserId(HttpContext.User.Identity);
-            var previousReview = game.AllReviews.FirstOrDefault(r => r.MemberId == memberId);
+            Guid memberId = idGetter.GetUserId(HttpContext.User.Identity);
+            GameReview previousReview = game.AllReviews.FirstOrDefault(r => r.MemberId == memberId);
 
             ReviewViewModel viewModel = new ReviewViewModel
             {
@@ -44,6 +75,15 @@ namespace Veil.Controllers
             return PartialView(viewModel);
         }
 
+        /// <summary>
+        ///     Creates a review using the information in the <see cref="reviewViewModel"/>
+        /// </summary>
+        /// <param name="reviewViewModel">
+        ///     The <see cref="ReviewViewModel"/> containing the review information
+        /// </param>
+        /// <returns>
+        ///     Redirection back to the reviewed game's details page
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateReviewForGameProduct([Bind] ReviewViewModel reviewViewModel)
@@ -57,7 +97,9 @@ namespace Veil.Controllers
             if (ModelState.IsValid)
             {
                 //If there is review text, it's pending otherwise it's just approved.
-                review.ReviewStatus = !string.IsNullOrWhiteSpace(review.ReviewText) ? ReviewStatus.Pending : ReviewStatus.Approved;
+                review.ReviewStatus = !string.IsNullOrWhiteSpace(review.ReviewText)
+                    ? ReviewStatus.Pending
+                    : ReviewStatus.Approved;
 
                 if (previousReview == null)
                 {
@@ -82,7 +124,9 @@ namespace Veil.Controllers
 
                 if (review.ReviewStatus == ReviewStatus.Pending)
                 {
-                    this.AddAlert(AlertType.Info, "Your rating will be visible immediately, but your comments will be visible pending review.");
+                    this.AddAlert(
+                        AlertType.Info,
+                        "Your rating will be visible immediately, but your comments will be visible pending review.");
                 }
             }
             else
@@ -90,9 +134,18 @@ namespace Veil.Controllers
                 this.AddAlert(AlertType.Error, "There was an error saving your review. Please try again.");
             }
 
-            return RedirectToAction("Details", "Games", new {id = reviewViewModel.GameId});
+            return RedirectToAction("Details", "Games", new { id = reviewViewModel.GameId });
         }
 
+        /// <summary>
+        ///     Displays a partial view for all of the reviews for the given game
+        /// </summary>
+        /// <param name="game">
+        ///     The game to displays reviews for
+        /// </param>
+        /// <returns>
+        ///     The partial view for the game's reviews
+        /// </returns>
         [ChildActionOnly]
         public PartialViewResult RenderReviewsForGame([NotNull] Game game)
         {
@@ -125,8 +178,9 @@ namespace Veil.Controllers
         public async Task<ActionResult> Approve(Guid memberId, Guid productReviewedId)
         {
             var review = await db.GameReviews
-                .FirstOrDefaultAsync(gr => gr.MemberId == memberId
-                                            && gr.ProductReviewedId == productReviewedId);
+                .FirstOrDefaultAsync(
+                    gr => gr.MemberId == memberId
+                        && gr.ProductReviewedId == productReviewedId);
 
             if (review == null)
             {
@@ -153,8 +207,9 @@ namespace Veil.Controllers
         public async Task<ActionResult> Deny(Guid memberId, Guid productReviewedId)
         {
             var review = await db.GameReviews
-                .FirstOrDefaultAsync(gr => gr.MemberId == memberId
-                                            && gr.ProductReviewedId == productReviewedId);
+                .FirstOrDefaultAsync(
+                    gr => gr.MemberId == memberId
+                        && gr.ProductReviewedId == productReviewedId);
 
             if (review == null)
             {

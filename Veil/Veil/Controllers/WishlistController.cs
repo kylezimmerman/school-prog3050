@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* WishlistController.cs
+ * Purpose: Controller for viewing and managing a wishlist of products
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.13: Created
+ */ 
+
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,11 +19,23 @@ using Veil.DataModels;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to viewing and managing a wishlist of products
+    /// </summary>
     public class WishlistController : BaseController
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of WishlistController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public WishlistController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
@@ -45,7 +64,8 @@ namespace Veil.Controllers
                 if (username != null)
                 {
                     // Even anonymous users can see public wishlists
-                    wishlistOwner = await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
+                    wishlistOwner =
+                        await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
 
                     if (wishlistOwner != null &&
                         wishlistOwner.WishListVisibility == WishListVisibility.Public)
@@ -65,9 +85,10 @@ namespace Veil.Controllers
             }
             else
             {
-                wishlistOwner = await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
+                wishlistOwner =
+                    await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
             }
-            
+
             if (wishlistOwner == null)
             {
                 throw new HttpException(NotFound, "Wishlist");
@@ -81,9 +102,11 @@ namespace Veil.Controllers
 
             if (wishlistOwner.WishListVisibility == WishListVisibility.FriendsOnly &&
                 (wishlistOwner.UserId != currentMember.UserId &&
-                !wishlistOwner.ConfirmedFriends.Contains(currentMember)))
+                    !wishlistOwner.ConfirmedFriends.Contains(currentMember)))
             {
-                this.AddAlert(AlertType.Error, wishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
+                this.AddAlert(
+                    AlertType.Error,
+                    wishlistOwner.UserAccount.UserName + "'s wishlist is only available to their friends.");
                 return RedirectToAction("Index", "FriendList");
             }
 
@@ -103,7 +126,8 @@ namespace Veil.Controllers
         ///     Partial view for the provided gameProduct
         /// </returns>
         [ChildActionOnly]
-        public ActionResult RenderPhysicalGameProduct(PhysicalGameProduct gameProduct, Guid wishlistOwnerId)
+        public ActionResult RenderPhysicalGameProduct(
+            PhysicalGameProduct gameProduct, Guid wishlistOwnerId)
         {
             var model = new WishlistPhysicalGameProductViewModel
             {
@@ -114,8 +138,10 @@ namespace Veil.Controllers
 
             if (currentMember != null)
             {
-                model.NewIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
-                model.UsedIsInCart = currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
+                model.NewIsInCart =
+                    currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && i.IsNew);
+                model.UsedIsInCart =
+                    currentMember.Cart.Items.Any(i => i.ProductId == gameProduct.Id && !i.IsNew);
                 model.ProductIsOnWishlist = currentMember.Wishlist.Any(p => p.Id == gameProduct.Id);
                 model.MemberIsCurrentUser = currentMember.UserId == wishlistOwnerId;
             }
@@ -137,7 +163,7 @@ namespace Veil.Controllers
         public async Task<ActionResult> Add(Guid? itemId)
         {
             Product newItem = await db.Products.FindAsync(itemId);
-            
+
             if (newItem == null)
             {
                 throw new HttpException(NotFound, nameof(Product));
@@ -148,14 +174,16 @@ namespace Veil.Controllers
             if (currentMember.Wishlist.Contains(newItem))
             {
                 this.AddAlert(AlertType.Info, newItem.Name + " is already on your wishlist.");
-                return View("Index", currentMember);
+            }
+            else
+            {
+                currentMember.Wishlist.Add(newItem);
+                await db.SaveChangesAsync();
+
+                this.AddAlert(AlertType.Success, newItem.Name + " was added to your wishlist.");
             }
 
-            currentMember.Wishlist.Add(newItem);
-            await db.SaveChangesAsync();
-
-            this.AddAlert(AlertType.Success, newItem.Name + " was added to your wishlist.");
-            return View("Index", currentMember);
+            return RedirectToAction("Index");
         }
 
         /// <summary>

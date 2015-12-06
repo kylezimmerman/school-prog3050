@@ -14,9 +14,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Transactions;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
@@ -44,6 +44,25 @@ namespace Veil.Controllers
         private readonly IShippingCostService shippingCostService;
         private readonly VeilUserManager userManager;
 
+        /// <summary>
+        ///     Instantiates a new instance of CheckoutController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
+        /// <param name="stripeService">
+        ///     The <see cref="IStripeService"/> to use for Stripe interaction
+        /// </param>
+        /// <param name="shippingCostService">
+        ///     The <see cref="IShippingCostService"/> to use for getting the shipping cost for
+        ///     the items in the cart
+        /// </param>
+        /// <param name="userManager">
+        ///     The <see cref="VeilUserManager"/> to use for sending an order confirmation email
+        /// </param>
         public CheckoutController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter,
             IStripeService stripeService, IShippingCostService shippingCostService,
             VeilUserManager userManager)
@@ -343,17 +362,13 @@ namespace Veil.Controllers
                 {
                     newCard = stripeService.CreateCreditCard(currentMember, stripeCardToken);
                 }
-                catch (StripeException ex)
+                catch (StripeServiceException ex)
                 {
-                    // Note: Stripe says their card_error messages are safe to display to the user
-                    if (ex.StripeError.ErrorType == "card_error")
+                    this.AddAlert(AlertType.Error, ex.Message);
+
+                    if (ex.ExceptionType == StripeExceptionType.ApiKeyError)
                     {
-                        this.AddAlert(AlertType.Error, ex.Message);
-                    }
-                    else
-                    {
-                        this.AddAlert(AlertType.Error,
-                            "An error occured while talking to one of our backends. Sorry!");
+                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
                     }
 
                     return RedirectToAction("BillingInfo");
@@ -638,24 +653,17 @@ namespace Veil.Controllers
 
                     order.StripeChargeId = stripeChargeId;
                 }
-                catch (StripeException ex)
+                catch (StripeServiceException ex)
                 {
-                    // Note: Stripe says their card_error messages are safe to display to the user
-                    if (ex.StripeError.ErrorType == "card_error")
+                    if (ex.ExceptionType == StripeExceptionType.CardError)
                     {
-                        this.AddAlert(AlertType.Error, ex.Message);
-
                         ModelState.AddModelError(
                             ManageController.STRIPE_ISSUES_MODELSTATE_KEY,
                             ex.Message);
                     }
-                    else
-                    {
-                        // TODO: We would want to log this
-                        this.AddAlert(AlertType.Error,
-                            "An error occured while talking to one of our backends. Sorry!");
-                    }
-                    
+
+                    this.AddAlert(AlertType.Error, ex.Message);
+
                     return RedirectToAction("ConfirmOrder");
                 }
 
@@ -674,7 +682,15 @@ namespace Veil.Controllers
                 }
                 catch (DataException ex)
                 {
-                    stripeService.RefundCharge(stripeChargeId);
+                    try
+                    {
+                        stripeService.RefundCharge(stripeChargeId);
+                    }
+                    catch (StripeServiceException stripeEx)
+                    {
+                        this.AddAlert(AlertType.Error, stripeEx.Message);
+                    }
+                    
 
                     this.AddAlert(
                         AlertType.Error,
@@ -750,10 +766,14 @@ namespace Veil.Controllers
                 {
                     last4Digits = stripeService.GetLast4ForToken(orderCheckoutDetails.StripeCardToken);
                 }
-                catch (StripeException ex)
+                catch (StripeServiceException ex)
                 {
-                    // TODO: We would want to log this
-                    this.AddAlert(AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
+                    if (ex.ExceptionType == StripeExceptionType.ApiKeyError)
+                    {
+                        throw new HttpException((int)HttpStatusCode.InternalServerError, ex.Message, ex);
+                    }
+
+                    this.AddAlert(AlertType.Error, ex.Message);
 
                     return null;
                 }

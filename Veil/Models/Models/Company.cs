@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -26,7 +27,7 @@ namespace Veil.DataModels.Models
         /// The company's full name
         /// </summary>
         [Required]
-        [StringLength(maximumLength:512, MinimumLength = 1)]
+        [StringLength(512, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string Name { get; set; }
 
         /// <summary>

@@ -15,6 +15,7 @@ using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Models;
 using Veil.Services;
 using Veil.Services.Interfaces;
@@ -228,6 +229,44 @@ namespace Veil.Tests.Controllers
             Assert.That(
                 () => 
                     userManagerMock.Verify(um => um.CheckPasswordAsync(It.Is<User>(val => val == user), It.Is<string>(val => val == viewModel.LoginPassword)),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void Login_IncorrectPassword_CallsUserManagerAccessFailedAsync()
+        {
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password"
+            };
+
+            User user = new User
+            {
+                Id = new Guid("65ED1E57-D246-4A20-9937-E5C129E67064"),
+                Email = viewModel.LoginEmail
+            };
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(false);
+            userManagerMock.
+                Setup(um => um.AccessFailedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            AccountController controller = new AccountController(userManagerMock.Object, signInManager: null, stripeService: null);
+
+            await controller.Login(viewModel, null);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.AccessFailedAsync(user.Id),
                     Times.Exactly(1)),
                 Throws.Nothing);
         }
@@ -538,53 +577,6 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Login_RequiresTwoFactorAuth_RedirectsToSendCodeWithReturnUrlAndRememberMe()
-        {
-            string returnUrl = "/returnUrl";
-
-            LoginViewModel viewModel = new LoginViewModel
-            {
-                LoginEmail = "fake@example.com",
-                LoginPassword = "password",
-                RememberMe = true
-            };
-
-            User user = new User
-            {
-                Id = Guid.ParseExact("65ED1E57-D246-4A20-9937-E5C129E67064", "D"),
-                Email = viewModel.LoginEmail,
-                UserName = "userName"
-            };
-
-            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
-            userManagerStub.
-                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
-                ReturnsAsync(user);
-            userManagerStub.
-                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
-                ReturnsAsync(true);
-            userManagerStub.
-                Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
-                ReturnsAsync(true);
-
-            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
-
-            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerStub.Object, authenticationManagerStub.Object);
-            signInManagerStub.
-                Setup(sim => sim.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>())).
-                ReturnsAsync(SignInStatus.RequiresVerification);
-
-            AccountController controller = new AccountController(userManagerStub.Object, signInManagerStub.Object, stripeService: null);
-
-            var result = await controller.Login(viewModel, returnUrl) as RedirectToRouteResult;
-
-            Assert.That(result != null);
-            Assert.That(result.RouteValues["Action"], Is.EqualTo("SendCode"));
-            Assert.That(result.RouteValues["ReturnUrl"], Is.EqualTo(returnUrl));
-            Assert.That(result.RouteValues["RememberMe"], Is.EqualTo(viewModel.RememberMe));
-        }
-
-        [Test]
         public async void Login_SignInStatusFailure_AddsErrorToModelState()
         {
             LoginViewModel viewModel = new LoginViewModel
@@ -624,6 +616,166 @@ namespace Veil.Tests.Controllers
             await controller.Login(viewModel, null);
 
             Assert.That(controller.ModelState.Count, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public async void Login_SignInSuccessOfUserWithMemberInMemberRole_DoesNotAddsOrRemoveUserFromMemberRole()
+        {
+            string returnUrl = "/Games";
+
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password",
+                RememberMe = true
+            };
+
+            User user = new User
+            {
+                Id = Guid.ParseExact("65ED1E57-D246-4A20-9937-E5C129E67064", "D"),
+                Email = viewModel.LoginEmail,
+                UserName = "userName",
+                Member = new Member()
+            };
+
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsInRoleAsync(It.Is<Guid>(val => val == user.Id), VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.AddToRoleAsync(It.Is<Guid>(val => val == user.Id), VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+            userManagerMock.
+                Setup(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerMock.Object, authenticationManagerStub.Object);
+            signInManagerStub.
+                Setup(sim => sim.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>())).
+                ReturnsAsync(SignInStatus.Success);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
+
+            AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
+            {
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.Login(viewModel, returnUrl);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.AddToRoleAsync(user.Id, VeilRoles.MEMBER_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.MEMBER_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public async void Login_SignInSuccessOfUserWithEmployeeInEmployeeRole_DoesNotAddsOrRemoveUserFromEmployeeRole()
+        {
+            string returnUrl = "/Games";
+
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password",
+                RememberMe = true
+            };
+
+            User user = new User
+            {
+                Id = Guid.ParseExact("65ED1E57-D246-4A20-9937-E5C129E67064", "D"),
+                Email = viewModel.LoginEmail,
+                UserName = "userName",
+                Employee = new Employee()
+            };
+
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(0);
+
+            user.Member = memberStub.Object;
+
+            Mock<VeilUserManager> userManagerMock = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerMock.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerMock.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.IsInRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE)).
+                ReturnsAsync(true);
+            userManagerMock.
+                Setup(um => um.AddToRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+            userManagerMock.
+                Setup(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE)).
+                ReturnsAsync(IdentityResult.Success).
+                Verifiable();
+
+            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerMock.Object, authenticationManagerStub.Object);
+            signInManagerStub.
+                Setup(sim => sim.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>())).
+                ReturnsAsync(SignInStatus.Success);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>());
+
+            AccountController controller = new AccountController(userManagerMock.Object, signInManagerStub.Object, stripeService: null)
+            {
+                Url = urlHelperStub.Object,
+                ControllerContext = contextStub.Object
+            };
+
+            await controller.Login(viewModel, returnUrl);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.AddToRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE),
+                    Times.Never),
+                Throws.Nothing);
+
+            Assert.That(
+                () =>
+                    userManagerMock.Verify(um => um.RemoveFromRoleAsync(user.Id, VeilRoles.EMPLOYEE_ROLE),
+                    Times.Never),
+                Throws.Nothing);
         }
 
         [Test]
@@ -887,6 +1039,74 @@ namespace Veil.Tests.Controllers
                 Throws.Nothing);
         }
 
+        [Test]
+        public async void Login_SignInSuccessOfUserWithMember_AddsCartCountToSession()
+        {
+            int cartCount = 10;
+
+            LoginViewModel viewModel = new LoginViewModel
+            {
+                LoginEmail = "fake@example.com",
+                LoginPassword = "password",
+                RememberMe = true
+            };
+
+            User user = new User
+            {
+                Id = Guid.ParseExact("65ED1E57-D246-4A20-9937-E5C129E67064", "D"),
+                Email = viewModel.LoginEmail,
+                UserName = "userName",
+                Member = new Member()
+            };
+
+            Mock<Member> memberStub = new Mock<Member>();
+            memberStub.Setup(m => m.Cart.Items.Count).Returns(cartCount);
+
+            user.Member = memberStub.Object;
+
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+            userManagerStub.
+                Setup(um => um.FindByEmailAsync(It.IsAny<string>())).
+                ReturnsAsync(user);
+            userManagerStub.
+                Setup(um => um.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>())).
+                ReturnsAsync(true);
+            userManagerStub.
+                Setup(um => um.IsEmailConfirmedAsync(It.IsAny<Guid>())).
+                ReturnsAsync(true);
+            userManagerStub.
+                Setup(um => um.IsInRoleAsync(It.Is<Guid>(val => val == user.Id), VeilRoles.MEMBER_ROLE)).
+                ReturnsAsync(true);
+
+            Mock<IAuthenticationManager> authenticationManagerStub = new Mock<IAuthenticationManager>();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerStub.Object, authenticationManagerStub.Object);
+            signInManagerStub.
+                Setup(sim => sim.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>())).
+                ReturnsAsync(SignInStatus.Success);
+
+            Mock<UrlHelper> urlHelperStub = new Mock<UrlHelper>();
+
+            Mock<ControllerContext> contextMock = new Mock<ControllerContext>();
+            contextMock.
+                SetupSet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = It.IsAny<int>()).
+                Verifiable();
+
+            AccountController controller = new AccountController(userManagerStub.Object, signInManagerStub.Object, stripeService: null)
+            {
+                Url = urlHelperStub.Object,
+                ControllerContext = contextMock.Object
+            };
+
+            await controller.Login(viewModel, returnUrl: null);
+
+            Assert.That(
+                () => 
+                    contextMock.VerifySet(c => c.HttpContext.Session[CartController.CART_QTY_SESSION_KEY] = cartCount,
+                    Times.Once),
+                Throws.Nothing);
+        }
+
         #endregion Login Tests
 
         #region Register Tests
@@ -1123,7 +1343,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Register_IStripeServiceThrowing_Handles500LevelException()
+        public void Register_IStripeServiceThrowing_HandlesStripeServiceException()
         {
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
@@ -1132,7 +1352,7 @@ namespace Veil.Tests.Controllers
 
             stripeServiceStub.
                 Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.InternalServerError, new StripeError(), "message"));
+                Throws(new StripeServiceException("message", StripeExceptionType.UnknownError));
 
             RegisterViewModel viewModel = new RegisterViewModel();
             AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
@@ -1141,7 +1361,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void Register_IStripeServiceThrowing_HandlesUnauthorizedException()
+        public void Register_IStripeServiceThrowing_HandlesApiKeyException()
         {
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
@@ -1150,29 +1370,9 @@ namespace Veil.Tests.Controllers
 
             stripeServiceStub.
                 Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.Unauthorized, new StripeError(), "message"));
+                Throws(new StripeServiceException("message", StripeExceptionType.ApiKeyError));
 
             RegisterViewModel viewModel = new RegisterViewModel();
-
-            AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
-
-            Assert.That(async () => await controller.Register(viewModel, null), Throws.Nothing);
-        }
-
-        [Test]
-        public void Register_IStripeServiceThrowing_HandlesUnknownException()
-        {
-            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
-            userManagerStub.
-                Setup(um => um.CreateAsync(It.IsAny<User>(), It.IsAny<string>())).
-                ReturnsAsync(IdentityResult.Success);
-
-            stripeServiceStub.
-                Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.BadRequest, new StripeError(), "message"));
-
-            RegisterViewModel viewModel = new RegisterViewModel();
-
             AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
 
             Assert.That(async () => await controller.Register(viewModel, null), Throws.Nothing);
@@ -1199,7 +1399,8 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public async void Register_StripeThrowingError_ReturnsLoginViewWithInitializedViewModel()
+        public async void Register_IStripeServiceThrowingNonApiKeyError_ReturnsLoginViewWithInitializedViewModel(
+            [Values(StripeExceptionType.UnknownError, StripeExceptionType.ServiceError)]StripeExceptionType exceptionType)
         {
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
             userManagerStub.
@@ -1208,7 +1409,7 @@ namespace Veil.Tests.Controllers
 
             stripeServiceStub.
                 Setup(ss => ss.CreateCustomer(It.IsAny<User>())).
-                Throws(new StripeException(HttpStatusCode.InternalServerError, new StripeError(), "message"));
+                Throws(new StripeServiceException("message", exceptionType));
 
             RegisterViewModel viewModel = new RegisterViewModel();
             AccountController controller = new AccountController(userManagerStub.Object, null /*signInManager*/, stripeServiceStub.Object);
@@ -1222,7 +1423,7 @@ namespace Veil.Tests.Controllers
 
             Assert.That(model.RegisterViewModel != null);
             Assert.That(model.RegisterViewModel, Is.EqualTo(viewModel));
-            Assert.That(model.LoginViewModel != null);
+            Assert.That(model.LoginViewModel, Is.Not.Null);
         }
 
         [Test]
@@ -2166,6 +2367,52 @@ namespace Veil.Tests.Controllers
             Assert.That(result.ViewName, Is.Empty.Or.EqualTo("ResetPasswordConfirmation"));
         }
 
-        #endregion ResetPassword Tests
+    #endregion ResetPassword Tests
+
+        #region LogOff Tests
+        [Test]
+        public void SignOut_WhenCalled_CallsAuthenticationManager()
+        {
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+
+            Mock<IAuthenticationManager> authenticationManagerMock = new Mock<IAuthenticationManager>();
+            authenticationManagerMock.
+                Setup(am => am.SignOut(It.IsAny<string>())).
+                Verifiable();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerStub.Object, authenticationManagerMock.Object);
+
+            AccountController controller = new AccountController(userManager: null, signInManager: signInManagerStub.Object, stripeService: null);
+
+            controller.LogOff();
+
+            Assert.That(
+                () =>
+                    authenticationManagerMock.Verify(am => am.SignOut(DefaultAuthenticationTypes.ApplicationCookie),
+                    Times.Exactly(1)),
+                Throws.Nothing);
+        }
+
+        [Test]
+        public void SignOut_WhenCalled_RedirectsToHomeIndex()
+        {
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/, null /*dataProtectionProvider*/);
+
+            Mock<IAuthenticationManager> authenticationManagerMock = new Mock<IAuthenticationManager>();
+            authenticationManagerMock.
+                Setup(am => am.SignOut(It.IsAny<string>())).
+                Verifiable();
+
+            Mock<VeilSignInManager> signInManagerStub = new Mock<VeilSignInManager>(userManagerStub.Object, authenticationManagerMock.Object);
+
+            AccountController controller = new AccountController(userManager: null, signInManager: signInManagerStub.Object, stripeService: null);
+
+            var result = controller.LogOff() as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(HomeController.Index)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo("Home"));
+        }
+        #endregion LogOff Tests
     }
 }

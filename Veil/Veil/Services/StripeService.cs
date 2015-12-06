@@ -1,17 +1,28 @@
-﻿using System;
+﻿/* StripeService.cs
+ * Purpose: Implementation of IStripeService for interacting with Stripe using Stripe.net
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.27: Created
+ */ 
+
+using System;
+using System.Diagnostics;
+using System.Net;
 using JetBrains.Annotations;
 using Stripe;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Services.Interfaces;
 
 namespace Veil.Services
 {
+    /// <summary>
+    ///     Implementation of IStripeService using Stripe.net
+    /// </summary>
     [UsedImplicitly]
     public class StripeService : IStripeService
     {
-        // TODO: I'd like to create our own StripeException and handle the exceptions in here in a way that lets the users just output the message of the exception
-
         /// <summary>
         ///     Implements <see cref="IStripeService.CreateCustomer"/>
         /// </summary>
@@ -25,9 +36,49 @@ namespace Veil.Services
 
             var customerService = new StripeCustomerService();
 
-            StripeCustomer customer = customerService.Create(myCustomer);
+            try
+            {
+                StripeCustomer customer = customerService.Create(myCustomer);
+                return customer.Id;
+            }
+            catch (StripeException ex)
+            {
+                string exceptionMessage;
+                StripeExceptionType type;
 
-            return customer.Id;
+                if (ex.HttpStatusCode >= HttpStatusCode.InternalServerError
+                    || (int)ex.HttpStatusCode == 429 /* Too Many Requests */
+                    || (int)ex.HttpStatusCode == 402 /* Request Failed */)
+                {
+                    type = StripeExceptionType.ServiceError;
+                    exceptionMessage = 
+                        "An error occured while creating a customer account for you. Please try again later.";
+                }
+                else if (ex.HttpStatusCode == HttpStatusCode.Unauthorized)
+                {
+                    // Note: We want to log this as it means we don't have a valid API key
+                    Debug.WriteLine("Stripe API Key is Invalid");
+                    Debug.WriteLine(ex.Message);
+
+                    type = StripeExceptionType.ApiKeyError;
+                    exceptionMessage = "An error occured while talking to one of our backends. Sorry!";
+                }
+                else
+                {
+                    // Note: Log unknown errors
+                    Debug.WriteLine(ex.HttpStatusCode);
+                    Debug.WriteLine($"Stripe Type: {ex.StripeError.ErrorType}");
+                    Debug.WriteLine($"Stripe Message: {ex.StripeError.Message}");
+                    Debug.WriteLine($"Stripe Code: {ex.StripeError.Code}");
+                    Debug.WriteLine($"Stripe Param: {ex.StripeError.Parameter}");
+
+                    type = StripeExceptionType.UnknownError;
+                    exceptionMessage = 
+                        "An unknown error occured while creating a customer account for you. Please try again later.";
+                }
+
+                throw new StripeServiceException(exceptionMessage, type, ex);
+            }
         }
 
         /// <summary>
@@ -35,9 +86,6 @@ namespace Veil.Services
         /// </summary>
         public MemberCreditCard CreateCreditCard(Member member, string stripeCardToken)
         {
-            // Note: Stripe says their card_error messages are safe to display to the user
-            //if (ex.StripeError.ErrorType == "card_error")
-
             var newCard = new StripeCardCreateOptions
             {
                 Source = new StripeSourceOptions
@@ -49,7 +97,16 @@ namespace Veil.Services
 
             var cardService = new StripeCardService();
 
-            StripeCard card = cardService.Create(member.StripeCustomerId, newCard);
+            StripeCard card;
+
+            try
+            {
+                card = cardService.Create(member.StripeCustomerId, newCard);
+            }
+            catch (StripeException ex)
+            {
+                throw HandleStripeException(ex);
+            }
 
             int expiryMonth = int.Parse(card.ExpirationMonth);
             int expiryYear = int.Parse(card.ExpirationYear);
@@ -75,19 +132,28 @@ namespace Veil.Services
         {
             StripeTokenService tokenService = new StripeTokenService();
 
-            StripeToken token = tokenService.Get(stripeCardToken);
+            try
+            {
+                StripeToken token = tokenService.Get(stripeCardToken);
 
-            return token.StripeCard.Last4;
+                return token.StripeCard.Last4;
+            }
+            catch (StripeException ex)
+            {
+                throw HandleStripeException(ex);
+            }
+            
         }
 
         /// <summary>
         ///     Implements <see cref="IStripeService.ChargeCard"/>
         /// </summary>
-        public string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null, string description = null)
+        public string ChargeCard(
+            decimal chargeAmount, string cardToken, string customerId = null, string description = null)
         {
             var newCharge = new StripeChargeCreateOptions
             {
-                Amount = (int)Math.Round(chargeAmount, 2) * 100,
+                Amount = (int) Math.Round(chargeAmount, 2) * 100,
                 Description = description,
                 Capture = true,
                 Currency = "CAD",
@@ -101,9 +167,17 @@ namespace Veil.Services
 
             StripeChargeService chargeService = new StripeChargeService();
 
-            StripeCharge charge = chargeService.Create(newCharge);
+            try
+            {
+                StripeCharge charge = chargeService.Create(newCharge);
 
-            return charge.Id;
+                return charge.Id;
+            }
+            catch (StripeException ex)
+            {
+                throw HandleStripeException(ex);
+            }
+            
         }
 
         /// <summary>
@@ -113,9 +187,82 @@ namespace Veil.Services
         {
             StripeRefundService refundService = new StripeRefundService();
 
-            StripeRefund refund = refundService.Create(chargeId);
+            try
+            {
+                StripeRefund refund = refundService.Create(chargeId);
 
-            return refund.Amount > 0;
+                return refund.Amount > 0;
+            }
+            catch (StripeException ex)
+            {
+                string message;
+                StripeExceptionType type;
+
+                if (ex.StripeError.ErrorType == "card_error")
+                {
+                    message = $"{ex.Message}. This occured while refunding payment. " + 
+                        "Please contact customer support.";
+                    type = StripeExceptionType.CardError;
+                }
+                else if (ex.HttpStatusCode == HttpStatusCode.Unauthorized)
+                {
+                    // Note: We want to log this as it means we don't have a valid API key
+                    Debug.WriteLine("Stripe API Key is Invalid");
+                    Debug.WriteLine(ex.Message);
+
+                    type = StripeExceptionType.ApiKeyError;
+                    message = "An error occurred while refunding payment. " +
+                        "Please contact customer support.";
+                }
+                else
+                {
+                    type = StripeExceptionType.UnknownError;
+                    message = "An error occurred while refunding payment. " +
+                        "Please contact customer support.";
+                }
+
+                throw new StripeServiceException(message, type, ex);
+            }
+        }
+
+        /// <summary>
+        ///     Converts the <see cref="StripeException"/> into a non-Stripe.net exception
+        /// </summary>
+        /// <param name="ex">
+        ///     The <see cref="StripeException"/> to convert
+        /// </param>
+        /// <returns>
+        ///     A <see cref="StripeServiceException"/> representing the original 
+        ///     <see cref="StripeException"/>
+        /// </returns>
+        protected virtual StripeServiceException HandleStripeException(StripeException ex)
+        {
+            string message;
+            StripeExceptionType type;
+
+            // Note: Stripe says their card_error messages are safe to display to the user
+            if (ex.StripeError.ErrorType == "card_error")
+            {
+                message = ex.Message;
+                type = StripeExceptionType.CardError;
+            }
+            else if (ex.HttpStatusCode == HttpStatusCode.Unauthorized)
+            {
+                // Note: We want to log this as it means we don't have a valid API key
+                Debug.WriteLine("Stripe API Key is Invalid");
+                Debug.WriteLine(ex.Message);
+
+                type = StripeExceptionType.ApiKeyError;
+                message = "An error occured while talking to one of our backends. Sorry!";
+            }
+            else
+            {
+                type = StripeExceptionType.UnknownError;
+                message =
+                    "An error occured while talking to one of our backends. Sorry!";
+            }
+
+            return new StripeServiceException(message, type, ex);
         }
     }
 }

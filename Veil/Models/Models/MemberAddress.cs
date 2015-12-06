@@ -7,6 +7,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -38,10 +39,10 @@ namespace Veil.DataModels.Models
         public Address Address { get; set; }
 
         /// <summary>
-        /// The province code for this Address's Province
+        ///     The province code for this Address's Province
         /// </summary>
         [Required]
-        [StringLength(2, MinimumLength = 2)]
+        [StringLength(2, MinimumLength = 2, ErrorMessageResourceName = nameof(ErrorMessages.StringLengthFixedLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string ProvinceCode { get; set; }
 
         /// <summary>
@@ -50,9 +51,9 @@ namespace Veil.DataModels.Models
         public virtual Province Province { get; set; }
 
         /// <summary>
-        /// The country code for this Address's Country
+        ///     The country code for this Address's Country
         /// </summary>
-        [StringLength(2, MinimumLength = 2)]
+        [StringLength(2, MinimumLength = 2, ErrorMessageResourceName = nameof(ErrorMessages.StringLengthFixedLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         public string CountryCode { get; set; }
 

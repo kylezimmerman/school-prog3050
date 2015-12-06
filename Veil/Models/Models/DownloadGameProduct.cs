@@ -7,6 +7,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -21,14 +22,14 @@ namespace Veil.DataModels.Models
         [Required]
         [DataType(DataType.Url)]
         [Url]
-        [MaxLength(2048)]
+        [StringLength(2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Download Link")]
         public string DownloadLink { get; set; }
 
         /// <summary>
         /// An approximate size in megabytes for the download
         /// </summary>
-        [Range(0, int.MaxValue)]
+        [Range(0, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Approximate Size")]
         public int ApproximateSizeInMB { get; set; }
     }

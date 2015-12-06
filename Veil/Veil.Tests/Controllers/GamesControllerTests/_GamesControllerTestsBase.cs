@@ -18,6 +18,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
 
         protected Tag tag;
         protected ESRBRating everyoneESRBRating;
+        protected ESRBRating matureESRBRating;
 
         protected const string TITLE_FRAGMENT_COMMON_TO_ALL_SEARCH_GAMES = "atch";
 
@@ -49,7 +50,8 @@ namespace Veil.Tests.Controllers.GamesControllerTests
 
             tag = new Tag { Name = "Test" };
 
-            everyoneESRBRating = new ESRBRating { RatingId = "E", Description = "Everyone" };
+            everyoneESRBRating = new ESRBRating { RatingId = "E", Description = "Everyone", MinimumAge = 0};
+            matureESRBRating = new ESRBRating { RatingId = "M", Description = "Mature", MinimumAge = 17 };
         }
 
         protected List<GameProduct> GetGameSKUsListWithAllAvailabilityStatuses()

@@ -435,7 +435,7 @@ namespace Veil.Tests.Controllers
 
         [TestCase(true)]
         [TestCase(false)]
-        public async void Add_IdInDb_ReturnsViewWithMemberAsModel(bool itemAlreadyInWishlist)
+        public async void Add_IdInDb_RedirectsToIndex(bool itemAlreadyInWishlist)
         {
             Guid gameProductId = new Guid("976ACE77-D87C-4EBE-83A0-46F911F6490E");
             PhysicalGameProduct gameProduct = new PhysicalGameProduct()
@@ -480,15 +480,11 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.Add(gameProduct.Id) as ViewResult;
+            var result = await controller.Add(gameProduct.Id) as RedirectToRouteResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<Member>());
-
-            var model = (Member)result.Model;
-
-            Assert.That(model.UserId, Is.EqualTo(currentMember.UserId));
-            Assert.That(model.Wishlist.Contains(gameProduct));
+            Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
+            Assert.That(currentMember.Wishlist.Contains(gameProduct));
         }
 
         [Test]

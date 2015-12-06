@@ -103,21 +103,14 @@
                     <span class="prefix"><strong>Password</strong></span>
                 </div>
                 <div class="medium-9 columns">
-                    @if (Model.HasPassword)
-                    {
-                        @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Create", "SetPassword", null, new { @class = "button postfix" })
-                    }
+                    @Html.ActionLink("Change your password", "ChangePassword", null, new { @class = "button postfix" })
                 </div>
             </div>
             
             <div class="row collapse">
                 <div class="checkbox">
-                    @Html.CheckBoxFor(m => m.ReceivePromotionalEmail, new { value = Model.ReceivePromotionalEmail })
-                    @Html.LabelFor(m => m.ReceivePromotionalEmail)
+                    @Html.CheckBoxFor(m => m.ReceivePromotionalEmails, new { value = Model.ReceivePromotionalEmails })
+                    @Html.LabelFor(m => m.ReceivePromotionalEmails)
                 </div>
             </div>
             <button type="submit">Save Profile</button>

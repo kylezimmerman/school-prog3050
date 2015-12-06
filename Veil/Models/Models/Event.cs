@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Veil.DataModels.Validation;
 
 namespace Veil.DataModels.Models
 {
@@ -26,13 +27,13 @@ namespace Veil.DataModels.Models
         /// The event's name
         /// </summary>
         [Required]
-        [MaxLength(255)]
+        [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string Name { get; set; }
 
         /// <summary>
         /// A description of the event
         /// </summary>
-        [MaxLength(2048)]
+        [StringLength(maximumLength: 2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DataType(DataType.MultilineText)]
         public string Description { get; set; }
 
@@ -48,7 +49,7 @@ namespace Veil.DataModels.Models
         ///     Unknown
         /// </example>
         /// </summary>
-        [MaxLength(128)]
+        [StringLength(maximumLength: 128, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string Duration { get; set; }
 
         /// <summary>

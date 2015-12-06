@@ -20,7 +20,9 @@ using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataAccess
 {
-
+    /// <summary>
+    ///     Implementation of IVeilDataAccess for use with SQL Server/Entity Framework
+    /// </summary>
     public class VeilDataContext : IdentityDbContext<User, GuidIdentityRole, Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>, IVeilDataAccess
     {
         // NOTE: If you change this value, the Down() in the AddPhysicalGameProductSkuSequence
@@ -30,9 +32,11 @@ namespace Veil.DataAccess
         // NOTE: If you change this value, no existing DB objects will be removed in migrations' Down()'s
         internal const string SCHEMA_NAME = "dbo";
 
+        // NOTE: Documentation for these can be found in IVeilDataAccess
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Country> Countries { get; set; }
+        public DbSet<MemberCreditCard> MemberCreditCards { get; set; } 
         public DbSet<Department> Departments { get; set; }
         public DbSet<DownloadGameProduct> DownloadGameProducts { get; set; }
         public DbSet<Employee> Employees { get; set; }
@@ -57,6 +61,9 @@ namespace Veil.DataAccess
 
         public IUserStore<User, Guid> UserStore { get; }
 
+        /// <summary>
+        ///     Instantiates a new instance of VeilDataContext using the VeilDatabase connection string
+        /// </summary>
         [UsedImplicitly]
         public VeilDataContext() : base("name=VeilDatabase")
         {
@@ -67,11 +74,24 @@ namespace Veil.DataAccess
                                       GuidIdentityUserRole, GuidIdentityUserClaim>(this);
         }
 
+        /// <summary>
+        ///     Sets an Entity's <see cref="EntityState"/> to Modified
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The type of the entity
+        /// </typeparam>
+        /// <param name="entity">
+        ///     The entity itself
+        /// </param>
         public void MarkAsModified<T>(T entity) where T : class
         {
             Entry(entity).State = EntityState.Modified;
         }
 
+        /// <summary>
+        ///     Gets the new SKU number for physical game products
+        /// </summary>
+        /// <returns></returns>
         public string GetNextPhysicalGameProductSku()
         {
             DbRawSqlQuery<long> result = Database.SqlQuery<long>($"SELECT NEXT VALUE FOR {PHYSICAL_GAME_PRODUCT_SKU_SEQUENCE_NAME};");
@@ -83,6 +103,12 @@ namespace Veil.DataAccess
             return stringValue.PadLeft(12, '0');
         }
 
+        /// <summary>
+        ///     Sets up the Entity Framework model of the database
+        /// </summary>
+        /// <param name="modelBuilder">
+        ///     The <see cref="DbModelBuilder"/> used to build the model
+        /// </param>
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
@@ -100,6 +126,13 @@ namespace Veil.DataAccess
             UserEntityConfig.Setup(modelBuilder);
         }
 
+        /// <summary>
+        ///     Disposes the IUserStore for the context and then calls base.Dispose
+        /// </summary>
+        /// <param name="disposing">
+        ///     <c>true</c> to release both managed and unmanaged resources;
+        ///     <c>false</c> to release only unmanaged resources.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

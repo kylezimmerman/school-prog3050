@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -51,9 +49,9 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.GameList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListRowViewModel>>());
 
-            var model = (DateFilteredListViewModel<GameListViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<GameListRowViewModel>)result.Model;
             var items = model.Items;
 
             Assert.That(items.Count, Is.EqualTo(1));
@@ -79,9 +77,9 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.GameList() as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListRowViewModel>>());
 
-            var model = (DateFilteredListViewModel<GameListViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<GameListRowViewModel>)result.Model;
             var items = model.Items;
 
             Assert.That(items.Count, Is.EqualTo(0));
@@ -137,9 +135,9 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.GameList(DateTime.Today, null) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListRowViewModel>>());
 
-            var model = (DateFilteredListViewModel<GameListViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<GameListRowViewModel>)result.Model;
             var items = model.Items;
 
             Assert.That(items.Count, Is.EqualTo(1));
@@ -183,9 +181,9 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             var result = await controller.GameList(DateTime.Today, DateTime.Now) as ViewResult;
 
             Assert.That(result != null);
-            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListViewModel>>());
+            Assert.That(result.Model, Is.InstanceOf<DateFilteredListViewModel<GameListRowViewModel>>());
 
-            var model = (DateFilteredListViewModel<GameListViewModel>)result.Model;
+            var model = (DateFilteredListViewModel<GameListRowViewModel>)result.Model;
             var items = model.Items;
 
             Assert.That(items.Count, Is.EqualTo(1));

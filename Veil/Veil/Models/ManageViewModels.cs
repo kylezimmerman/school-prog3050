@@ -1,116 +1,112 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/* ManageViewModels.cs
+ * Purpose: View models used by ManageController
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.09.25: Created
+ */
+
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNet.Identity;
-using Microsoft.Owin.Security;
 using Veil.DataModels.Models;
 using Veil.DataModels.Validation;
 
 namespace Veil.Models
 {
+    /// <summary>
+    ///     View model for the manage index page. Also known as account settings
+    /// </summary>
     public class IndexViewModel
     {
-        public bool HasPassword { get; set; }
-
-        public IList<UserLoginInfo> Logins { get; set; }
-
+        /// <summary>
+        ///     The user's phone number
+        /// </summary>
         [DataType(DataType.PhoneNumber)]
-        [RegularExpression(ValidationRegex.INPUT_PHONE, ErrorMessage = "Must be in the format 800-555-0199 or 800-555-0199, ext. 1234")]
-        [MaxLength(24, ErrorMessage = "Can't be longer than 24 characters")]
+        [RegularExpression(ValidationRegex.INPUT_PHONE,
+            ErrorMessage = "Must be in the format 800-555-0199 or 800-555-0199, ext. 1234")]
+        [StringLength(maximumLength: 24, ErrorMessageResourceName = nameof(ErrorMessages.StringLength),
+            ErrorMessageResourceType = typeof (ErrorMessages))]
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
 
-        public bool TwoFactor { get; set; }
-
-        public bool BrowserRemembered { get; set; }
-
+        /// <summary>
+        ///     The user's setting for whether to receive promotional emails
+        /// </summary>
         [Display(Name = "Receive Promotional Emails?")]
-        public bool ReceivePromotionalEmail { get; set; }
+        public bool ReceivePromotionalEmails { get; set; }
 
-        public string StatusMessage { get; set; }
+        /// <summary>
+        ///     The user's first name
+        /// </summary>
         [Required]
-        [StringLength(maximumLength: 64, MinimumLength = 1)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength),
+            ErrorMessageResourceType = typeof (ErrorMessages))]
+        [Display(Name = "First Name")]
         public string MemberFirstName { get; set; }
+
+        /// <summary>
+        ///     The user's last name
+        /// </summary>
         [Required]
-        [StringLength(maximumLength: 64, MinimumLength = 1)]
+        [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength),
+            ErrorMessageResourceType = typeof (ErrorMessages))]
+        [Display(Name = "Last Name")]
         public string MemberLastName { get; set; }
 
+        /// <summary>
+        ///     The user's email address
+        /// </summary>
         [Required]
         [EmailAddress]
+        [Display(Name = "Email Address")]
         public string MemberEmail { get; set; }
+
+        /// <summary>
+        ///     The user's setting for wishlist visibility
+        /// </summary>
+        [Display(Name = "Wishlist Visibility")]
         public WishListVisibility MemberVisibility { get; set; }
+
+        /// <summary>
+        ///     The count of the user's favorite platforms
+        /// </summary>
         public int FavoritePlatformCount { get; set; }
+
+        /// <summary>
+        ///     The count of the user's favorite tags
+        /// </summary>
         public int FavoriteTagCount { get; set; }
-        public bool ReceivePromotionalEmals { get; set; }
     }
 
-    public class ManageLoginsViewModel
-    {
-        public IList<UserLoginInfo> CurrentLogins { get; set; }
-        public IList<AuthenticationDescription> OtherLogins { get; set; }
-    }
-
-    public class FactorViewModel
-    {
-        public string Purpose { get; set; }
-    }
-
-    public class SetPasswordViewModel
-    {
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "New password")]
-        public string NewPassword { get; set; }
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm new password")]
-        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; }
-    }
-
+    /// <summary>
+    ///     View model for the change password page
+    /// </summary>
     public class ChangePasswordViewModel
     {
+        /// <summary>
+        ///     The user's old password
+        /// </summary>
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Current Password")]
         public string OldPassword { get; set; }
 
+        /// <summary>
+        ///     The new password
+        /// </summary>
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(maximumLength: 100, MinimumLength = 6,
+            ErrorMessageResourceName = nameof(ErrorMessages.StringLengthBetween),
+            ErrorMessageResourceType = typeof (ErrorMessages))]
         [DataType(DataType.Password)]
         [Display(Name = "New Password")]
         public string NewPassword { get; set; }
 
+        /// <summary>
+        ///     Confirmation of the new password
+        /// </summary>
         [DataType(DataType.Password)]
         [Display(Name = "Confirm New Password")]
-        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+        [Compare(nameof(NewPassword),
+            ErrorMessage = "The new password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
-    }
-
-    public class AddPhoneNumberViewModel
-    {
-        [Required]
-        [Phone]
-        [Display(Name = "Phone Number")]
-        public string Number { get; set; }
-    }
-
-    public class VerifyPhoneNumberViewModel
-    {
-        [Required]
-        [Display(Name = "Code")]
-        public string Code { get; set; }
-
-        [Required]
-        [Phone]
-        [Display(Name = "Phone Number")]
-        public string PhoneNumber { get; set; }
-    }
-
-    public class ConfigureTwoFactorViewModel
-    {
-        public string SelectedProvider { get; set; }
-        public ICollection<System.Web.Mvc.SelectListItem> Providers { get; set; }
     }
 }

@@ -17,11 +17,12 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
     public class MemberDetailTests : ReportsControllerTestsBase
     {
         [Test]
-        public void MemberDetail_UsernameIsNull_Throws404Exception()
+        public void MemberDetail_UsernameIsNullOrWhitespace_Throws404Exception([Values(null, "", " ")]string userName)
         {
             var controller = new ReportsController(null);
 
-            Assert.That(async () => await controller.MemberDetail(null), Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+            Assert.That(async () => await controller.MemberDetail(userName),
+                Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
         }
 
         [Test]
@@ -119,6 +120,112 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
             Assert.That(model.OrderCount, Is.EqualTo(1));
             Assert.That(model.TotalQuantity, Is.EqualTo(2));
             Assert.That(model.Total, Is.EqualTo(20m));
+        }
+
+        [Test]
+        public void DateFiltered_NullOrWhitespaceUserName_Throws404Exception([Values(null, "", " ")] string userName)
+        {
+            DateTime startTime = new DateTime(635847641516896833L, DateTimeKind.Local);
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member>().AsQueryable());
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            ReportsController controller = new ReportsController(dbStub.Object);
+
+            Assert.That(async () => await controller.MemberDetail(userName, start: startTime, end: null),
+                Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public void DateFiltered_UserNotFound_Throws404Exception()
+        {
+            DateTime startDate = new DateTime(635847641516896833L, DateTimeKind.Local);
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member>().AsQueryable());
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            ReportsController controller = new ReportsController(dbStub.Object);
+
+            Assert.That(async () => await controller.MemberDetail("notFound", startDate, end: null),
+                Throws.InstanceOf<HttpException>().And.Matches<HttpException>(ex => ex.GetHttpCode() == 404));
+        }
+
+        [Test]
+        public async void DateFiltered_UserFound_ReturnsMatchingModel()
+        {
+            DateTime startDate = new DateTime(2015,12, 2);
+            DateTime endDate = new DateTime(2015, 12, 3);
+
+            var member = new Member
+            {
+                UserAccount = new User
+                {
+                    UserName = "TestUser",
+                    FirstName = "Test",
+                    LastName = "User"
+                },
+                FavoriteTags = new List<Tag>(),
+                FavoritePlatforms = new List<Platform>(),
+                Wishlist = new List<Product>(),
+                ReceivedFriendships = new List<Friendship>(),
+                RequestedFriendships = new List<Friendship>(),
+                WebOrders = new List<WebOrder>
+                {
+                    new WebOrder
+                    {
+                        // Shouldn't be matched due to OrderDate
+                        OrderItems = new List<OrderItem>
+                        {
+                            new OrderItem
+                            {
+                                Quantity = 1,
+                                ListPrice = 10m
+                            }
+                        },
+                        OrderSubtotal = 10m,
+                        ShippingCost = 0m,
+                        TaxAmount = 0m,
+                        OrderStatus = OrderStatus.Processed,
+                        OrderDate = new DateTime(2000, 1, 1)
+                    },
+                    // Should be matched
+                    new WebOrder
+                    {
+                        OrderItems = new List<OrderItem>
+                        {
+                            new OrderItem
+                            {
+                                Quantity = 5,
+                                ListPrice = 10m
+                            }
+                        },
+                        OrderSubtotal = 50m,
+                        ShippingCost = 0m,
+                        TaxAmount = 0m,
+                        OrderStatus = OrderStatus.Processed,
+                        OrderDate = new DateTime(2015, 12, 2)
+                    }
+                }
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
+            dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
+
+            ReportsController controller = new ReportsController(dbStub.Object);
+
+            var result = await controller.MemberDetail(member.UserAccount.UserName, startDate, endDate) as ViewResult;
+
+            Assert.That(result != null);
+
+            var model = (MemberDetailViewModel)result.Model;
+
+            Assert.That(model.FullName, Is.EqualTo("Test User"));
+            Assert.That(model.OrderCount, Is.EqualTo(1));
+            Assert.That(model.TotalQuantity, Is.EqualTo(5));
+            Assert.That(model.Total, Is.EqualTo(50m));
         }
     }
 }

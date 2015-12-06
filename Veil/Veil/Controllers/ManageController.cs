@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* ManageController.cs
+ * Purpose: Controller for manage account related things
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.09.25: Created
+ */ 
+
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
@@ -10,12 +17,11 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
-using Microsoft.Owin.Security;
-using Stripe;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 using Veil.Helpers;
 using Veil.Models;
 using Veil.Services;
@@ -24,6 +30,10 @@ using Member = Veil.DataModels.Models.Member;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for manage account related things.
+    ///     The actions in this controller can only be viewed by users in the Member role
+    /// </summary>
     [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
     public class ManageController : BaseController
     {
@@ -35,7 +45,9 @@ namespace Veil.Controllers
         private readonly IGuidUserIdGetter idGetter;
         private readonly IStripeService stripeService;
 
-        public ManageController(VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter, IStripeService stripeService)
+        public ManageController(
+            VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess,
+            IGuidUserIdGetter idGetter, IStripeService stripeService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
@@ -44,9 +56,17 @@ namespace Veil.Controllers
             this.stripeService = stripeService;
         }
 
-        //
-        // GET: /Manage/Index
-        public async Task<ActionResult> Index(ManageController.ManageMessageId? message)
+        /// <summary>
+        ///     Displays a view allowing the member to manage their account, including 
+        ///     addresses, passwords and favorite tags and platforms
+        /// </summary>
+        /// <param name="message">
+        ///     Enum value for a message to display with the page
+        /// </param>
+        /// <returns>
+        ///     The view allowing the member to manage their account
+        /// </returns>
+        public async Task<ActionResult> Index(ManageMessageId? message)
         {
             switch (message)
             {
@@ -57,13 +77,14 @@ namespace Veil.Controllers
                     this.AddAlert(AlertType.Success, "Your password has been changed.");
                     break;
                 case ManageMessageId.SetTwoFactorSuccess:
-                    this.AddAlert(AlertType.Success, "Your two-factor authentication provider has been set.");
+                    this.AddAlert(
+                        AlertType.Success, "Your two-factor authentication provider has been set.");
                     break;
                 case ManageMessageId.SetPasswordSuccess:
                     this.AddAlert(AlertType.Success, "Your password has been set.");
                     break;
                 case ManageMessageId.RemoveLoginSuccess:
-                    this.AddAlert(AlertType.Success,  "A login has been removed.");
+                    this.AddAlert(AlertType.Success, "A login has been removed.");
                     break;
                 case ManageMessageId.RemovePhoneSuccess:
                     this.AddAlert(AlertType.Success, "Your phone number was removed.");
@@ -85,22 +106,18 @@ namespace Veil.Controllers
 
             if (user.Member == null)
             {
-                this.AddAlert(AlertType.Error, "Employees do not have profiles to view you have been redirected to the home page");
+                this.AddAlert(AlertType.Error, "Employees do not have profiles to view.");
                 return RedirectToAction("Index", "Home");
             }
 
             var model = new IndexViewModel
             {
-                HasPassword = HasPassword(),
                 PhoneNumber = user.PhoneNumber,
-                TwoFactor = await userManager.GetTwoFactorEnabledAsync(userId),
-                Logins = await userManager.GetLoginsAsync(userId),
-                BrowserRemembered = await signInManager.AuthenticationManager.TwoFactorBrowserRememberedAsync(userId.ToString()),
                 MemberFirstName = user.FirstName,
                 MemberLastName = user.LastName,
                 MemberEmail = user.Email,
                 MemberVisibility = user.Member.WishListVisibility,
-                ReceivePromotionalEmals = user.Member.ReceivePromotionalEmails,
+                ReceivePromotionalEmails = user.Member.ReceivePromotionalEmails,
                 FavoritePlatformCount = user.Member.FavoritePlatforms.Count,
                 FavoriteTagCount = user.Member.FavoriteTags.Count
             };
@@ -123,9 +140,9 @@ namespace Veil.Controllers
                 signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
                 return RedirectToAction("Index", "Home");
             }
-            if (user.Member == null) 
+            if (user.Member == null)
             {
-                this.AddAlert(AlertType.Error, "Employees do not have profiles to view you have been redirected to the home page");
+                this.AddAlert(AlertType.Error, "Employees do not have public profiles.");
                 return RedirectToAction("Index", "Home");
             }
             if (ModelState.IsValid)
@@ -133,7 +150,7 @@ namespace Veil.Controllers
                 user.FirstName = viewModel.MemberFirstName;
                 user.LastName = viewModel.MemberLastName;
                 user.PhoneNumber = viewModel.PhoneNumber;
-                user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmals;
+                user.Member.ReceivePromotionalEmails = viewModel.ReceivePromotionalEmails;
                 user.Member.WishListVisibility = viewModel.MemberVisibility;
 
                 if (user.Email != viewModel.MemberEmail)
@@ -154,9 +171,10 @@ namespace Veil.Controllers
                     if (isNewEmail)
                     {
                         await SendConfirmationEmail(user);
-                        this.AddAlert(AlertType.Info, "A confirmation email has been sent to " + user.NewEmail +
-                                                      ", you can continue logging into your Veil account using " +
-                                                      user.Email + " to login until you confirm the new email address");
+                        this.AddAlert(
+                            AlertType.Info, "A confirmation email has been sent to " + user.NewEmail +
+                                ", you can continue logging into your Veil account using " +
+                                user.Email + " to login until you confirm the new email address");
                     }
                     this.AddAlert(AlertType.Success, "Your Profile has been updated");
                 }
@@ -168,11 +186,9 @@ namespace Veil.Controllers
             else
             {
                 this.AddAlert(AlertType.Error, "A manadatory field was empty");
-            }                         
+            }
             return RedirectToAction("Index", new { Message = message });
         }
-    
-       
 
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmNewEmail(Guid userId, string code)
@@ -183,10 +199,9 @@ namespace Veil.Controllers
             }
 
             var result = await userManager.ConfirmEmailAsync(userId, code);
-           
+
             if (!result.Succeeded)
             {
-
                 return View("Error");
             }
 
@@ -209,65 +224,13 @@ namespace Veil.Controllers
             }
             catch (Exception)
             {
-                this.AddAlert(AlertType.Error, "There was an error confirming new email email address please try again later");
+                this.AddAlert(
+                    AlertType.Error,
+                    "There was an error confirming new email email address please try again later");
                 return View("Error");
             }
 
             return View("ConfirmNewEmail");
-        }
-
-        //
-        // POST: /Manage/RemoveLogin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
-        {
-            ManageMessageId? message;
-            var result = await userManager.RemoveLoginAsync(GetUserId(), new UserLoginInfo(loginProvider, providerKey));
-            if (result.Succeeded)
-            {
-                var user = await userManager.FindByIdAsync(GetUserId());
-                if (user != null)
-                {
-                    await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                }
-                message = ManageMessageId.RemoveLoginSuccess;
-            }
-            else
-            {
-                message = ManageMessageId.Error;
-            }
-            return RedirectToAction("ManageLogins", new { Message = message });
-        }
-
-        //
-        // POST: /Manage/EnableTwoFactorAuthentication
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EnableTwoFactorAuthentication()
-        {
-            await userManager.SetTwoFactorEnabledAsync(GetUserId(), true);
-            var user = await userManager.FindByIdAsync(GetUserId());
-            if (user != null)
-            {
-                await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-            }
-            return RedirectToAction("Index", "Manage");
-        }
-
-        //
-        // POST: /Manage/DisableTwoFactorAuthentication
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DisableTwoFactorAuthentication()
-        {
-            await userManager.SetTwoFactorEnabledAsync(GetUserId(), false);
-            var user = await userManager.FindByIdAsync(GetUserId());
-            if (user != null)
-            {
-                await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-            }
-            return RedirectToAction("Index", "Manage");
         }
 
         //
@@ -288,11 +251,13 @@ namespace Veil.Controllers
                 return View(model);
             }
 
-            IdentityResult result = null; 
+            IdentityResult result = null;
 
             try
             {
-                result = await userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
+                result =
+                    await
+                        userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
             }
             catch (DbEntityValidationException ex)
             {
@@ -318,58 +283,6 @@ namespace Veil.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Manage/SetPassword
-        public ActionResult SetPassword()
-        {
-            return View();
-        }
-
-        //
-        // POST: /Manage/SetPassword
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> SetPassword(SetPasswordViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var result = await userManager.AddPasswordAsync(GetUserId(), model.NewPassword);
-                if (result.Succeeded)
-                {
-                    var user = await userManager.FindByIdAsync(GetUserId());
-                    if (user != null)
-                    {
-                        await signInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                    }
-                    return RedirectToAction("Index", new { Message = ManageMessageId.SetPasswordSuccess });
-                }
-                AddErrors(result);
-            }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
-
-        //
-        // GET: /Manage/ManageLogins
-        public async Task<ActionResult> ManageLogins(ManageMessageId? message)
-        {
-            ViewBag.StatusMessage = message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed." : message == ManageMessageId.Error ? "An error has occurred." : "";
-
-            var user = await userManager.FindByIdAsync(GetUserId());
-            if (user == null)
-            {
-                return View("Error");
-            }
-            var userLogins = await userManager.GetLoginsAsync(GetUserId());
-            var otherLogins = signInManager.AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
-            ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
-            return View(new ManageLoginsViewModel
-            {
-                CurrentLogins = userLogins, OtherLogins = otherLogins
-            });
-        }
-
         /// <summary>
         ///     Displays a view for adding or removing addresses
         /// </summary>
@@ -381,7 +294,7 @@ namespace Veil.Controllers
             AddressViewModel model = new AddressViewModel();
 
             await model.SetupAddressesAndCountries(db, GetUserId());
-            
+
             return View(model);
         }
 
@@ -436,20 +349,21 @@ namespace Veil.Controllers
                 if (innermostException != null)
                 {
                     string exMessage = innermostException.Message;
-                    
+
                     errorWasProvinceForeignKeyConstraint =
-                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation &&
-                        exMessage.Contains(nameof(Province.ProvinceCode)) &&
-                        exMessage.Contains(nameof(Province.CountryCode));
+                        innermostException.Number == (int) SqlErrorNumbers.ConstraintViolation &&
+                            exMessage.Contains(nameof(Province.ProvinceCode)) &&
+                            exMessage.Contains(nameof(Province.CountryCode));
                 }
 
-                this.AddAlert(AlertType.Error,
+                this.AddAlert(
+                    AlertType.Error,
                     errorWasProvinceForeignKeyConstraint
                         ? "The Province/State you selected isn't in the Country you selected."
                         : "An unknown error occured while adding the address.");
 
                 await model.SetupAddressesAndCountries(db, GetUserId());
-        
+
                 return View("ManageAddresses", model);
             }
 
@@ -554,12 +468,13 @@ namespace Veil.Controllers
                     string exMessage = innermostException.Message;
 
                     errorWasProvinceForeignKeyConstraint =
-                        innermostException.Number == (int)SqlErrorNumbers.ConstraintViolation &&
-                        exMessage.Contains(nameof(Province.ProvinceCode)) &&
-                        exMessage.Contains(nameof(Province.CountryCode));
+                        innermostException.Number == (int) SqlErrorNumbers.ConstraintViolation &&
+                            exMessage.Contains(nameof(Province.ProvinceCode)) &&
+                            exMessage.Contains(nameof(Province.CountryCode));
                 }
 
-                this.AddAlert(AlertType.Error,
+                this.AddAlert(
+                    AlertType.Error,
                     errorWasProvinceForeignKeyConstraint
                         ? "The Province/State you selected isn't in the Country you selected."
                         : "An unknown error occured while adding the address.");
@@ -573,6 +488,41 @@ namespace Veil.Controllers
             return RedirectToAction("ManageAddresses");
         }
 
+        /// <summary>
+        ///     Deletes the specified address
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the address to remove
+        /// </param>
+        /// <returns>
+        ///     Redirection to ManageAddresses if successful
+        ///     404 Not Found view if the id does not match a credit card
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteAddress(Guid id)
+        {
+            MemberAddress address = await db.MemberAddresses.FindAsync(id);
+
+            if (address == null)
+            {
+                throw new HttpException(NotFound, nameof(MemberAddress));
+            }
+
+            db.MemberAddresses.Remove(address);
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Successfully removed the address.");
+
+            return RedirectToAction("ManageAddresses");
+        }
+
+        /// <summary>
+        ///     Displays a view allowing the member to add or remove credit cards
+        /// </summary>
+        /// <returns>
+        ///     The view allowing the member to add or remove credit cards
+        /// </returns>
         public async Task<ActionResult> ManageCreditCards()
         {
             BillingInfoViewModel model = new BillingInfoViewModel();
@@ -582,6 +532,19 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        /// <summary>
+        ///     Creates a new credit card using a Stripe card token
+        /// </summary>
+        /// <param name="stripeCardToken">
+        ///     The Stripe card token for the new credit card
+        /// </param>
+        /// <returns>
+        ///     Redirection to ManageCreditCards if successful
+        ///     Redirection to ManageCreditCards if <see cref="stripeCardToken"/> is invalid
+        ///     500 Internal Server Error page if the current member doesn't exist.
+        ///     Redirection to ManageCreditCards if associating the card 
+        ///         with the Member's customer account fails
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.MEMBER_ROLE)]
@@ -608,18 +571,17 @@ namespace Veil.Controllers
             {
                 newCard = stripeService.CreateCreditCard(currentMember, stripeCardToken);
             }
-            catch (StripeException ex)
+            catch (StripeServiceException ex)
             {
-                // Note: Stripe says their card_error messages are safe to display to the user
-                if (ex.StripeError.ErrorType == "card_error")
-                {
-                    this.AddAlert(AlertType.Error, ex.Message);
-                    ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
+                switch (ex.ExceptionType) {
+                    case StripeExceptionType.CardError:
+                        ModelState.AddModelError(STRIPE_ISSUES_MODELSTATE_KEY, ex.Message);
+                        break;
+                    case StripeExceptionType.ApiKeyError:
+                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
                 }
-                else
-                {
-                    this.AddAlert(AlertType.Error, "An error occured while talking to one of our backends. Sorry!");
-                }
+
+                this.AddAlert(AlertType.Error, ex.Message);
 
                 return RedirectToAction("ManageCreditCards");
             }
@@ -629,6 +591,35 @@ namespace Veil.Controllers
             await db.SaveChangesAsync();
 
             this.AddAlert(AlertType.Success, "Successfully added a new Credit Card.");
+
+            return RedirectToAction("ManageCreditCards");
+        }
+
+        /// <summary>
+        ///     Deletes the specified credit card
+        /// </summary>
+        /// <param name="id">
+        ///     The Id of the credit card
+        /// </param>
+        /// <returns>
+        ///     A redirection back to ManageCreditCards if successful.
+        ///     404 Not Found view if the id does not match a credit card
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteCreditCard(Guid id)
+        {
+            MemberCreditCard card = await db.MemberCreditCards.FindAsync(id);
+
+            if (card == null)
+            {
+                throw new HttpException(NotFound, "Credit Card");
+            }
+
+            db.MemberCreditCards.Remove(card);
+            await db.SaveChangesAsync();
+
+            this.AddAlert(AlertType.Success, "Successfully removed the credit card.");
 
             return RedirectToAction("ManageCreditCards");
         }
@@ -647,7 +638,7 @@ namespace Veil.Controllers
         }
 
         /// <summary>
-        ///     Persists the selected platfroms as the member's new favorites
+        ///     Persists the selected platforms as the member's new favorites
         /// </summary>
         /// <param name="platforms">
         ///     An updated list of the member's favorite platforms
@@ -667,7 +658,8 @@ namespace Veil.Controllers
             Member currentMember = await db.Members.FindAsync(idGetter.GetUserId(User.Identity));
 
             currentMember.FavoritePlatforms.Clear();
-            currentMember.FavoritePlatforms = await db.Platforms.Where(p => platforms.Contains(p.PlatformCode)).ToListAsync();
+            currentMember.FavoritePlatforms =
+                await db.Platforms.Where(p => platforms.Contains(p.PlatformCode)).ToListAsync();
 
             db.MarkAsModified(currentMember);
             await db.SaveChangesAsync();
@@ -720,31 +712,14 @@ namespace Veil.Controllers
 
             return RedirectToAction("Index");
         }
-        
-        //
-        // POST: /Manage/RememberBrowser
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult RememberBrowser()
-        {
-            var rememberBrowserIdentity = signInManager.AuthenticationManager.CreateTwoFactorRememberBrowserIdentity(GetUserId().ToString());
-            signInManager.AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = true }, rememberBrowserIdentity);
-
-            return RedirectToAction("Index", "Manage");
-        }
-
-        //
-        // POST: /Manage/ForgetBrowser
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult ForgetBrowser()
-        {
-            signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.TwoFactorRememberBrowserCookie);
-
-            return RedirectToAction("Index", "Manage");
-        }
 
         #region Helpers
+        /// <summary>
+        ///     Adds all errors in an IdentityResult to ModelState
+        /// </summary>
+        /// <param name="result">
+        ///     The <see cref="IdentityResult"/> to add errors from
+        /// </param>
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)
@@ -753,31 +728,20 @@ namespace Veil.Controllers
             }
         }
 
+        /// <summary>
+        ///     Gets the current user's Id
+        /// </summary>
+        /// <returns>
+        ///     The current user's Id
+        /// </returns>
         private Guid GetUserId()
         {
             return idGetter.GetUserId(User.Identity);
         }
 
-        private bool HasPassword()
-        {
-            var user = userManager.FindById(idGetter.GetUserId(User.Identity));
-            if (user != null)
-            {
-                return user.PasswordHash != null;
-            }
-            return false;
-        }
-
-        private bool HasPhoneNumber()
-        {
-            var user = userManager.FindById(idGetter.GetUserId(User.Identity));
-            if (user != null)
-            {
-                return user.PhoneNumber != null;
-            }
-            return false;
-        }
-
+        /// <summary>
+        ///     Enumeration of identifiers for possible status messages
+        /// </summary>
         public enum ManageMessageId
         {
             AddPhoneSuccess,
@@ -791,10 +755,9 @@ namespace Veil.Controllers
 
         private async Task SendConfirmationEmail(User user)
         {
-            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-            // Send an email with this link
             string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ConfirmNewEmail", "Manage",
+            var callbackUrl = Url.Action(
+                "ConfirmNewEmail", "Manage",
                 new
                 {
                     userId = user.Id,
@@ -802,11 +765,13 @@ namespace Veil.Controllers
                 },
                 protocol: Request.Url.Scheme);
 
-            await userManager.SendNewEmailConfirmationEmailAsync(user.NewEmail,
+            await userManager.SendNewEmailConfirmationEmailAsync(
+                user.NewEmail,
                 "Veil - Email change request",
                 "<h1>Confirm this email to rejoin us at Veil</h1>" +
-                "An email change request has been made for this address if you requested this please click <a href=\"" + callbackUrl + "\">here</a>" +
-                "<br/> **Note once you click this link you need to use this email address to log in to Veil");
+                    "An email change request has been made for this address if you requested this please click <a href=\"" +
+                    callbackUrl + "\">here</a>" +
+                    "<br/> **Note once you click this link you need to use this email address to log in to Veil");
         }
         #endregion
     }

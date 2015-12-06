@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* EventsController.cs
+ * Purpose: Controller for Events
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.10.13: Created
+ */ 
+
+using System;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -12,11 +19,23 @@ using Veil.Helpers;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to Events
+    /// </summary>
     public class EventsController : BaseController
     {
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of EventsController with the provided arguments
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public EventsController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
@@ -193,7 +212,7 @@ namespace Veil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Unregister(Guid? id)
         {
-            if(id == null)
+            if (id == null)
             {
                 throw new HttpException(NotFound, nameof(Event));
             }
@@ -223,14 +242,18 @@ namespace Veil.Controllers
             return View("Details", model);
         }
 
-        // GET: Events/Create
+        /// <summary>
+        ///     Displays a view allowing the Employee or Administrator to create an event
+        /// </summary>
+        /// <returns>
+        ///     The view allowing creation of an <see cref="Event"/>
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Events/Create
         /// <summary>
         /// Creates an event with the submitted details.
         /// </summary>
@@ -314,7 +337,8 @@ namespace Veil.Controllers
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Description,Date,Time,Duration")] EventViewModel editedEvent)
+        public async Task<ActionResult> Edit(
+            [Bind(Include = "Id,Name,Description,Date,Time,Duration")] EventViewModel editedEvent)
         {
             if (!ModelState.IsValid)
             {

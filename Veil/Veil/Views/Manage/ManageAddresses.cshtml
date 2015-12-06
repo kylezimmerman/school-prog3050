@@ -32,7 +32,9 @@
             <div class="row collapse">
                 @using (Html.BeginForm("DeleteAddress", "Manage", FormMethod.Get))
                 {
-                    <input type="hidden" id="deleteAddressId" name="addressId" />
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" id="deleteAddressId" name="id" />
 
                     <div class="medium-4 columns right end">
                         <button type="submit" class="postfix alert">Delete Address</button>
@@ -61,27 +63,39 @@
 @section scripts
 {
     <script type="text/javascript">
+        $(function () {
+            $('#AddressId').change(function ()
+            {
+                var selectedAddress = $('option:selected', this).val();
+
+                $('#deleteAddressId').val(selectedAddress);
+            }).
+            trigger('change'); // Manually trigger the initial change
+        });
+    </script>
+
+    <script type="text/javascript">
         // Simple script to disable all the optgroups except for the one for the selected country
         $(function () {
 
             $('#@nameof(Model.CountryCode)').change(function () {
 
-                var selectedCountryName = $('option:selected', this).text();
+                    var selectedCountryName = $('option:selected', this).text();
 
-                $('#@nameof(Model.ProvinceCode) > optgroup').each(function () {
+                    $('#@nameof(Model.ProvinceCode) > optgroup').each(function () {
 
-                    if (this.label !== selectedCountryName) {
-                        $(this).prop('disabled', true);
-                    } else {
-                        $(this).prop('disabled', false);
+                        if (this.label !== selectedCountryName) {
+                            $(this).prop('disabled', true);
+                        } else {
+                            $(this).prop('disabled', false);
 
-                        if ($('option:selected', this)[0] === undefined) {
-                            $('option', this).first().prop('selected', true);
+                            if ($('option:selected', this)[0] === undefined) {
+                                $('option', this).first().prop('selected', true);
+                            }
                         }
-                    }
-                });
-            }).
-            trigger('change'); // Manually trigger the initial change
+                    });
+                }).
+                trigger('change'); // Manually trigger the initial change
         });
     </script>
 }

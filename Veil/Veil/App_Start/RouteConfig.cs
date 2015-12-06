@@ -1,15 +1,26 @@
-﻿using System.Web.Mvc;
+﻿/* RouteConfig.cs
+ * Purpose: Routing config
+ * 
+ * Revision History:
+ *      Drew Matheson, 2015.09.25: Created
+ */ 
+
+using System.Web.Mvc;
 using System.Web.Mvc.Routing.Constraints;
 using System.Web.Routing;
 
 namespace Veil
 {
+    /// <summary>
+    ///     Routing config for Veil
+    /// </summary>
     public class RouteConfig
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Route for adding or removing an item from the wishlist
             routes.MapRoute(
                 name: "Wishlist",
                 url: "Wishlist/{action}/{itemId}",
@@ -25,6 +36,7 @@ namespace Veil
                 }
             );
 
+            // Route for a specific user's wishlist
             routes.MapRoute(
                 name: "WishlistView",
                 url: "Wishlist/{username}",
@@ -36,6 +48,7 @@ namespace Veil
                 }
             );
 
+            // Default route
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",

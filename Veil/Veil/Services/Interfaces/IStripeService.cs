@@ -5,9 +5,9 @@
  *      Drew Matheson, 2015.10.27: Created
  */ 
 
-using Stripe;
 using Veil.DataModels.Models;
 using Veil.DataModels.Models.Identity;
+using Veil.Exceptions;
 
 namespace Veil.Services.Interfaces
 {
@@ -22,7 +22,7 @@ namespace Veil.Services.Interfaces
         /// <returns>
         ///     The Stripe customer Id for the user
         /// </returns>
-        /// <exception cref="StripeException">
+        /// <exception cref="StripeServiceException">
         ///     Thrown if Stripe returns any errors
         /// </exception>
         string CreateCustomer(User user);
@@ -40,7 +40,7 @@ namespace Veil.Services.Interfaces
         /// <returns>
         ///     A new <see cref="MemberCreditCard"/> containing the new card's information
         /// </returns>
-        /// <exception cref="StripeException">
+        /// <exception cref="StripeServiceException">
         ///     Thrown if Stripe returns any errors.
         ///     The messages are safe to display to the user.
         /// </exception>
@@ -55,7 +55,7 @@ namespace Veil.Services.Interfaces
         /// <returns>
         ///     The last 4 digits of the token's card
         /// </returns>
-        /// <exception cref="StripeException">
+        /// <exception cref="StripeServiceException">
         ///     Thrown if Stripe returns any errors.
         /// </exception>
         string GetLast4ForToken(string stripeCardToken);
@@ -78,7 +78,7 @@ namespace Veil.Services.Interfaces
         /// <returns>
         ///     The Stripe Charge Id for the charge.
         /// </returns>
-        /// <exception cref="StripeException">
+        /// <exception cref="StripeServiceException">
         ///     Thrown if Stripe returns any errors.
         /// </exception>
         string ChargeCard(decimal chargeAmount, string cardToken, string customerId = null, string description = null);
@@ -93,7 +93,7 @@ namespace Veil.Services.Interfaces
         ///     True if the amount refunded was greater than zero. False otherwise.
         ///     As we a refunding everything, if this returns true the refund succeeded.
         /// </returns>
-        /// <exception cref="StripeException">
+        /// <exception cref="StripeServiceException">
         ///     Thrown if Stripe returns any errors.
         /// </exception>
         bool RefundCharge(string chargeId);

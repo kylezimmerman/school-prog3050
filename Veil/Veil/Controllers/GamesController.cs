@@ -26,6 +26,9 @@ using Veil.DataModels;
 
 namespace Veil.Controllers
 {
+    /// <summary>
+    ///     Controller for actions related to <see cref="Game"/>
+    /// </summary>
     public class GamesController : BaseController
     {
         private const int GAMES_PER_PAGE = 10;
@@ -33,6 +36,15 @@ namespace Veil.Controllers
         private readonly IVeilDataAccess db;
         private readonly IGuidUserIdGetter idGetter;
 
+        /// <summary>
+        ///     Instantiates a new instance of GamesController with the provided argument
+        /// </summary>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
         public GamesController(IVeilDataAccess veilDataAccess, IGuidUserIdGetter idGetter)
         {
             db = veilDataAccess;
@@ -149,12 +161,12 @@ namespace Veil.Controllers
 
             if (tags.Count == 0 && title == "" && platform == "")
             {
-                AdvancedSearchViewModel advancedAdvancedSearchViewModel = new AdvancedSearchViewModel
+                AdvancedGameSearchViewModel advancedGameAdvancedGameSearchViewModel = new AdvancedGameSearchViewModel
                 {
                     Platforms = await db.Platforms.ToListAsync()
                 };
 
-                return View(advancedAdvancedSearchViewModel);
+                return View(advancedGameAdvancedGameSearchViewModel);
             }
 
             for (int i = 0; i < tags.Count; i++)
@@ -328,6 +340,7 @@ namespace Veil.Controllers
             }
 
             Game game = await db.Games
+                .Include(g => g.Rating)
                 .Include(g => g.ContentDescriptors)
                 .Include(g => g.GameSKUs)
                 .Include(g => g.GameSKUs.Select(sku => sku.Reviews.Select(r => r.Member)))
@@ -354,6 +367,24 @@ namespace Veil.Controllers
                 Where(gp => gp.ProductAvailabilityStatus != AvailabilityStatus.NotForSale).
                 ToList();
 
+            if (game.Rating.MinimumAge <= 0)
+            {
+                return View(game);
+            }
+
+            DateTime? userAge = AgeGateController.GetDateOfBirthValue(Request.Cookies);
+
+            if (userAge == null)
+            {
+                return View("~/Views/AgeGate/Index.cshtml", new AgeGateViewModel(Request.RawUrl, game.Name));
+            }
+
+            if ((DateTime.Now.Year - userAge.Value.Year) < game.Rating.MinimumAge)
+            {
+                this.AddAlert(AlertType.Info, AgeGateController.AgeBlockMessage);
+                return RedirectToAction("Index", new { Controller = "Games" });
+            }
+
             return View(game);
         }
 
@@ -370,7 +401,24 @@ namespace Veil.Controllers
             return View();
         }
 
-        // TODO: Comments
+        /// <summary>
+        ///     Creates a new game with the information provided if it is valid
+        /// </summary>
+        /// <param name="game">
+        ///     The <see cref="Game"/> containing the information excluding tags and content descriptors
+        /// </param>
+        /// <param name="tags">
+        ///     The <see cref="List{T}"/> of <see cref="string"/>s matching the names of the selected
+        ///     <see cref="Tag"/>s
+        /// </param>
+        /// <param name="contentDescriptors">
+        ///     The <see cref="List{T}"/> of <see cref="int"/>s matching the Ids of the selected
+        ///     <see cref="ESRBContentDescriptor"/>s
+        /// </param>
+        /// <returns>
+        ///     Redirection to the new <see cref="Game"/>s details if successful
+        ///     Redisplay of the page with errors if any information is invalid
+        /// </returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         [HttpPost]
         [ValidateAntiForgeryToken]

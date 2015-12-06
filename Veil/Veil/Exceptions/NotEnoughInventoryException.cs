@@ -21,6 +21,11 @@ namespace Veil.Exceptions
         /// </summary>
         public Product Product { get; set; }
 
+        /// <summary>
+        ///     Instantiates a new instance of NotEnoughInventoryException with the provided arguments
+        /// </summary>
+        /// <param name="message">The exception message</param>
+        /// <param name="product">The product that was too low on/out of stock</param>
         public NotEnoughInventoryException(string message, Product product) : base(message)
         {
             Product = product;

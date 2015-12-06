@@ -1,0 +1,55 @@
+﻿@using Veil.Models
+@model AgeGateViewModel
+
+@{
+    ViewBag.Title = "Age Gate";
+
+}
+
+<div class="row">
+    <div class="column">
+        <h2>
+            @ViewBag.Title
+            @if (!string.IsNullOrWhiteSpace(Model.Name))
+            {
+                @(Html.Encode($"- {Model.Name}"))
+            }
+        </h2>
+
+        @using (Html.BeginForm("Index", "AgeGate", FormMethod.Post))
+        {
+            @Html.HiddenFor(m => m.ReturnUrl)
+
+            <div class="row collapse">
+                <div class="small-3 medium-2 medium-offset-1 large-1 large-offset-2 columns">
+                    @Html.LabelFor(m => m.Day)
+                </div>
+                <div class="small-5 medium-3 large-3 columns">
+                    @Html.LabelFor(m => m.Month)
+                </div>
+                <div class="small-4 medium-2 large-2 columns end">
+                    @Html.LabelFor(m => m.Year)
+                </div>
+            </div>
+
+            <div class="row collapse">
+                <div class="small-3 medium-offset-1 medium-2 large-1 large-offset-2 columns">
+                    @Html.DropDownListFor(m => m.Day, Model.Days)
+                    @Html.ValidationMessageFor(m => m.Day)
+                </div>
+                <div class="small-5 medium-3 columns">
+                    @Html.DropDownListFor(m => m.Month, Model.Months)
+                    @Html.ValidationMessageFor(m => m.Month)
+                </div>
+                <div class="small-4 medium-2 columns">
+                    @Html.DropDownListFor(m => m.Year, Model.Years)
+                    @Html.ValidationMessageFor(m => m.Year)
+                </div>
+                <div class="medium-3 large-2 columns end">
+                    <button type="submit" class="expand postfix">Enter</button>
+                </div>
+            </div>
+            
+        }
+    </div>
+</div>

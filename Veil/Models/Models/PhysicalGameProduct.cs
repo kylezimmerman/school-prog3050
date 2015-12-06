@@ -12,7 +12,7 @@ using Veil.DataModels.Validation;
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// A physical product version of a GameProduct
+    ///     A physical product version of a GameProduct
     /// </summary>
     public class PhysicalGameProduct : GameProduct
     {
@@ -21,12 +21,12 @@ namespace Veil.DataModels.Models
         public override string NamePlatformDistinct => $"{Name} ({Platform.PlatformName})";
 
         /// <summary>
-        /// The optional suffix for this specific SKU of the game.
+        ///     The optional suffix for this specific SKU of the game.
         /// <example>
         ///     Collector's Edition
         /// </example>
         /// </summary>
-        [MaxLength(255)]
+        [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("SKU Suffix")]
         public string SKUNameSuffix { get; set; }
 
@@ -40,7 +40,7 @@ namespace Veil.DataModels.Models
         ///         0200300400500
         ///     </example>
         /// </remarks>
-        [MaxLength(128)]
+        [StringLength(maximumLength: 128, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_NEW_SKU)]
         [DisplayName("Internal New SKU")]
         public string InternalNewSKU { get; set; }
@@ -55,13 +55,13 @@ namespace Veil.DataModels.Models
         ///         1200300400500
         ///     </example>
         /// </remarks>
-        [MaxLength(128)]
+        [StringLength(maximumLength: 128, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [RegularExpression(ValidationRegex.PHYSICAL_GAME_PRODUCT_USED_SKU)]
         [DisplayName("Internal Used SKU")]
         public string InteralUsedSKU { get; set; }
 
         /// <summary>
-        /// Flag which indicates if we will buy pre-used copies from customers
+        ///     Flag which indicates if we will buy pre-used copies from customers
         /// </summary>
         [DisplayName("Will Buy Used")]
         public bool WillBuyBackUsedCopy { get; set; }

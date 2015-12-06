@@ -29,7 +29,7 @@ namespace Veil.DataModels.Models
         /// The Game's name
         /// </summary>
         [Required]
-        [StringLength(maximumLength: 512, MinimumLength = 1)]
+        [StringLength(maximumLength: 512, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string Name { get; set; }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's minimum player count
         /// </summary>
-        [Range(1, int.MaxValue)]
+        [Range(1, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         [DisplayName("Minimum Player Count")]
         public int MinimumPlayerCount { get; set; }
@@ -89,7 +89,7 @@ namespace Veil.DataModels.Models
         /// The Game's maximum player count
         /// </summary>
         [CompareValues(nameof(MinimumPlayerCount), ComparisonCriteria.GreatThanOrEqualTo)]
-        [Range(1, int.MaxValue)]
+        [Range(1, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         [DisplayName("Maximum Player Count")]
         public int MaximumPlayerCount { get; set; }
@@ -100,14 +100,14 @@ namespace Veil.DataModels.Models
         [DataType(DataType.Url)]
         [Url]
         [RegularExpression(ValidationRegex.YOUTUBE_EMBED_LINK, ErrorMessage = "Must be in the format https://www.youtube.com/embed/KxTaQmhztVQ")]
-        [MaxLength(2048)]
+        [StringLength(maximumLength: 2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Trailer URL")]
         public string TrailerURL { get; set; }
 
         /// <summary>
         /// The Game's short description
         /// </summary>
-        [MaxLength(140)]
+        [StringLength(maximumLength: 140, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
         [DisplayName("Short Description")]
         public string ShortDescription { get; set; }
@@ -115,7 +115,7 @@ namespace Veil.DataModels.Models
         /// <summary>
         /// The Game's long description
         /// </summary>
-        [MaxLength(2048)]
+        [StringLength(maximumLength: 2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DataType(DataType.MultilineText)]
         [DisplayName("Long Description")]
         public string LongDescription { get; set; }
@@ -124,7 +124,7 @@ namespace Veil.DataModels.Models
         /// The URL for the primary image for this game
         /// </summary>
         [DataType(DataType.Url)]
-        [MaxLength(2048)]
+        [StringLength(maximumLength: 2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Primary Image URL")]
         public string PrimaryImageURL { get; set; }
 
