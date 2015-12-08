@@ -11,7 +11,6 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Moq;
 using NUnit.Framework;
-using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
@@ -1125,7 +1124,7 @@ namespace Veil.Tests.Controllers.CheckoutControllerTests
             Assert.That(newOrder.ProvinceCode, Is.EqualTo(memberAddress.ProvinceCode));
             Assert.That(newOrder.CreditCardLast4Digits, Is.EqualTo(memberCreditCard.Last4Digits));
             Assert.That(newOrder.MemberId, Is.EqualTo(memberId));
-            Assert.That(newOrder.OrderDate, Is.EqualTo(DateTime.Now).Within(1).Minutes);
+            Assert.That(newOrder.OrderDate, Is.EqualTo(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"))).Within(1).Minutes);
             Assert.That(newOrder.OrderStatus, Is.EqualTo(OrderStatus.PendingProcessing));
             Assert.That(newOrder.OrderSubtotal, Is.EqualTo(subTotal));
             Assert.That(newOrder.ShippingCost, Is.EqualTo(shippingCost));
