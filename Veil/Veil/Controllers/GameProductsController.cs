@@ -444,7 +444,6 @@ namespace Veil.Controllers
 
             await db.SaveChangesAsync();
 
-            // TODO: This is new, untested code
             if (gameProduct is PhysicalGameProduct)
             {
                 ProductLocationInventory onlineInventory = new ProductLocationInventory
@@ -462,7 +461,7 @@ namespace Veil.Controllers
                 db.ProductLocationInventories.Add(onlineInventory);
 
                 await db.SaveChangesAsync();
-            } // TODO: End new untested code
+            }
 
             this.AddAlert(AlertType.Success, "Successfully added a new SKU.");
 
