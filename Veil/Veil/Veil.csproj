@@ -344,6 +344,8 @@
       <SubType>Designer</SubType>
     </Content>
     <None Include="Properties\PublishProfiles\Local_IIS.pubxml" />
+    <None Include="Properties\PublishProfiles\veil - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\veil - Web Deploy.pubxml" />
     <None Include="Scripts\Library\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\AddStripeCard.js" />
     <Content Include="Scripts\Library\foundation\fastclick.js" />
