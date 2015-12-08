@@ -26,7 +26,7 @@ namespace Veil.DataAccess.Interfaces
     }
 
     /// <summary>
-    ///     Interface for Veil's Data Access layer
+    ///     Provides methods for interacting with for Veil's Data Access layer
     /// </summary>
     public interface IVeilDataAccess : IDisposable
     {

@@ -104,6 +104,9 @@ namespace Veil.DataModels.Models
         [DisplayName("SKU Description")]
         public string SKUDescription { get; set; }
 
+        /// <summary>
+        ///     The number of new copies contained by <see cref="LocationInventories"/>
+        /// </summary>
         public int NewInventory
         {
             get
@@ -112,6 +115,9 @@ namespace Veil.DataModels.Models
             }
         }
 
+        /// <summary>
+        ///     The number of used copies contained by <see cref="LocationInventories"/>
+        /// </summary>
         public int UsedInventory
         {
             get

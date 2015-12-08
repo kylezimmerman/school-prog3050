@@ -624,7 +624,7 @@ namespace Veil.Controllers
                 CountryCode = memberAddress.CountryCode,
                 MemberId = memberId,
                 CreditCardLast4Digits = last4Digits,
-                OrderDate = DateTime.Now,
+                OrderDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")),
                 OrderStatus = OrderStatus.PendingProcessing,
                 TaxAmount = taxAmount,
                 ShippingCost = shippingCost,

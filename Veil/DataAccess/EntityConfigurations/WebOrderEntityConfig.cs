@@ -11,11 +11,14 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="WebOrder"/> model
+    /// </summary>
     internal class WebOrderEntityConfig : EntityTypeConfiguration<WebOrder>
     {
         public WebOrderEntityConfig()
         {
-            // TODO: StripeChargeId should be case sensitive in the DB
+            // NOTE: StripeChargeId should be case sensitive in the DB
 
             /* Primary Key:
              *

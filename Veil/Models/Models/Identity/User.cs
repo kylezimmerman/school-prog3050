@@ -27,6 +27,15 @@ namespace Veil.DataModels.Models.Identity
     /// </remarks>
     public class User : IdentityUser<Guid, GuidIdentityUserLogin, GuidIdentityUserRole, GuidIdentityUserClaim>
     {
+        /// <summary>
+        ///     Generates a <see cref="ClaimsIdentity"/> representing the user
+        /// </summary>
+        /// <param name="manager">
+        ///     The <see cref="UserManager{TUser, TKey}"/> to use for creating the identity
+        /// </param>
+        /// <returns>
+        ///     A Task which will resolve to the created <see cref="ClaimsIdentity"/>
+        /// </returns>
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<User, Guid> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType

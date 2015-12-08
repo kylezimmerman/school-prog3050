@@ -11,18 +11,18 @@ using Veil.DataModels.Validation;
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// A department within a company
+    ///     A department within a company
     /// </summary>
     public class Department
     {
         /// <summary>
-        /// The Id of the department
+        ///     The Id of the department
         /// </summary>
         [Key]
         public int Id { get; set; }
 
         /// <summary>
-        /// The department's name
+        ///     The department's name
         /// </summary>
         [Required]
         [StringLength(128, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages) )]

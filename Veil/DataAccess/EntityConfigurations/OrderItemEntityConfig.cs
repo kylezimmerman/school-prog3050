@@ -10,6 +10,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="OrderItem"/> model
+    /// </summary>
     internal class OrderItemEntityConfig : EntityTypeConfiguration<OrderItem>
     {
         public OrderItemEntityConfig()

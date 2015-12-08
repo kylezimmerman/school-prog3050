@@ -18,12 +18,13 @@ namespace Veil.DataModels.Models
     {
         /// <summary>
         ///     The location type's name
+        /// </summary>
         /// <example>
+        ///     <b>Examples:</b>
         ///     Head Office
         ///     Western Branch Office
         ///     Store
         /// </example>
-        /// </summary>
         [Key]
         [Required]
         [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]

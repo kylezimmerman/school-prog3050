@@ -1,6 +1,6 @@
 ﻿/* IdentityEntitiesConfig.cs
  * Purpose: Entity Configuration for the ASP.NET Identity models excluding User
- *          These aren't EntityTypeConfiguration classes because Identity override the values
+ *          These aren't EntityTypeConfiguration classes because Identity overrides the values
  *          if they are.
  * 
  * Revision History:
@@ -12,6 +12,12 @@ using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     Entity Configuration for the ASP.NET Identity models excluding <see cref="User"/>
+    ///     <br/>
+    ///     These aren't EntityTypeConfiguration classes because Identity overrides the values
+    ///     if they are.
+    /// </summary>
     internal class IdentityEntitiesConfig
     {
         public static void Setup(DbModelBuilder modelBuilder)

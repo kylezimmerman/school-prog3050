@@ -11,7 +11,7 @@ using Veil.DataModels.Models;
 namespace Veil.Services.Interfaces
 {
     /// <summary>
-    ///     Interface containing a method for calculating the shipping cost for <see cref="CartItem"/>s
+    ///     Provides a method for calculating the shipping cost for <see cref="CartItem"/>s
     /// </summary>
     public interface IShippingCostService
     {

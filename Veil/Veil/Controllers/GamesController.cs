@@ -442,7 +442,11 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // TODO: Comments
+        /// <summary>
+        /// Displays the page for editing a game.
+        /// </summary>
+        /// <param name="id">The Id of the game to edit.</param>
+        /// <returns>The view for editing a game if a match is found, 404 Not Found page if no match is found.</returns>
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
         public async Task<ActionResult> Edit(Guid? id)
         {
@@ -462,7 +466,13 @@ namespace Veil.Controllers
             return View(game);
         }
 
-        // TODO: Comments
+        /// <summary>
+        /// Processes the POST action of editing a Game object, and displays a confirmation message.
+        /// </summary>
+        /// <param name="game">The Game object being edited.</param>
+        /// <param name="tags">The list of tags for the Game object being edited.</param>
+        /// <param name="contentDescriptors">The list of ESRB descriptors for the Game object being edited.</param>
+        /// <returns>Returns the View for the Game Details page on success, returns the user back to the Edit view on failure.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
