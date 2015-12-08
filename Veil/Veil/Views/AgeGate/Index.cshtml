@@ -15,6 +15,11 @@
                 @(Html.Encode($"- {Model.Name}"))
             }
         </h2>
+    </div>
+</div>
+<div class="row">
+    <div class="column panel">
+        <p class="text-center">Please confirm your date of birth to proceed:</p>
 
         @using (Html.BeginForm("Index", "AgeGate", FormMethod.Post))
         {
@@ -49,7 +54,7 @@
                     <button type="submit" class="expand postfix">Enter</button>
                 </div>
             </div>
-            
+
         }
     </div>
 </div>
