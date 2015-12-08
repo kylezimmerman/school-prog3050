@@ -10,6 +10,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="Friendship"/> model
+    /// </summary>
     internal class FriendshipEntityConfig : EntityTypeConfiguration<Friendship>
     {
         public FriendshipEntityConfig()

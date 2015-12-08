@@ -10,6 +10,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="Province"/> model
+    /// </summary>
     internal class ProvinceEntityConfig : EntityTypeConfiguration<Province>
     {
         public ProvinceEntityConfig()

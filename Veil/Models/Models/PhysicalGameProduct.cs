@@ -22,10 +22,11 @@ namespace Veil.DataModels.Models
 
         /// <summary>
         ///     The optional suffix for this specific SKU of the game.
+        /// </summary>
         /// <example>
+        ///     <b>Examples:</b>
         ///     Collector's Edition
         /// </example>
-        /// </summary>
         [StringLength(maximumLength: 255, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("SKU Suffix")]
         public string SKUNameSuffix { get; set; }
@@ -36,6 +37,7 @@ namespace Veil.DataModels.Models
         /// <remarks>
         ///     This is a 13 digit string with the first digit being a 0
         ///     <example>
+        ///         <b>Examples:</b>
         ///         0000000000123
         ///         0200300400500
         ///     </example>
@@ -51,6 +53,7 @@ namespace Veil.DataModels.Models
         /// <remarks>
         ///     This is a 13 digit string with the first digit being a 1
         ///     <example>
+        ///         <b>Examples:</b>
         ///         1000000000123
         ///         1200300400500
         ///     </example>

@@ -14,18 +14,28 @@ namespace Veil.DataAccess.Migrations
 {
     using System.Data.Entity.Migrations;
 
+    /// <summary>
+    ///     <see cref="DbMigrationsConfiguration{T}"/> class for <see cref="VeilDataContext"/>
+    /// </summary>
     internal sealed class Configuration : DbMigrationsConfiguration<VeilDataContext>
     {
+        /// <summary>
+        ///     Instantiates a new instance of Configuration
+        /// </summary>
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
             ContextKey = "Veil.DataAccess.VeilDataContext";
         }
 
+        /// <summary>
+        ///     Data seed method which is called after migrating to the latest version.
+        /// </summary>
+        /// <param name="context">
+        ///     The <see cref="VeilDataContext"/> to be used to seed the data
+        /// </param>
         protected override void Seed(VeilDataContext context)
         {
-            //  This method will be called after migrating to the latest version.
-
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data.
 

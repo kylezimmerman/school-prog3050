@@ -45,8 +45,25 @@ namespace Veil.DataModels.Models
         /// </summary>
         public int Quantity { get; set; }
 
+        /// <summary>
+        ///     Implementation of <see cref="IEqualityComparer{T}"/> for <see cref="CartItem"/>
+        /// </summary>
         private sealed class CartItemEqualityComparer : IEqualityComparer<CartItem>
         {
+            /// <summary>
+            ///     Implements <see cref="IEqualityComparer{T}.Equals(T, T)"/>.
+            ///     Compares whether the two <see cref="CartItem"/>s are equal
+            /// </summary>
+            /// <param name="x">
+            ///     The first <see cref="CartItem"/>
+            /// </param>
+            /// <param name="y">
+            ///     The second <see cref="CartItem"/>
+            /// </param>
+            /// <returns>
+            ///     True if the two <see cref="CartItem"/>s are considered equal.
+            ///     False otherwise
+            /// </returns>
             public bool Equals(CartItem x, CartItem y)
             {
                 if (ReferenceEquals(x, y))
@@ -67,6 +84,19 @@ namespace Veil.DataModels.Models
                     x.Quantity == y.Quantity;
             }
 
+            /// <summary>
+            ///     Implements <see cref="IEqualityComparer{T}.GetHashCode(T)"/>.
+            /// </summary>
+            /// <param name="obj">
+            ///     The <see cref="CartItem"/> to get the hash code of.
+            /// </param>
+            /// <returns>
+            ///     <see cref="obj"/>'s hashcode
+            /// </returns>
+            /// <remarks>
+            ///     The hashcode is generated using <see cref="MemberId"/>, <see cref="ProductId"/>, 
+            ///     <see cref="IsNew"/>, and <see cref="Quantity"/>
+            /// </remarks>
             public int GetHashCode(CartItem obj)
             {
                 unchecked
@@ -80,8 +110,12 @@ namespace Veil.DataModels.Models
             }
         }
 
+        // Singleton instance of <see cref="CartItemEqualityComparer"/>
         private static readonly IEqualityComparer<CartItem> CartItemComparerInstance = new CartItemEqualityComparer();
 
+        /// <summary>
+        ///     Gets an instance of <see cref="IEqualityComparer{T}"/> for <see cref="CartItem"/>
+        /// </summary>
         public static IEqualityComparer<CartItem> CartItemComparer => CartItemComparerInstance;
     }
 }

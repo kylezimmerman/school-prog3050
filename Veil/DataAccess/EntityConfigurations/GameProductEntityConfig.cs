@@ -10,6 +10,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="GameProduct"/> model
+    /// </summary>
     internal class GameProductEntityConfig : EntityTypeConfiguration<GameProduct>
     {
         public GameProductEntityConfig()

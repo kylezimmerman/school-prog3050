@@ -12,12 +12,12 @@ using Veil.DataModels.Validation;
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// A downloadable game product
+    ///     A downloadable game product
     /// </summary>
     public class DownloadGameProduct : GameProduct
     {
         /// <summary>
-        /// The game's download url
+        ///     The game's download url
         /// </summary>
         [Required]
         [DataType(DataType.Url)]
@@ -27,7 +27,7 @@ namespace Veil.DataModels.Models
         public string DownloadLink { get; set; }
 
         /// <summary>
-        /// An approximate size in megabytes for the download
+        ///     An approximate size in megabytes for the download
         /// </summary>
         [Range(0, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DisplayName("Approximate Size")]

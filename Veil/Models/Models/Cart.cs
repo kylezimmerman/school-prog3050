@@ -13,7 +13,7 @@ using System.Linq;
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// A shopping cart containing the cart items for a specific member
+    ///     A shopping cart containing the cart items for a specific member
     /// </summary>
     public class Cart
     {
@@ -33,6 +33,9 @@ namespace Veil.DataModels.Models
         /// </summary>
         public virtual ICollection<CartItem> Items { get; set; }
 
+        /// <summary>
+        ///     Gets the total item price for all of the items in the cart
+        /// </summary>
         public decimal TotalCartItemsPrice
         {
             get

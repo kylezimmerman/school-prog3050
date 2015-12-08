@@ -11,6 +11,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="Cart"/> model
+    /// </summary>
     internal class CartEntityConfig : EntityTypeConfiguration<Cart>
     {
         public CartEntityConfig()

@@ -16,6 +16,7 @@ namespace Veil.DataModels.Validation
         ///     Pattern for input phone numbers
         /// </summary>
         /// <example>
+        ///     <b>Examples:</b>
         ///     (800)555-0199
         ///     800-555-0199
         ///     (800)555-0199, ext. 5555
@@ -27,6 +28,7 @@ namespace Veil.DataModels.Validation
         ///     Pattern for persisted phone numbers
         /// </summary>
         /// <example>
+        ///     <b>Examples:</b>
         ///     800-555-0199
         ///     800-555-0199, ext. 5555    
         /// </example>

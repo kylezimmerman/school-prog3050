@@ -11,6 +11,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="ESRBRating"/> model
+    /// </summary>
     internal class ESRBRatingEntityConfig : EntityTypeConfiguration<ESRBRating>
     {
         public ESRBRatingEntityConfig()
