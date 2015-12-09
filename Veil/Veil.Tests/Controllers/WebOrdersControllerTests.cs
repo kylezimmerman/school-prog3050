@@ -11,7 +11,6 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Moq;
 using NUnit.Framework;
-using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels;

@@ -11,8 +11,11 @@
         <p>Wishlist Visibility: @Html.DisplayFor(m => m.WishListVisibility)</p>
         @if (Model.WishListVisibility == WishListVisibility.Public)
         {
+            string url = Url.Action("Index", "Wishlist",
+                new { username = Model.UserAccount.UserName },
+                Request.Url.Scheme);
             <p>You can share your wishlist with others by sending them this link:
-                <a href="@HttpContext.Current.Request.Url.AbsoluteUri">@HttpContext.Current.Request.Url.AbsoluteUri</a>
+                <a href="@url">@url</a>
             </p>
         }
     </div>

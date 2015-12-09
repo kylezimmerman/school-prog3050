@@ -211,14 +211,16 @@ namespace Veil.Controllers
             if (!currentMember.Wishlist.Contains(toRemove))
             {
                 this.AddAlert(AlertType.Error, toRemove.Name + " is not on your wishlist.");
-                return View("Index", currentMember);
             }
+            else
+            {
+                currentMember.Wishlist.Remove(toRemove);
+                await db.SaveChangesAsync();
 
-            currentMember.Wishlist.Remove(toRemove);
-            await db.SaveChangesAsync();
-
-            this.AddAlert(AlertType.Success, toRemove.Name + " was removed from your wishlist.");
-            return View("Index", currentMember);
+                this.AddAlert(AlertType.Success, toRemove.Name + " was removed from your wishlist.");
+            }
+            
+            return RedirectToAction("Index");
         }
     }
 }
