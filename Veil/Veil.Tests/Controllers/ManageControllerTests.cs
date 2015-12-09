@@ -2250,6 +2250,67 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
+        public async void UpdateProfile_InvalidModelState_RedisplaysIndexViewWithSameViewModel()
+        {
+            IndexViewModel viewModel = new IndexViewModel()
+            {
+                MemberFirstName = "firstName",
+                MemberLastName = "lastName",
+                MemberVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmails = true
+            };
+
+            Member member = new Member()
+            {
+                UserId = memberId,
+                WishListVisibility = WishListVisibility.FriendsOnly,
+                ReceivePromotionalEmails = true,
+                FavoritePlatforms = new List<Platform> { new Platform(), new Platform() },
+                FavoriteTags = new List<Tag> { new Tag(), new Tag() }
+            };
+
+            User user = new User()
+            {
+                Id = memberId,
+                Email = "person@email.com",
+                Member = member
+            };
+
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.Setup(um => um.FindByIdAsync(memberId)).ReturnsAsync(user);
+            userManagerStub.Setup(um => um.GenerateEmailConfirmationTokenAsync(It.IsAny<Guid>())).ReturnsAsync("emailToken");
+            userManagerStub.Setup(um => um.SendNewEmailConfirmationEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(0));
+
+            dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
+            context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+
+            Mock<IGuidUserIdGetter> idGetterStub = new Mock<IGuidUserIdGetter>();
+            idGetterStub.Setup(id => id.GetUserId(It.IsAny<IIdentity>())).Returns(memberId);
+
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, idGetterStub.Object, null)
+            {
+                ControllerContext = context.Object
+            };
+
+            controller.ModelState.AddModelError(nameof(viewModel.MemberEmail), "Required");
+
+            var result = await controller.UpdateProfile(viewModel) as ViewResult;
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.Empty.Or.EqualTo(nameof(ManageController.Index)));
+            Assert.That(result.Model, Is.SameAs(viewModel));
+            Assert.That(viewModel.FavoritePlatformCount, Is.EqualTo(member.FavoritePlatforms.Count));
+            Assert.That(viewModel.FavoriteTagCount, Is.EqualTo(member.FavoriteTags.Count));
+        }
+
+        [Test]
         public async void UpdateProfile_SetNewEmail()
         {
             IndexViewModel viewModel = new IndexViewModel()
@@ -2310,6 +2371,7 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
         }
+
         [Test]
         public async void UpdateProfile_ReplaceNewEmailWithNewerEmail()
         {
@@ -2372,6 +2434,7 @@ namespace Veil.Tests.Controllers
             Assert.That(result != null);
             Assert.That(result.RouteValues["action"], Is.EqualTo("Index"));
         }
+
         [Test]
         public async void UpdateProfile_CatchOnSave()
         {
@@ -2450,7 +2513,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ConfirmNewEmail(user.Id, "string") as ActionResult;
+            var result = await controller.ConfirmNewEmail(user.Id, "string");
 
             Assert.That(result != null);
         }
@@ -2465,7 +2528,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ConfirmNewEmail(Guid.Empty, "string") as ActionResult;
+            var result = await controller.ConfirmNewEmail(Guid.Empty, "string");
 
             Assert.That(result != null);
         }
@@ -2493,20 +2556,56 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ConfirmNewEmail(user.Id, "string") as ActionResult;
+            var result = await controller.ConfirmNewEmail(user.Id, "string");
 
             Assert.That(result != null);
         }
 
         [Test]
-        public async void ConfirmNewEmail_UserIsNullThrows()
+        public async void ConfirmNewEmail_ConfirmEmailReturnsFailedIdentityResult_AddsErrorsToModelErrors()
         {
+            string[] identityErrors =
+            {
+                "Error 1",
+                "Error 2",
+                "Error 3"
+            };
+            IdentityResult failedResult = IdentityResult.Failed(identityErrors);
+
             User user = new User()
             {
                 Id = memberId,
                 Email = "person@email.com"
             };
 
+            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
+            Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
+            Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
+                null /*dataProtectionProvider*/);
+
+            userManagerStub.
+                Setup(um => um.ConfirmEmailAsync(It.IsAny<Guid>(), It.IsAny<string>())).
+                ReturnsAsync(failedResult);
+
+            dbStub.
+                Setup(db => db.UserStore).
+                Returns(userStoreStub.Object);
+
+            Mock<ControllerContext> context = new Mock<ControllerContext>();
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, null, null)
+            {
+                ControllerContext = context.Object
+            };
+
+            await controller.ConfirmNewEmail(user.Id, "string");
+
+            Assert.That(controller.ModelState.Count, Is.EqualTo(1));
+            Assert.That(controller.ModelState.First().Value.Errors.Count, Is.EqualTo(identityErrors.Length));
+        }
+
+        [Test]
+        public void ConfirmNewEmail_UserIsNullThrows()
+        {
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
@@ -2552,9 +2651,20 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ConfirmNewEmail(user.Id, "string") as ActionResult;
+            var result = await controller.ConfirmNewEmail(user.Id, "string");
 
             Assert.That(result != null);
+        }
+
+        [Test]
+        public void ChangePasswordGET_WhenCalled_ReturnsView()
+        {
+            ManageController controller = new ManageController(userManager: null, signInManager: null, veilDataAccess: null, idGetter: null, stripeService: null);
+
+            var result = controller.ChangePassword();
+
+            Assert.That(result != null);
+            Assert.That(result.ViewName, Is.Empty.Or.EqualTo(nameof(ManageController.ChangePassword)));
         }
 
         [Test]
@@ -2590,8 +2700,6 @@ namespace Veil.Tests.Controllers
             Mock<VeilSignInManager> signInManagerMock = new Mock<VeilSignInManager>(userManagerStub.Object, authenticationManagerStub.Object);
             signInManagerMock.Setup(sm => sm.SignInAsync(It.IsAny<User>(), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult(0));
 
-            
-            
             Mock<ControllerContext> context = new Mock<ControllerContext>();
             context.Setup(c => c.HttpContext.User.Identity).Returns<IIdentity>(null);
             context.Setup(c => c.HttpContext.User.Identity.IsAuthenticated).Returns(true);
@@ -2619,7 +2727,7 @@ namespace Veil.Tests.Controllers
 
             controller.ModelState.AddModelError("error", "this is an error");
 
-            var result = await controller.ChangePassword(passwordModel) as ActionResult;
+            var result = await controller.ChangePassword(passwordModel);
 
             Assert.That(result != null);
         }
@@ -2640,7 +2748,7 @@ namespace Veil.Tests.Controllers
                 null /*dataProtectionProvider*/);
 
             userManagerStub.Setup(um => um.ChangePasswordAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ThrowsAsync<VeilUserManager, IdentityResult>(new DbEntityValidationException());
+                .ThrowsAsync(new DbEntityValidationException());
 
             dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
 
@@ -2656,13 +2764,13 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ChangePassword(passwordModel) as ActionResult;
+            var result = await controller.ChangePassword(passwordModel);
 
             Assert.That(result != null);
         }
 
         [Test]
-        public async void ChangePassword_ResultEqualsIdentitiyResultFailed()
+        public async void ChangePassword_ResultEqualsIdentityResultFailed()
         {
 
             ChangePasswordViewModel passwordModel = new ChangePasswordViewModel()
@@ -2709,7 +2817,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ChangePassword(passwordModel) as ActionResult;
+            var result = await controller.ChangePassword(passwordModel);
 
             Assert.That(result != null);
         }

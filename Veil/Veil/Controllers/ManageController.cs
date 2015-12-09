@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
@@ -125,12 +126,13 @@ namespace Veil.Controllers
             return View(model);
         }
 
+        // TODO: Comments
         [HttpPost]
+        [ActionName(nameof(Index))]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UpdateProfile(IndexViewModel viewModel)
         {
             Guid userId = GetUserId();
-            ManageMessageId? message = null;
             var user = await userManager.FindByIdAsync(userId);
             bool isNewEmail = false;
 
@@ -140,11 +142,13 @@ namespace Veil.Controllers
                 signInManager.AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
                 return RedirectToAction("Index", "Home");
             }
+
             if (user.Member == null)
             {
                 this.AddAlert(AlertType.Error, "Employees do not have public profiles.");
                 return RedirectToAction("Index", "Home");
             }
+
             if (ModelState.IsValid)
             {
                 user.FirstName = viewModel.MemberFirstName;
@@ -155,15 +159,18 @@ namespace Veil.Controllers
 
                 if (user.Email != viewModel.MemberEmail)
                 {
-                    //runs if newEmail was not null or empty and and the new email property is different than the one being set
-                    if (!String.IsNullOrWhiteSpace(user.NewEmail) && user.NewEmail != viewModel.MemberEmail)
+                    // Runs if newEmail was not null or empty and and the new email property is 
+                    // different than the one being set
+                    if (!string.IsNullOrWhiteSpace(user.NewEmail) &&
+                        user.NewEmail != viewModel.MemberEmail)
                     {
-                        //invalidates confirmation email stamp
+                        // Invalidates confirmation email stamp
                         await userManager.UpdateSecurityStampAsync(userId);
                     }
                     user.NewEmail = viewModel.MemberEmail;
                     isNewEmail = true;
                 }
+
                 try
                 {
                     db.MarkAsModified(user);
@@ -173,23 +180,31 @@ namespace Veil.Controllers
                         await SendConfirmationEmail(user);
                         this.AddAlert(
                             AlertType.Info, "A confirmation email has been sent to " + user.NewEmail +
-                                ", you can continue logging into your Veil account using " +
-                                user.Email + " to login until you confirm the new email address");
+                                ", you must continue logging into your Veil account using " +
+                                user.Email + " until you confirm the new email address");
                     }
                     this.AddAlert(AlertType.Success, "Your Profile has been updated");
                 }
-                catch (Exception e)
+                catch (DataException)
                 {
-                    this.AddAlert(AlertType.Error, "An Error occurred while trying to save your changes");
+                    this.AddAlert(AlertType.Error, "An error occurred while trying to save your changes");
                 }
             }
             else
             {
-                this.AddAlert(AlertType.Error, "A manadatory field was empty");
+                this.AddAlert(AlertType.Error, "Some profile information was invalid");
+
+                viewModel.FavoritePlatformCount = user.Member.FavoritePlatforms.Count;
+                viewModel.FavoriteTagCount = user.Member.FavoriteTags.Count;
+
+                return View(viewModel);
             }
-            return RedirectToAction("Index", new { Message = message });
+
+            return RedirectToAction("Index");
         }
 
+        // TODO: Comments
+        // TODO: Do we want to allow non-logged-in users to do this?
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmNewEmail(Guid userId, string code)
         {
@@ -202,6 +217,8 @@ namespace Veil.Controllers
 
             if (!result.Succeeded)
             {
+                AddErrors(result);
+
                 return View("Error");
             }
 
@@ -214,6 +231,7 @@ namespace Veil.Controllers
 
             user.Email = user.NewEmail;
             user.NewEmail = null;
+
             try
             {
                 db.MarkAsModified(user);
@@ -222,7 +240,7 @@ namespace Veil.Controllers
                 // Update the security stamp to invalidate the email link
                 await userManager.UpdateSecurityStampAsync(userId);
             }
-            catch (Exception)
+            catch (DataException)
             {
                 this.AddAlert(
                     AlertType.Error,
@@ -233,15 +251,13 @@ namespace Veil.Controllers
             return View("ConfirmNewEmail");
         }
 
-        //
-        // GET: /Manage/ChangePassword
-        public ActionResult ChangePassword()
+        // TODO: Comments
+        public ViewResult ChangePassword()
         {
             return View();
         }
 
-        //
-        // POST: /Manage/ChangePassword
+        // TODO: Comments
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ChangePassword(ChangePasswordViewModel model)
@@ -251,7 +267,7 @@ namespace Veil.Controllers
                 return View(model);
             }
 
-            IdentityResult result = null;
+            IdentityResult result;
 
             try
             {

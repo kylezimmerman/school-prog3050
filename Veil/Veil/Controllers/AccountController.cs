@@ -380,7 +380,7 @@ namespace Veil.Controllers
         /// </param>
         /// <returns>
         ///     If successful, a view letting the user know their email has confirmed.
-        ///      Otherwise, an error view.
+        ///     Otherwise, an error view.
         /// </returns>
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(Guid userId, string code)
