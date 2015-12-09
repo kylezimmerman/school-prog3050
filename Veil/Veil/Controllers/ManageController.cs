@@ -46,6 +46,24 @@ namespace Veil.Controllers
         private readonly IGuidUserIdGetter idGetter;
         private readonly IStripeService stripeService;
 
+        /// <summary>
+        ///     Instantiates a new instance of ManageController with the provided arguments
+        /// </summary>
+        /// <param name="userManager">
+        ///     The <see cref="VeilUserManager"/> for the controller to use
+        /// </param>
+        /// <param name="signInManager">
+        ///     The <see cref="VeilSignInManager"/> for the controller to use
+        /// </param>
+        /// <param name="veilDataAccess">
+        ///     The <see cref="IVeilDataAccess"/> to use for database access
+        /// </param>
+        /// <param name="idGetter">
+        ///     The <see cref="IGuidUserIdGetter"/> to use for getting the current user's Id
+        /// </param>
+        /// <param name="stripeService">
+        ///     The <see cref="IStripeService"/> to use for Stripe interaction
+        /// </param>
         public ManageController(
             VeilUserManager userManager, VeilSignInManager signInManager, IVeilDataAccess veilDataAccess,
             IGuidUserIdGetter idGetter, IStripeService stripeService)
@@ -126,7 +144,18 @@ namespace Veil.Controllers
             return View(model);
         }
 
-        // TODO: Comments
+        /// <summary>
+        ///     Updates the user's profile information
+        /// </summary>
+        /// <param name="viewModel">
+        ///     <see cref="IndexViewModel"/> containing the updated profile information
+        /// </param>
+        /// <returns>
+        ///     Redirection back to Index if successful.
+        ///     Redirection to Home Index if the user doesn't exist
+        ///     Redirection to Home Index if the user is an employee
+        ///     Redisplays the form if the information is incorrect
+        /// </returns>
         [HttpPost]
         [ActionName(nameof(Index))]
         [ValidateAntiForgeryToken]
@@ -180,7 +209,7 @@ namespace Veil.Controllers
                         await SendConfirmationEmail(user);
                         this.AddAlert(
                             AlertType.Info, "A confirmation email has been sent to " + user.NewEmail +
-                                ", you must continue logging into your Veil account using " +
+                                ". You must continue logging into your Veil account using " +
                                 user.Email + " until you confirm the new email address");
                     }
                     this.AddAlert(AlertType.Success, "Your Profile has been updated");
@@ -203,9 +232,20 @@ namespace Veil.Controllers
             return RedirectToAction("Index");
         }
 
-        // TODO: Comments
-        // TODO: Do we want to allow non-logged-in users to do this?
-        [AllowAnonymous]
+        /// <summary>
+        ///     Validates the confirmation info, sets the user's email as confirmed, 
+        ///     and sets the new email address as their email address
+        /// </summary>
+        /// <param name="userId">
+        ///     The Id of the user
+        /// </param>
+        /// <param name="code">
+        ///     The validation code
+        /// </param>
+        /// <returns>
+        ///     If successful, a view letting the user know their email has confirmed.
+        ///     Otherwise, an error view.
+        /// </returns>
         public async Task<ActionResult> ConfirmNewEmail(Guid userId, string code)
         {
             if (userId == Guid.Empty || string.IsNullOrWhiteSpace(code))
@@ -251,13 +291,27 @@ namespace Veil.Controllers
             return View("ConfirmNewEmail");
         }
 
-        // TODO: Comments
+        /// <summary>
+        ///     Displays a view for changed your account password
+        /// </summary>
+        /// <returns></returns>
         public ViewResult ChangePassword()
         {
             return View();
         }
 
-        // TODO: Comments
+        /// <summary>
+        ///     Changes the user's password
+        /// </summary>
+        /// <param name="model">
+        ///     <see cref="ChangePasswordViewModel"/> containing the old, new, and confirm passwords
+        /// </param>
+        /// <returns>
+        ///     Redirects to Index if successful
+        ///     Redisplays the form if information is invalid
+        ///     Redisplays the form if password changing fails due to a database error
+        ///     Redisplays the form if password changing fails due to an Identity error
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ChangePassword(ChangePasswordViewModel model)
@@ -271,9 +325,8 @@ namespace Veil.Controllers
 
             try
             {
-                result =
-                    await
-                        userManager.ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
+                result = await userManager.
+                    ChangePasswordAsync(GetUserId(), model.OldPassword, model.NewPassword);
             }
             catch (DbEntityValidationException ex)
             {
@@ -769,6 +822,15 @@ namespace Veil.Controllers
             Error
         }
 
+        /// <summary>
+        ///     Sends a confirmation email allowing the user to confirm a new email address
+        /// </summary>
+        /// <param name="user">
+        ///     The <see cref="User"/> to see the confirmation email to
+        /// </param>
+        /// <returns>
+        ///     A Task to be awaited
+        /// </returns>
         private async Task SendConfirmationEmail(User user)
         {
             string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -784,9 +846,9 @@ namespace Veil.Controllers
             await userManager.SendNewEmailConfirmationEmailAsync(
                 user.NewEmail,
                 "Veil - Email change request",
-                "<h1>Confirm this email to rejoin us at Veil</h1>" +
-                    "An email change request has been made for this address if you requested this please click <a href=\"" +
-                    callbackUrl + "\">here</a>" +
+                "<h1>Confirm this email to use it at Veil</h1>" +
+                    "An email change request has been made for this address. If you requested this please click <a href=\"" +
+                    callbackUrl + "\">here</a>." +
                     "<br/> **Note once you click this link you need to use this email address to log in to Veil");
         }
         #endregion

@@ -39,9 +39,15 @@ namespace Veil.Controllers
         /// <summary>
         ///     Instantiates a new instance of AccountController
         /// </summary>
-        /// <param name="userManager">The UserManager for the controller to use</param>
-        /// <param name="signInManager">The SingInManager for the controller to use</param>
-        /// <param name="stripeService">The IStripeService for the controller to use</param>
+        /// <param name="userManager">
+        ///     The <see cref="VeilUserManager"/> for the controller to use
+        /// </param>
+        /// <param name="signInManager">
+        ///     The <see cref="VeilSignInManager"/> for the controller to use
+        /// </param>
+        /// <param name="stripeService">
+        ///     The <see cref="IStripeService"/> to use for Stripe customer creation
+        /// </param>
         public AccountController(
             VeilUserManager userManager, VeilSignInManager signInManager, IStripeService stripeService)
         {
@@ -651,11 +657,14 @@ namespace Veil.Controllers
         /// <param name="result">
         ///     The <see cref="IdentityResult"/> to add errors from
         /// </param>
-        private void AddErrors(IdentityResult result, string tag)
+        /// <param name="key">
+        ///     The key to add the model errors under
+        /// </param>
+        private void AddErrors(IdentityResult result, string key)
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(tag, error);
+                ModelState.AddModelError(key, error);
             }
         }
 #endregion
