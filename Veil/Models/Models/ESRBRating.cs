@@ -18,20 +18,23 @@ namespace Veil.DataModels.Models
     {
         /// <summary>
         ///     The Id for the rating
+        /// </summary>
         /// <example>
+        ///     <b>Examples:</b>
         ///     E10+, T, M
         /// </example>
-        /// </summary>
         [Key]
         [StringLength(maximumLength: 8, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
-        public string RatingId { get; set; }
+        public string RatingId { get; set;
+        }
 
         /// <summary>
         ///     The longer description for the rating
+        /// </summary>
         /// <example>
+        ///     <b>Examples:</b>
         ///     Everyone 10+, Teen, Mature
         /// </example>
-        /// </summary>
         [Required]
         [StringLength(maximumLength: 64, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         public string Description { get; set; }

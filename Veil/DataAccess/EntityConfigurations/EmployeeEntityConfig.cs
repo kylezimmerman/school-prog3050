@@ -12,6 +12,9 @@ using Veil.DataModels.Models;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     <see cref="EntityTypeConfiguration{T}"/> for the <see cref="Employee"/> model
+    /// </summary>
     internal class EmployeeEntityConfig : EntityTypeConfiguration<Employee>
     {
         public EmployeeEntityConfig()

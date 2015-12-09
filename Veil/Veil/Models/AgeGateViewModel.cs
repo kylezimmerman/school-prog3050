@@ -16,6 +16,9 @@ using Veil.DataModels.Validation;
 
 namespace Veil.Models
 {
+    /// <summary>
+    ///     View model for the AgeGate index page
+    /// </summary>
     public class AgeGateViewModel
     {
         /// <summary>

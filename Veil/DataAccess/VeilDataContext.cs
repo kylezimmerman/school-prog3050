@@ -33,32 +33,134 @@ namespace Veil.DataAccess
         internal const string SCHEMA_NAME = "dbo";
 
         // NOTE: Documentation for these can be found in IVeilDataAccess
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Carts"/>
+        /// </summary>
         public DbSet<Cart> Carts { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Companies"/>
+        /// </summary>
         public DbSet<Company> Companies { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Countries"/>
+        /// </summary>
         public DbSet<Country> Countries { get; set; }
-        public DbSet<MemberCreditCard> MemberCreditCards { get; set; } 
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.MemberCreditCards"/>
+        /// </summary>
+        public DbSet<MemberCreditCard> MemberCreditCards { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Departments"/>
+        /// </summary>
         public DbSet<Department> Departments { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.DownloadGameProducts"/>
+        /// </summary>
         public DbSet<DownloadGameProduct> DownloadGameProducts { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Employees"/>
+        /// </summary>
         public DbSet<Employee> Employees { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.ESRBContentDescriptors"/>
+        /// </summary>
         public DbSet<ESRBContentDescriptor> ESRBContentDescriptors { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.ESRBRatings"/>
+        /// </summary>
         public DbSet<ESRBRating> ESRBRatings { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Events"/>
+        /// </summary>
         public DbSet<Event> Events { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Friendships"/>
+        /// </summary>
         public DbSet<Friendship> Friendships { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Games"/>
+        /// </summary>
         public DbSet<Game> Games { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.GameProducts"/>
+        /// </summary>
         public DbSet<GameProduct> GameProducts { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.GameReviews"/>
+        /// </summary>
         public DbSet<GameReview> GameReviews { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Locations"/>
+        /// </summary>
         public DbSet<Location> Locations { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.LocationTypes"/>
+        /// </summary>
         public DbSet<LocationType> LocationTypes { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Members"/>
+        /// </summary>
         public DbSet<Member> Members { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.MemberAddresses"/>
+        /// </summary>
         public DbSet<MemberAddress> MemberAddresses { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.PhysicalGameProducts"/>
+        /// </summary>
         public DbSet<PhysicalGameProduct> PhysicalGameProducts { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Platforms"/>
+        /// </summary>
         public DbSet<Platform> Platforms { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.ProductLocationInventories"/>
+        /// </summary>
         public DbSet<ProductLocationInventory> ProductLocationInventories { get; set; }
-        public DbSet<Product> Products { get; set; } 
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Products"/>
+        /// </summary>
+        public DbSet<Product> Products { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Provinces"/>
+        /// </summary>
         public DbSet<Province> Provinces { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.Tags"/>
+        /// </summary>
         public DbSet<Tag> Tags { get; set; }
+
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.WebOrders"/>
+        /// </summary>
         public DbSet<WebOrder> WebOrders { get; set; }
 
+        /// <summary>
+        ///     Implements <see cref="IVeilDataAccess.UserStore"/>
+        /// </summary>
         public IUserStore<User, Guid> UserStore { get; }
 
         /// <summary>

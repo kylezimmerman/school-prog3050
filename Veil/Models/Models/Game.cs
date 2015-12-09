@@ -15,18 +15,18 @@ using Veil.DataModels.Validation;
 namespace Veil.DataModels.Models
 {
     /// <summary>
-    /// Non product-specific information about a game
+    ///     Non product-specific information about a game
     /// </summary>
     public class Game
     {
         /// <summary>
-        /// The Game's Id
+        ///     The Game's Id
         /// </summary>
         [Key]
         public Guid Id { get; set; }
 
         /// <summary>
-        /// The Game's name
+        ///     The Game's name
         /// </summary>
         [Required]
         [StringLength(maximumLength: 512, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
@@ -65,20 +65,20 @@ namespace Veil.DataModels.Models
         }
 
         /// <summary>
-        /// The Id for the Game's ESRB rating
+        ///     The Id for the Game's ESRB rating
         /// </summary>
         [Required]
         [DisplayName("ESRB Rating")]
         public string ESRBRatingId { get; set; }
 
         /// <summary>
-        /// Navigation property for the Game's ESRB rating
+        ///     Navigation property for the Game's ESRB rating
         /// </summary>
         [DisplayName("ESRB Rating")]
         public virtual ESRBRating Rating { get; set; }
 
         /// <summary>
-        /// The Game's minimum player count
+        ///     The Game's minimum player count
         /// </summary>
         [Range(1, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
@@ -86,7 +86,7 @@ namespace Veil.DataModels.Models
         public int MinimumPlayerCount { get; set; }
 
         /// <summary>
-        /// The Game's maximum player count
+        ///     The Game's maximum player count
         /// </summary>
         [CompareValues(nameof(MinimumPlayerCount), ComparisonCriteria.GreatThanOrEqualTo)]
         [Range(1, int.MaxValue, ErrorMessageResourceName = nameof(ErrorMessages.Range), ErrorMessageResourceType = typeof(ErrorMessages))]
@@ -95,7 +95,7 @@ namespace Veil.DataModels.Models
         public int MaximumPlayerCount { get; set; }
 
         /// <summary>
-        /// The URL for a trailer for the Game
+        ///     The URL for a trailer for the Game
         /// </summary>
         [DataType(DataType.Url)]
         [Url]
@@ -105,7 +105,7 @@ namespace Veil.DataModels.Models
         public string TrailerURL { get; set; }
 
         /// <summary>
-        /// The Game's short description
+        ///     The Game's short description
         /// </summary>
         [StringLength(maximumLength: 140, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [Required]
@@ -113,7 +113,7 @@ namespace Veil.DataModels.Models
         public string ShortDescription { get; set; }
 
         /// <summary>
-        /// The Game's long description
+        ///     The Game's long description
         /// </summary>
         [StringLength(maximumLength: 2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
         [DataType(DataType.MultilineText)]
@@ -121,7 +121,7 @@ namespace Veil.DataModels.Models
         public string LongDescription { get; set; }
 
         /// <summary>
-        /// The URL for the primary image for this game
+        ///     The URL for the primary image for this game
         /// </summary>
         [DataType(DataType.Url)]
         [StringLength(maximumLength: 2048, ErrorMessageResourceName = nameof(ErrorMessages.StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
@@ -129,18 +129,18 @@ namespace Veil.DataModels.Models
         public string PrimaryImageURL { get; set; }
 
         /// <summary>
-        /// Collection navigation property for this Game's tags
+        ///     Collection navigation property for this Game's tags
         /// </summary>
         public virtual ICollection<Tag> Tags { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the Game's ESRB content descriptors
+        ///     Collection navigation property for the Game's ESRB content descriptors
         /// </summary>
         [DisplayName("ESRB Descriptors")]
         public virtual ICollection<ESRBContentDescriptor> ContentDescriptors { get; set; }
 
         /// <summary>
-        /// Collection navigation property for the product versions of the Game
+        ///     Collection navigation property for the product versions of the Game
         /// </summary>
         public virtual ICollection<GameProduct> GameSKUs { get; set; }
     }

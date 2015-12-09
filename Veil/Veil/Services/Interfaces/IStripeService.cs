@@ -11,6 +11,9 @@ using Veil.Exceptions;
 
 namespace Veil.Services.Interfaces
 {
+    /// <summary>
+    ///     Provides a methods for interacting with Stripe
+    /// </summary>
     public interface IStripeService
     {
         /// <summary>

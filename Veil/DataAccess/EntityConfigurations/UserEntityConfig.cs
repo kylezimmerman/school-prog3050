@@ -1,7 +1,7 @@
 ﻿/* UserEntityConfig.cs
  * Purpose: Entity Configuration for the User model
  *          This isn't a EntityTypeConfiguration class because Identity override the values
- *          if they it is.
+ *          if it is.
  * 
  * Revision History:
  *      Drew Matheson, 2015.10.23: Created
@@ -13,8 +13,20 @@ using Veil.DataModels.Models.Identity;
 
 namespace Veil.DataAccess.EntityConfigurations
 {
+    /// <summary>
+    ///     Entity configuration for the <see cref="User"/> model.
+    ///     <br/>
+    ///     This isn't a EntityTypeConfiguration class because Identity overrides the values
+    ///     if it is.
+    /// </summary>
     internal class UserEntityConfig
     {
+        /// <summary>
+        ///     Sets up the entity model/configuration for the <see cref="User"/> model
+        /// </summary>
+        /// <param name="modelBuilder">
+        ///     The <see cref="DbModelBuilder"/> to be configured for the <see cref="User"/> model
+        /// </param>
         public static void Setup(DbModelBuilder modelBuilder)
         {
             /* Primary Key:
