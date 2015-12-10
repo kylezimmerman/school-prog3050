@@ -21,6 +21,9 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
 
         protected Company veilCompany;
 
+        protected PhysicalGameProduct physicalGameProduct;
+        protected DownloadGameProduct downloadGameProduct;
+
         [SetUp]
         public void Setup()
         {
@@ -43,6 +46,18 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
             {
                 Id = new Guid("B4FDA176-1EA6-469A-BB02-75125D811ED4"),
                 Name = "Veil"
+            };
+
+            physicalGameProduct = new PhysicalGameProduct
+            {
+                Id = new Guid("E7746CD1-106E-4622-BC10-E13CCCCA7AC9"),
+                GameId = game.Id
+            };
+
+            downloadGameProduct = new DownloadGameProduct
+            {
+                Id = new Guid("2A1474A0-7ABA-41D6-BBD1-2DF28F43786E"),
+                GameId = game.Id
             };
         }
 
