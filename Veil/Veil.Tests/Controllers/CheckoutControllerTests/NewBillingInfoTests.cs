@@ -6,7 +6,6 @@ using System.Net;
 using System.Web.Mvc;
 using Moq;
 using NUnit.Framework;
-using Stripe;
 using Veil.Controllers;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;

@@ -17,7 +17,7 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
     public class RenderPhysicalGameProductPartialTests : GameProductsControllerTestsBase
     {
         [Test]
-        public void NullUser_ReturnsPartialViewWithFalseModelProperties()
+        public void RenderPhysicalGameProductPartial_NullUser_ReturnsPartialViewWithFalseModelProperties()
         {
             PhysicalGameProduct gameProduct = new PhysicalGameProduct();
 
@@ -58,7 +58,7 @@ namespace Veil.Tests.Controllers.GameProductsControllerTests
         }
 
         [Test]
-        public void UserWithAllInCart_ReturnsPartialViewWithTrueModelProperties()
+        public void RenderPhysicalGameProductPartial_UserWithAllInCart_ReturnsPartialViewWithTrueModelProperties()
         {
             PhysicalGameProduct gameProduct = new PhysicalGameProduct
             {

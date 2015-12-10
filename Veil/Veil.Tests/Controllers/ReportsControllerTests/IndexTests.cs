@@ -4,10 +4,10 @@ using Veil.Controllers;
 
 namespace Veil.Tests.Controllers.ReportsControllerTests
 {
-    class IndexTest : ReportsControllerTestsBase
+    class IndexTests : ReportsControllerTestsBase
     {
         [Test]
-        public void Index()
+        public void Index_WhenCalled_ReturnsIndexView()
         {
             ReportsController controller = new ReportsController(null);
             var result = controller.Index() as ViewResult;

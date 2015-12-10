@@ -123,7 +123,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
         }
 
         [Test]
-        public void DateFiltered_NullOrWhitespaceUserName_Throws404Exception([Values(null, "", " ")] string userName)
+        public void MemberDetailDateFiltered_NullOrWhitespaceUserName_Throws404Exception([Values(null, "", " ")] string userName)
         {
             DateTime startTime = new DateTime(635847641516896833L, DateTimeKind.Local);
 
@@ -138,7 +138,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
         }
 
         [Test]
-        public void DateFiltered_UserNotFound_Throws404Exception()
+        public void MemberDetailDateFiltered_UserNotFound_Throws404Exception()
         {
             DateTime startDate = new DateTime(635847641516896833L, DateTimeKind.Local);
 
@@ -153,7 +153,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
         }
 
         [Test]
-        public async void DateFiltered_UserFound_ReturnsMatchingModel()
+        public async void MemberDetailDateFiltered_UserFound_ReturnsMatchingModel()
         {
             DateTime startDate = new DateTime(2015,12, 2);
             DateTime endDate = new DateTime(2015, 12, 3);

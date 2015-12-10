@@ -90,10 +90,6 @@
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stripe.net, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stripe.net.5.0.0\lib\net40\Stripe.net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -142,7 +138,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\AccountControllerTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\ConfirmEmailTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\ConfirmResendConfirmationEmailTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\ForgotPasswordTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\LoginTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\SignOutTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\RegisterTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\ResendConfirmationEmailTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\ResetPasswordTests.cs" />
+    <Compile Include="Controllers\AccountControllerTests\_AccountControllerTestsBase.cs" />
     <Compile Include="Controllers\AgeGateControllerTests.cs" />
     <Compile Include="Controllers\BaseControllerTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\BillingInfoTests.cs" />
@@ -154,6 +158,9 @@
     <Compile Include="Controllers\CheckoutControllerTests\NewShippingInfoTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\PlaceOrderTests.cs" />
     <Compile Include="Controllers\CheckoutControllerTests\ShippingInfoTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\CreateCreditCardTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\DeleteAddressTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\EditAddressTests.cs" />
     <Compile Include="Controllers\ESRBDescriptionControllerTests.cs" />
     <Compile Include="Controllers\FriendListControllerTests.cs" />
     <Compile Include="Controllers\EventsControllerTests.cs" />
@@ -177,9 +184,20 @@
     <Compile Include="Controllers\GamesControllerTests\SearchTests.cs" />
     <Compile Include="Controllers\GamesControllerTests\_GamesControllerTestsBase.cs" />
     <Compile Include="Controllers\CompaniesControllerTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\ChangePasswordTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\ConfirmNewEmailTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\CreateAddressTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\DeleteCreditCardTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\IndexTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\ManageAddressesTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\ManageTagsTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\UpdateProfileTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\_ManageControllerTestsBase.cs" />
+    <Compile Include="Controllers\ManageControllerTests\ManageCreditCardsTests.cs" />
+    <Compile Include="Controllers\ManageControllerTests\ManagePlatformsTests.cs" />
     <Compile Include="Controllers\PlatformsControllerTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\GameDetailTests.cs" />
-    <Compile Include="Controllers\ReportsControllerTests\IndexTest.cs" />
+    <Compile Include="Controllers\ReportsControllerTests\IndexTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\MemberDetailTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\SalesTests.cs" />
     <Compile Include="Controllers\ReportsControllerTests\GameListTests.cs" />
@@ -190,7 +208,6 @@
     <Compile Include="Controllers\TagsControllerTests.cs" />
     <Compile Include="Controllers\WebOrdersControllerTests.cs" />
     <Compile Include="Controllers\WishlistControllerTests.cs" />
-    <Compile Include="Controllers\ManageControllerTests.cs" />
     <Compile Include="Models\AgeGateViewModelTests.cs" />
     <Compile Include="Models\BillingInfoViewModelTests.cs" />
     <Compile Include="Models\GameListViewModelTests.cs" />

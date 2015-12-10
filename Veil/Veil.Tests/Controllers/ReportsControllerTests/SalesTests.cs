@@ -110,7 +110,7 @@ namespace Veil.Tests.Controllers.ReportsControllerTests
         }
 
         [Test]
-        public async void DateFilter_Sales_ReturnsMatchingModel()
+        public async void SalesDateFilter_Sales_ReturnsMatchingModel()
         {
             List<WebOrder> orders = new List<WebOrder>
             {

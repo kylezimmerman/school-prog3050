@@ -6,6 +6,7 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using System.Web.ModelBinding;
 using Veil.DataModels.Models;
 using Veil.DataModels.Validation;
 
@@ -68,11 +69,13 @@ namespace Veil.Models
         /// <summary>
         ///     The count of the user's favorite platforms
         /// </summary>
+        [BindNever]
         public int FavoritePlatformCount { get; set; }
 
         /// <summary>
         ///     The count of the user's favorite tags
         /// </summary>
+        [BindNever]
         public int FavoriteTagCount { get; set; }
     }
 
