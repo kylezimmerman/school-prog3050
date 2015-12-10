@@ -2521,12 +2521,7 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void ConfirmNewEmail_EmptyGuid()
         {
-
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            ManageController controller = new ManageController(null, null, null, null, null)
-            {
-                ControllerContext = context.Object
-            };
+            ManageController controller = new ManageController(null, null, null, null, null);
 
             var result = await controller.ConfirmNewEmail(Guid.Empty, "string");
 
@@ -2536,12 +2531,6 @@ namespace Veil.Tests.Controllers
         [Test]
         public async void ConfirmNewEmail_IdentityResultFails()
         {
-            User user = new User()
-            {
-                Id = memberId,
-                Email = "person@email.com"
-            };
-
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
             Mock<IUserStore<User, Guid>> userStoreStub = new Mock<IUserStore<User, Guid>>();
             Mock<VeilUserManager> userManagerStub = new Mock<VeilUserManager>(dbStub.Object, null /*messageService*/,
@@ -2556,7 +2545,7 @@ namespace Veil.Tests.Controllers
                 ControllerContext = context.Object
             };
 
-            var result = await controller.ConfirmNewEmail(user.Id, "string");
+            var result = await controller.ConfirmNewEmail(memberId, "string");
 
             Assert.That(result != null);
         }
@@ -2616,11 +2605,7 @@ namespace Veil.Tests.Controllers
             userManagerStub.Setup(um => um.UpdateSecurityStampAsync(It.IsAny<Guid>())).ReturnsAsync(IdentityResult.Success);
             dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, null, null)
-            {
-                ControllerContext = context.Object
-            };
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, null, null);
 
             Assert.That(async  () => await controller.ConfirmNewEmail(memberId, "string"), Throws.InvalidOperationException);
         }
@@ -2645,11 +2630,7 @@ namespace Veil.Tests.Controllers
             dbStub.Setup(db => db.SaveChangesAsync()).Throws<DbUpdateException>();
             dbStub.Setup(db => db.UserStore).Returns(userStoreStub.Object);
 
-            Mock<ControllerContext> context = new Mock<ControllerContext>();
-            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, null, null)
-            {
-                ControllerContext = context.Object
-            };
+            ManageController controller = new ManageController(userManagerStub.Object, null, dbStub.Object, null, null);
 
             var result = await controller.ConfirmNewEmail(user.Id, "string");
 
@@ -2675,7 +2656,6 @@ namespace Veil.Tests.Controllers
             {
                 OldPassword = "oldPassword",
                 NewPassword = "newPassword",
-                ConfirmPassword = "newPassword"
             };
             
             User user = new User()
