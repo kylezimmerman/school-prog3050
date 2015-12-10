@@ -12,7 +12,7 @@
     </div>
 </div>
 
-@using (Html.BeginForm("UpdateProfile", "Manage", FormMethod.Post, new { Role = "form" }))
+@using (Html.BeginForm("Index", "Manage", FormMethod.Post, new { Role = "form" }))
 {
     @Html.AntiForgeryToken()
     <div class="row panel">
