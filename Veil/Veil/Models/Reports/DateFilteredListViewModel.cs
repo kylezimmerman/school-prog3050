@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Veil.Models.Reports
 {
@@ -19,11 +20,15 @@ namespace Veil.Models.Reports
         ///     The starting date used when filtering.
         ///     If this is null, no date filtering has occured.
         /// </summary>
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? StartDate { get; set; }
 
         /// <summary>
         ///     The ending date used when filtering.
         /// </summary>
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? EndDate { get; set; }
     }
 

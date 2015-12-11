@@ -40,6 +40,8 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The date and time of the event
         /// </summary>
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime Date { get; set; }
 
         /// <summary>

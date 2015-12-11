@@ -69,7 +69,8 @@ namespace Veil.DataModels.Models
         ///     The release date of this product
         /// </summary>
         [DisplayName("Release Date")]
-        [DataType(DataType.Date)]
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime ReleaseDate { get; set; }
 
         /// <summary>

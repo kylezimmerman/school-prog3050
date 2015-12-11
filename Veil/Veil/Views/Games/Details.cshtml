@@ -1,4 +1,5 @@
-﻿@using Veil.Extensions
+﻿@using Veil.DataModels
+@using Veil.Extensions
 @using Veil.DataModels.Models
 @model Game
 
@@ -124,6 +125,9 @@
     </div>
 </div>
 @{
-    Html.RenderAction("CreateReviewForGame", "Reviews", new { game = Model });
+    if (!User.IsInRole(VeilRoles.MEMBER_ROLE))
+    {
+         Html.RenderAction("CreateReviewForGame", "Reviews", new { game = Model });
+    }
     Html.RenderAction("RenderReviewsForGame", "Reviews", new { game = Model, platform = ViewBag.Platform });
 }

@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Veil.DataModels.Models;
 
@@ -104,6 +105,8 @@ namespace Veil.Models.Reports
         /// <summary>
         ///     The date for the order
         /// </summary>
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime OrderDate { get; set; }
 
         /// <summary>

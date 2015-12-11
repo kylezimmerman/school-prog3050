@@ -85,11 +85,12 @@ namespace Veil.Controllers
             }
             else
             {
-                wishlistOwner =
-                    await db.Members.FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
+                wishlistOwner = await db.Members.
+                        Include(m => m.ConfirmedFriends).
+                        FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
             }
 
-            if (wishlistOwner == null)
+            if (wishlistOwner == null || currentMember == null)
             {
                 throw new HttpException(NotFound, "Wishlist");
             }

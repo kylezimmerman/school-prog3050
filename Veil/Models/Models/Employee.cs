@@ -58,6 +58,8 @@ namespace Veil.DataModels.Models
         ///     The date the employee was hired
         /// </summary>
         [Required]
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime HireDate { get; set; }
 
         /// <summary>

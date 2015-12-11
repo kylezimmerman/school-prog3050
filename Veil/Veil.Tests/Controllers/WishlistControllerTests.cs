@@ -153,6 +153,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(new List<Member> { member }.AsQueryable());
             memberDbSetStub.Setup(db => db.Find(member.UserId)).Returns(member);
             memberDbSetStub.Setup(db => db.FindAsync(Id)).ReturnsAsync(null);
+            memberDbSetStub.SetupForInclude();
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
@@ -199,6 +200,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(members.AsQueryable());
             memberDbSetStub.Setup(db => db.FindAsync(currentMember.UserId)).ReturnsAsync(currentMember);
             memberDbSetStub.Setup(db => db.FindAsync(wishlistOwner.UserId)).ReturnsAsync(wishlistOwner);
+            memberDbSetStub.SetupForInclude();
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
@@ -252,6 +254,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(members.AsQueryable());
             memberDbSetStub.Setup(db => db.FindAsync(currentMember.UserId)).ReturnsAsync(currentMember);
             memberDbSetStub.Setup(db => db.FindAsync(wishlistOwner.UserId)).ReturnsAsync(wishlistOwner);
+            memberDbSetStub.SetupForInclude();
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();
@@ -300,6 +303,7 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<Member>> memberDbSetStub = TestHelpers.GetFakeAsyncDbSet(members.AsQueryable());
             memberDbSetStub.Setup(db => db.FindAsync(currentMember.UserId)).ReturnsAsync(currentMember);
             memberDbSetStub.Setup(db => db.FindAsync(wishlistOwner.UserId)).ReturnsAsync(wishlistOwner);
+            memberDbSetStub.SetupForInclude();
             dbStub.Setup(db => db.Members).Returns(memberDbSetStub.Object);
 
             Mock<ControllerContext> context = new Mock<ControllerContext>();

@@ -117,6 +117,8 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The date and time the order was created
         /// </summary>
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime OrderDate { get; set; }
 
         /// <summary>
@@ -132,6 +134,8 @@ namespace Veil.DataModels.Models
         /// <summary>
         ///     The date and time of when the order was processed and shipped out
         /// </summary>
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? ProcessedDate { get; set; }
 
         /// <summary>

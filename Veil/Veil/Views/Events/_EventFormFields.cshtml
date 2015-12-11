@@ -31,7 +31,7 @@
                 @Html.LabelFor(model => model.Date, htmlAttributes: new { @class = "prefix" })
             </div>
             <div class="medium-8 columns">
-                @Html.EditorFor(model => model.Date, new { htmlAttributes = new { @class = "expand" } })
+                @Html.EditorFor(model => model.Date, new { htmlAttributes = new { @class = "expand", @type = "text" } })
                 @Html.ValidationMessageFor(model => model.Date)
             </div>
         </div>

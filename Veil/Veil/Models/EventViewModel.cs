@@ -20,7 +20,8 @@ namespace Veil.Models
         /// <summary>
         ///     The start date of the event
         /// </summary>
-        [DataType(DataType.Date)]
+        [DataType(DataType.Text)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public new DateTime Date { get; set; }
 
         /// <summary>

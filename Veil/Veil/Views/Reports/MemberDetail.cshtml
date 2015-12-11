@@ -37,7 +37,7 @@
             }
         </p>
         <p class="margin-bottom-0">
-            @Html.ActionLink($"{Model.WishlistCount} items", "Index", "Wishlist", new { username = Model.UserName }, null) on wishlist
+            @Model.WishlistCount items on wishlist
         </p>
         <p>@Model.FriendCount friends</p>
     </div>

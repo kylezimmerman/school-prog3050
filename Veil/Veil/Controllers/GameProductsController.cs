@@ -287,7 +287,10 @@ namespace Veil.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = VeilRoles.Authorize.Admin_Employee)]
-        public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind] PhysicalGameProduct gameProduct)
+        public async Task<ActionResult> EditPhysicalSKU(Guid? id, [Bind(
+                Exclude =
+                    nameof(PhysicalGameProduct.NewInventory) + "," +
+                        nameof(PhysicalGameProduct.UsedInventory))] PhysicalGameProduct gameProduct)
         {
             if (id == null)
             {

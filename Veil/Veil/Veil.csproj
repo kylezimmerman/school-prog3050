@@ -506,12 +506,12 @@
     <Content Include="Views\ESRBDescription\Index.cshtml" />
     <Content Include="Views\Companies\Manage.cshtml" />
     <Content Include="Views\AgeGate\Index.cshtml" />
-    <None Include="Views\GameProducts\EditDownloadSKU.cshtml" />
-    <None Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
+    <Content Include="Views\GameProducts\EditDownloadSKU.cshtml" />
+    <Content Include="Views\GameProducts\EditPhysicalSKU.cshtml" />
     <Content Include="Views\Manage\EditAddress.cshtml" />
     <Content Include="Views\Manage\ConfirmNewEmail.cshtml" />
-    <None Include="Views\Manage\ManageAddresses.cshtml" />
-    <None Include="Views\Manage\ManageCreditCards.cshtml" />
+    <Content Include="Views\Manage\ManageAddresses.cshtml" />
+    <Content Include="Views\Manage\ManageCreditCards.cshtml" />
     <Content Include="Views\Shared\_AlertPartial.cshtml" />
     <Content Include="Views\Shared\_RatingStarsPartial.cshtml" />
     <Content Include="Views\Tags\Index.cshtml" />
