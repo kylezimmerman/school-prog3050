@@ -90,6 +90,12 @@ namespace Veil.Controllers
         {
             var review = reviewViewModel.Review;
 
+            if (!User.IsInRole(VeilRoles.MEMBER_ROLE))
+            {
+                this.AddAlert(AlertType.Error, "Only member's can review games.");
+                return RedirectToAction("Details", "Games", new { id = reviewViewModel.GameId });
+            }
+
             review.MemberId = idGetter.GetUserId(HttpContext.User.Identity);
 
             var previousReview = await db.GameReviews.FindAsync(review.MemberId, review.ProductReviewedId);

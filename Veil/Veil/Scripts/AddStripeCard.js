@@ -37,7 +37,7 @@
         var $form = $('#addCardForm');
 
         // Remove the display: none style from the form.
-        $form.css('display', 'initial');
+        $form.css('display', 'block');
 
         // Add back name attributes
         $form.find(':input[data-stripe]').each(function () {

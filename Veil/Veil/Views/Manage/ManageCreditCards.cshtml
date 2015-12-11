@@ -18,7 +18,7 @@
 {
     using (Html.BeginForm("DeleteCreditCard", "Manage", FormMethod.Post))
     {
-        Html.AntiForgeryToken();
+        @Html.AntiForgeryToken()
 
         <div class="row panel">
             <div class="column">

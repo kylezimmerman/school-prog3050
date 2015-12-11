@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using Veil.DataAccess.Interfaces;
 using Veil.DataModels.Models;
+using Veil.Extensions;
 using Veil.Models;
 
 namespace Veil.Controllers
@@ -44,28 +45,32 @@ namespace Veil.Controllers
         /// <returns>The Index view with the processed HomePageViewModel.</returns>
         public async Task<ActionResult> Index()
         {
-            List<Game> comingSoon =
-                await db.Games.
+            IQueryable<Game> comingSoon =
+                db.Games.
                     Where(
                         g => g.GameSKUs.Any() &&
-                            g.GameSKUs.Min(gp => gp.ReleaseDate) > DateTime.Now).
-                    OrderBy(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
-                    Take(COMING_SOON_COUNT).
-                    ToListAsync();
+                            g.GameSKUs.Min(gp => gp.ReleaseDate) > DateTime.Now);
 
-            List<Game> newReleases =
-                await db.Games.
+            IQueryable<Game> newReleases =
+                db.Games.
                     Where(
                         g => g.GameSKUs.Any() &&
-                            g.GameSKUs.Max(gp => gp.ReleaseDate) <= DateTime.Now).
-                    OrderByDescending(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
-                    Take(NEW_RELEASE_COUNT).
-                    ToListAsync();
+                            g.GameSKUs.Max(gp => gp.ReleaseDate) <= DateTime.Now);
+
+            newReleases = FilterOutInternalOnly(newReleases).OrderBy(g => g.Name);
+            comingSoon = FilterOutInternalOnly(comingSoon).OrderBy(g => g.Name);
 
             var model = new HomePageViewModel
             {
-                ComingSoon = comingSoon,
-                NewReleases = newReleases
+                ComingSoon = await comingSoon.
+                OrderByDescending(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
+                Take(COMING_SOON_COUNT).
+                ToListAsync(),
+
+                NewReleases = await newReleases.
+                    OrderBy(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
+                    Take(NEW_RELEASE_COUNT).
+                    ToListAsync()
             };
 
             return View(model);
@@ -87,6 +92,25 @@ namespace Veil.Controllers
         public ActionResult Contact()
         {
             return View();
+        }
+
+        /// <summary>
+        ///     Filters out not for sale games if the user isn't an employee or admin
+        /// </summary>
+        /// <param name="queryable">
+        ///     The current Game IQueryable
+        /// </param>
+        /// <returns>
+        ///     The filtered queryable
+        /// </returns>
+        private IQueryable<Game> FilterOutInternalOnly(IQueryable<Game> queryable)
+        {
+            if (!User.IsEmployeeOrAdmin())
+            {
+                return queryable.Where(g => g.GameAvailabilityStatus != AvailabilityStatus.NotForSale);
+            }
+
+            return queryable;
         }
     }
 }
