@@ -125,7 +125,7 @@
     </div>
 </div>
 @{
-    if (User.IsInRole(VeilRoles.MEMBER_ROLE) || User.Identity.IsAuthenticated)
+    if (User.IsInRole(VeilRoles.MEMBER_ROLE))
     {
          Html.RenderAction("CreateReviewForGame", "Reviews", new { game = Model });
     }

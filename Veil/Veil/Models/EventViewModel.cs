@@ -28,6 +28,7 @@ namespace Veil.Models
         ///     The start time of the event
         /// </summary>
         [DataType(DataType.Time)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:HH:mm}")]
         public DateTime Time { get; set; }
 
         /// <summary>

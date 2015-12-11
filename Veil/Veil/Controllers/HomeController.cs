@@ -68,7 +68,7 @@ namespace Veil.Controllers
                 ToListAsync(),
 
                 NewReleases = await newReleases.
-                    OrderBy(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
+                    OrderByDescending(g => g.GameSKUs.Min(gp => gp.ReleaseDate)).
                     Take(NEW_RELEASE_COUNT).
                     ToListAsync()
             };

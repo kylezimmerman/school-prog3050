@@ -28,6 +28,7 @@
 
                     <fieldset>
                         <legend>Rating</legend>
+                        @Html.ValidationMessageFor(model => model.Review.Rating)
                         @for (int i = 5; i >= 1; i--)
                         {
                             <label class="rating">
