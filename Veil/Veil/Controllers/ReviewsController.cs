@@ -57,8 +57,9 @@ namespace Veil.Controllers
         [ChildActionOnly]
         public PartialViewResult CreateReviewForGame([NotNull] Game game)
         {
-            if (!(HttpContext.User?.Identity?.IsAuthenticated ?? false))
+            if (!(User?.Identity?.IsAuthenticated ?? false))
             {
+                // Don't return a partial for unauthenticated users
                 return null;
             }
 
@@ -96,7 +97,7 @@ namespace Veil.Controllers
                 return RedirectToAction("Details", "Games", new { id = reviewViewModel.GameId });
             }
 
-            review.MemberId = idGetter.GetUserId(HttpContext.User.Identity);
+            review.MemberId = idGetter.GetUserId(User.Identity);
 
             var previousReview = await db.GameReviews.FindAsync(review.MemberId, review.ProductReviewedId);
 

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Moq;
@@ -128,22 +126,52 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void CreateReviewForGameProduct_POST_Invalid_SaveChangesNotCalled()
+        public async void CreateReviewForGameProduct_POST_UserNotInMemberRole_RedirectsBackToGameDetail()
         {
-            Mock<DbSet<GameReview>> gameReviewStub = TestHelpers.GetFakeAsyncDbSet(new List<GameReview>().AsQueryable());
-            gameReviewStub.Setup(rdb => rdb.FindAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(null);
-
             Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            dbStub.Setup(db => db.GameReviews).Returns(gameReviewStub.Object);
-            dbStub.Setup(db => db.SaveChangesAsync()).ReturnsAsync(0).Verifiable();
-
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUserAuthenticated(false);
+            contextStub.SetupUser().InNoRoles();
 
             var idGetter = TestHelpers.GetSetupIUserIdGetterFake(memberId);
 
             ReviewsController controller = new ReviewsController(dbStub.Object, idGetter.Object)
+            {
+                ControllerContext = contextStub.Object,
+            };
+
+            ReviewViewModel model = new ReviewViewModel()
+            {
+                GameId = game.Id,
+                GameSKUSelectList = null,
+                Review = fullReview
+            };
+
+            var result = await controller.CreateReviewForGameProduct(model) as RedirectToRouteResult;
+
+            Assert.That(result != null);
+            Assert.That(result.RouteValues["Action"], Is.EqualTo(nameof(GamesController.Details)));
+            Assert.That(result.RouteValues["Controller"], Is.EqualTo("Games"));
+            Assert.That(result.RouteValues["id"], Is.EqualTo(model.GameId));
+        }
+
+        [Test]
+        public async void CreateReviewForGameProduct_POST_Invalid_SaveChangesNotCalled()
+        {
+            Mock<DbSet<GameReview>> gameReviewStub = TestHelpers.GetFakeAsyncDbSet(new List<GameReview>().AsQueryable());
+            gameReviewStub.Setup(rdb => rdb.FindAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(null);
+
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            dbMock.Setup(db => db.GameReviews).Returns(gameReviewStub.Object);
+            dbMock.Setup(db => db.SaveChangesAsync()).ReturnsAsync(0).Verifiable();
+
+
+            Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
+            contextStub.SetupUser().InMemberRole();
+
+            var idGetter = TestHelpers.GetSetupIUserIdGetterFake(memberId);
+
+            ReviewsController controller = new ReviewsController(dbMock.Object, idGetter.Object)
             {
                 ControllerContext = contextStub.Object,
             };
@@ -156,29 +184,28 @@ namespace Veil.Tests.Controllers
                 Review = fullReview
             };
 
-            var result = controller.CreateReviewForGameProduct(model);
+            await controller.CreateReviewForGameProduct(model);
 
-            Assert.That(result != null);
-            Assert.That(() => dbStub.Verify(db => db.SaveChangesAsync(), Times.Never), Throws.Nothing);
+            Assert.That(() => dbMock.Verify(db => db.SaveChangesAsync(), Times.Never), Throws.Nothing);
         }
 
         [Test]
-        public void CreateReviewForGameProduct_POST_ValidNew_AddCalledOnce()
+        public async void CreateReviewForGameProduct_POST_ValidNew_AddCalledOnce()
         {
-            Mock<DbSet<GameReview>> gameReviewsStub = TestHelpers.GetFakeAsyncDbSet(new List<GameReview>().AsQueryable());
-            gameReviewsStub.Setup(rdb => rdb.FindAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(null);
-            gameReviewsStub.Setup(rdb => rdb.Add(fullReview)).Returns(fullReview).Verifiable();
+            Mock<DbSet<GameReview>> gameReviewsMock = TestHelpers.GetFakeAsyncDbSet(new List<GameReview>().AsQueryable());
+            gameReviewsMock.Setup(rdb => rdb.FindAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(null);
+            gameReviewsMock.Setup(rdb => rdb.Add(fullReview)).Returns(fullReview).Verifiable();
 
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            dbStub.Setup(db => db.GameReviews).Returns(gameReviewsStub.Object);
-            dbStub.Setup(db => db.SaveChangesAsync()).ReturnsAsync(0).Verifiable();
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            dbMock.Setup(db => db.GameReviews).Returns(gameReviewsMock.Object);
+            dbMock.Setup(db => db.SaveChangesAsync()).ReturnsAsync(0).Verifiable();
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUserAuthenticated(false);
+            contextStub.SetupUser().InMemberRole();
 
             var idGetter = TestHelpers.GetSetupIUserIdGetterFake(memberId);
             
-            ReviewsController controller = new ReviewsController(dbStub.Object, idGetter.Object)
+            ReviewsController controller = new ReviewsController(dbMock.Object, idGetter.Object)
             {
                 ControllerContext = contextStub.Object,
             };
@@ -190,11 +217,10 @@ namespace Veil.Tests.Controllers
                 Review = fullReview
             };
 
-            var result = controller.CreateReviewForGameProduct(model);
+            await controller.CreateReviewForGameProduct(model);
 
-            Assert.That(result != null);
-            Assert.That(() => gameReviewsStub.Verify(rdb => rdb.Add(fullReview), Times.Once), Throws.Nothing);
-            Assert.That(() => dbStub.Verify(db => db.SaveChangesAsync(), Times.Once), Throws.Nothing);
+            Assert.That(() => gameReviewsMock.Verify(rdb => rdb.Add(fullReview), Times.Once), Throws.Nothing);
+            Assert.That(() => dbMock.Verify(db => db.SaveChangesAsync(), Times.Once), Throws.Nothing);
         }
 
         [Test]
@@ -217,7 +243,7 @@ namespace Veil.Tests.Controllers
         }
 
         [Test]
-        public void CreateReviewForGameProduct_ValidExisting_MarkAsChangedCalledOnce()
+        public async void CreateReviewForGameProduct_ValidExisting_MarkAsChangedCalledOnce()
         {
             var existingReviews = new List<GameReview>
             {
@@ -231,18 +257,18 @@ namespace Veil.Tests.Controllers
             Mock<DbSet<GameReview>> gameReviewsStub = TestHelpers.GetFakeAsyncDbSet(existingReviews.AsQueryable());
             gameReviewsStub.Setup(rdb => rdb.FindAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(fullReview);
         
-            Mock<IVeilDataAccess> dbStub = TestHelpers.GetVeilDataAccessFake();
-            dbStub.Setup(db => db.GameReviews).Returns(gameReviewsStub.Object);
-            dbStub.Setup(db => db.MarkAsModified(It.IsAny<GameReview>())).Verifiable();
-            dbStub.Setup(db => db.SaveChangesAsync()).ReturnsAsync(0).Verifiable();
-            dbStub.Setup(db => db.Games).Returns(gamesStub.Object);
+            Mock<IVeilDataAccess> dbMock = TestHelpers.GetVeilDataAccessFake();
+            dbMock.Setup(db => db.GameReviews).Returns(gameReviewsStub.Object);
+            dbMock.Setup(db => db.MarkAsModified(It.IsAny<GameReview>())).Verifiable();
+            dbMock.Setup(db => db.SaveChangesAsync()).ReturnsAsync(0).Verifiable();
+            dbMock.Setup(db => db.Games).Returns(gamesStub.Object);
 
             Mock<ControllerContext> contextStub = new Mock<ControllerContext>();
-            contextStub.SetupUserAuthenticated(false);
+            contextStub.SetupUser().InMemberRole();
 
             var idGetter = TestHelpers.GetSetupIUserIdGetterFake(memberId);
 
-            ReviewsController controller = new ReviewsController(dbStub.Object, idGetter.Object)
+            ReviewsController controller = new ReviewsController(dbMock.Object, idGetter.Object)
             {
                 ControllerContext = contextStub.Object,
             };
@@ -254,11 +280,10 @@ namespace Veil.Tests.Controllers
                 Review = fullReview
             };
 
-            var result = controller.CreateReviewForGameProduct(model);
+            await controller.CreateReviewForGameProduct(model);
 
-            Assert.That(result != null);
-            Assert.That(() => dbStub.Verify(db => db.MarkAsModified(fullReview), Times.Once), Throws.Nothing);
-            Assert.That(() => dbStub.Verify(db => db.SaveChangesAsync(), Times.Once), Throws.Nothing);
+            Assert.That(() => dbMock.Verify(db => db.MarkAsModified(fullReview), Times.Once), Throws.Nothing);
+            Assert.That(() => dbMock.Verify(db => db.SaveChangesAsync(), Times.Once), Throws.Nothing);
         }
 
         [Test]

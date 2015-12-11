@@ -67,7 +67,7 @@ namespace Veil.Tests.Controllers.GamesControllerTests
 
             GamesController controller = new GamesController(dbStub.Object, idGetter: null)
             {
-                ControllerContext = contextStub.Object,
+                ControllerContext = contextStub.Object
             };
 
             var result = await controller.Index() as ViewResult;
