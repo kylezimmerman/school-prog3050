@@ -648,11 +648,11 @@ namespace Veil.Controllers
         /// <summary>
         /// Sets a Game's ESRB Content Descriptors to the provided list of content descriptors by Id. Note that this clears any existing descriptors.
         /// </summary>
-        /// <param name="game">The game to set the tags on.</param>
-        /// <param name="tagNames">A list of tag names to add to the game.</param>
+        /// <param name="game">The game to set the content descriptors on.</param>
+        /// <param name="contentDescriptors">A list of ESRB Content Descriptor Ids to add to the game.</param>
         private async Task SetESRBContentDescriptors(Game game, List<int> contentDescriptors)
         {
-            //Clear any existing tags in the game
+            //Clear any existing content descriptors for the game
             game.ContentDescriptors.Clear();
 
             if (contentDescriptors == null)
@@ -660,7 +660,7 @@ namespace Veil.Controllers
                 return;
             }
 
-            var results = db.ESRBContentDescriptors.Where(e => contentDescriptors.Contains(e.Id));
+            var results = await db.ESRBContentDescriptors.Where(e => contentDescriptors.Contains(e.Id)).ToListAsync();
             foreach (var esrbContentDescriptor in results)
             {
                 game.ContentDescriptors.Add(esrbContentDescriptor);
