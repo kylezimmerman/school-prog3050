@@ -86,7 +86,8 @@ namespace Veil.Controllers
             else
             {
                 wishlistOwner = await db.Members.
-                        Include(m => m.ConfirmedFriends).
+                        Include(m => m.RequestedFriendships).
+                        Include(m => m.ReceivedFriendships).
                         FirstOrDefaultAsync(m => m.UserAccount.UserName == username);
             }
 
