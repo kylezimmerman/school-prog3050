@@ -2,13 +2,9 @@
 
 ### Project Timeline
 
-**Dec 18**
-- Final Project Presentation
+**Done**
 
-I've created milestones and labels for these deadlines, so put issues related to them under the related milestone and label.
-
-Our specific week by week plan can be found here:
-https://docs.google.com/document/d/1kHlQPMBe7dQ8jpvGUNa2ZDrAGux7Vlwn9OXq5KZhnkE/edit?usp=sharing
+There are milestones and labels for each of the phases / deadlines of the project.
 
 ### Solution
 The two config files needed can be found in our Drive folder. Place these in the Veil project.
